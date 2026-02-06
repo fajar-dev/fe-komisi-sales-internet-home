@@ -59,30 +59,30 @@ export interface InvoiceSalesShowResponseData {
 export interface InvoiceSalesData {
     ai: number;
     invoiceNumber: number;
-    position: number;
+    invoiceOrder: number;
     invoiceDate: string;
     dpp: number;
-    newSub:number
+    newSubscription: number;
     paidDate: string;
-    monthPeriod: number;
+    month: number;
     customerServiceId: number;
     customerId: string;
+    customerName: string;
     customerCompany: string;
     customerGroupId: string;
     serviceId: string;
     serviceName: string;
     salesId: string;
     managerSalesId: string;
-    referralId: string;
+    referralId: string | null;
     isNew: boolean;
     isUpgrade: boolean;
     isTermin: boolean;
     salesCommission: number;
     isAdjustment: boolean;
-    type:string
-    modal: number
-    typeSub:string
+    type: string;
+    modal: number;
+    typeSub: string;
     salesCommissionPercentage: number;
     isDeleted: boolean;
 }
-

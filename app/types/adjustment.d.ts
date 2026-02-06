@@ -29,7 +29,7 @@ export interface AdjustmentData {
     serviceGroupId: string
     serviceName: string
     invoiceNumber: number
-    position: number
+    invoiceOrder: number
 }
 
 

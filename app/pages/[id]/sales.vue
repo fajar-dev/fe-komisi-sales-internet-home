@@ -274,12 +274,11 @@ const UBadge = resolveComponent('UBadge')
 const UButton = resolveComponent('UButton')
 const UDropdownMenu = resolveComponent('UDropdownMenu')
 
+import { authService } from '~/services/auth-service'
 
-    import { authService } from '~/services/auth-service'
-
-    const route = useRoute()
-    const data = ref<InvoiceSalesData[]>([])
-    const responseData = ref<InvoiceSalesResponseData['data']>({ data: [], totalCommission: 0, totalDpp: 0 })
+const route = useRoute()
+const data = ref<InvoiceSalesData[]>([])
+const responseData = ref<InvoiceSalesResponseData['data']>({ data: [], totalCommission: 0, totalDpp: 0 })
 
     const zeroCommissionCount = computed(() => {
         return data.value.filter(item => Number(item.salesCommission) === 0).length
@@ -313,7 +312,7 @@ const UDropdownMenu = resolveComponent('UDropdownMenu')
         cell: ({ row }) => {
             const invoiceNum = row.original.invoiceNumber
             return h('a', { 
-                href: `https://isx.nusa.net.id/customer.php?module=customer&pid=printNewCustomerInvoice&invoiceNum=${invoiceNum}&urut=${row.original.position}&new=1&proforma=0&signature=0`,
+                href: `https://isx.nusa.net.id/customer.php?module=customer&pid=printNewCustomerInvoice&invoiceNum=${invoiceNum}&urut=${row.original.invoiceOrder}&new=1&proforma=0&signature=0`,
                 target: '_blank',
                 class: ['text-blue-500 hover:underline', row.original.isDeleted ? 'row-deleted' : '']
             }, `#${invoiceNum}`)
@@ -389,11 +388,11 @@ const UDropdownMenu = resolveComponent('UDropdownMenu')
         }
     },
     {
-        header: 'Company',
+        header: 'Customer',
         cell: ({ row }) => {
         return h('div', { class: 'flex flex-col' }, [
             h('span', { class: 'text-sm text-highlighted' }, row.original.customerId),
-            h('span', { class: 'text-sm' }, row.original.customerCompany)
+            h('span', { class: 'text-sm' }, row.original.customerName)
         ])
         }
     },
@@ -429,7 +428,7 @@ const UDropdownMenu = resolveComponent('UDropdownMenu')
             }
         },
         cell: ({ row }) => {
-        return row.original.monthPeriod
+        return row.original.month
         }
     },
     {
