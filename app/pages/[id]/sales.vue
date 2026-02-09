@@ -24,13 +24,13 @@
                                 {{ df.format(modelValue.start.toDate(getLocalTimeZone())) }} - {{ df.format(modelValue.end.toDate(getLocalTimeZone())) }}
                             </span>
                         </div>
-                        <div>
-                            <span class="text-3xl font-extrabold text-primary-600 dark:text-primary-400 tracking-tight">
-                                {{ formatCurrency(Number(periodData.commission)) }}
-                            </span>
-                            <p class="text-xs text-gray-400 font-medium mt-1">Total Commission</p>
-                            
-
+                        <div class="flex justify-between items-end mt-2">
+                            <div>
+                                <span class="text-3xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
+                                    {{ formatCurrency(Number(periodData.totalCommission)) }}
+                                </span>
+                                <p class="text-[10px] pt-4 text-gray-400 font-medium uppercase tracking-wider">Grand Total Commission</p>
+                            </div>
                         </div>
                     </div>
                 </template>
@@ -101,9 +101,16 @@
                                         </div>
                                         <span class="font-medium text-xs">{{ formatCurrency(Number(periodData.detail.recurring.commission)) }}</span>
                                     </li>
+                                    <li class="flex justify-between items-center text-sm">
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-black"></span>
+                                            <span class="text-gray-500 text-xs">Bonus</span>
+                                        </div>
+                                        <span class="font-medium text-xs">{{ formatCurrency(Number(periodData.bonus)) }}</span>
+                                    </li>
                                     <li class="flex justify-between items-center text-sm pt-2 border-t border-dashed border-gray-200 dark:border-gray-700">
                                         <span class="text-gray-900 dark:text-white font-bold text-xs">Total</span>
-                                        <span class="font-bold text-xs">{{ formatCurrency(Number(periodData.commission)) }}</span>
+                                        <span class="font-bold text-xs">{{ formatCurrency(Number(periodData.totalCommission)) }}</span>
                                     </li>
                                 </ul>
                             </div>
@@ -226,6 +233,14 @@
                 
                 <template #default>
                     <div class="pt-2 border-t border-gray-100 dark:border-gray-800 space-y-1">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-gray-500">Commission</span>
+                            <span class="font-medium text-gray-900 dark:text-white">{{ card.commission }}</span>
+                        </div>
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-gray-500">Bonus</span>
+                            <span class="font-medium text-gray-900 dark:text-white">{{ card.bonus }}</span>
+                        </div>
                         <div class="flex justify-between items-center text-xs">
                             <span class="text-gray-500">New Customer</span>
                             <span class="font-medium text-gray-900 dark:text-white">{{ card.detail.new.count }}</span>
@@ -899,6 +914,7 @@ const totalCommissionData = ref<{
     new: number;
     recurring: number;
     prorate: number;
+    bonus: number;
 }[]>([])
 
 const totalCommissionChart: Record<string, BulletLegendItemInterface> = {
@@ -906,6 +922,7 @@ const totalCommissionChart: Record<string, BulletLegendItemInterface> = {
     new: { name: 'New', color: '#3b82f6' },
     recurring: { name: 'Recurring', color: '#f97316' },
     prorate: { name: 'Prorate', color: '#8b5cf6' },
+    bonus: { name: 'Bonus', color: '#ec4899' },
 }
 
 const xFormatterTotalCommission = (tick: number, _i?: number, _ticks?: number[]): string => {
@@ -922,7 +939,7 @@ const yFormatter = (tick: number) => tick.toString()
 
 // Month Card
 const defaultDetailItem: CommissionDetailItem = { count: 0, commission: '0', mrc: '0', dpp: '0' }
-const monthcard = ref<{ mounth: string; total: string; count: number; dpp: string; mrc: string; detail: { new: CommissionDetailItem; recurring: CommissionDetailItem; prorate: CommissionDetailItem } }[]>([])
+const monthcard = ref<{ mounth: string; total: string; commission: string; bonus: string; count: number; dpp: string; mrc: string; detail: { new: CommissionDetailItem; recurring: CommissionDetailItem; prorate: CommissionDetailItem } }[]>([])
 const periodData = ref<CommissionPeriodData | null>(null)
 
 const fetchData = async () => {
@@ -969,9 +986,21 @@ const fetchData = async () => {
         const mData = data.monthly[m]
         
         const detail = mData?.detail ? {
-             new: { ...mData.detail.new, dpp: formatCurrency(Number(mData.detail.new.dpp)), mrc: formatCurrency(Number(mData.detail.new.mrc)) },
-             recurring: { ...mData.detail.recurring, dpp: formatCurrency(Number(mData.detail.recurring.dpp)), mrc: formatCurrency(Number(mData.detail.recurring.mrc)) },
-             prorate: { ...mData.detail.prorate, dpp: formatCurrency(Number(mData.detail.prorate.dpp)), mrc: formatCurrency(Number(mData.detail.prorate.mrc)) }
+             new: { 
+                 ...mData.detail.new, 
+                 dpp: formatCurrency(Number(mData.detail.new?.dpp ?? 0)), 
+                 mrc: formatCurrency(Number(mData.detail.new?.mrc ?? 0)) 
+             },
+             recurring: { 
+                 ...mData.detail.recurring, 
+                 dpp: formatCurrency(Number(mData.detail.recurring?.dpp ?? 0)), 
+                 mrc: formatCurrency(Number(mData.detail.recurring?.mrc ?? 0)) 
+             },
+             prorate: { 
+                 ...mData.detail.prorate, 
+                 dpp: formatCurrency(Number(mData.detail.prorate?.dpp ?? 0)), 
+                 mrc: formatCurrency(Number(mData.detail.prorate?.mrc ?? 0)) 
+             }
         } : { 
             new: { ...defaultDetailItem, dpp: formatCurrency(0), mrc: formatCurrency(0) }, 
             recurring: { ...defaultDetailItem, dpp: formatCurrency(0), mrc: formatCurrency(0) }, 
@@ -980,7 +1009,9 @@ const fetchData = async () => {
 
         return {
             mounth: m,
-            total: formatCurrency(Number(mData?.commission ?? 0)),
+            total: formatCurrency(Number(mData?.totalCommission ?? 0)),
+            commission: formatCurrency(Number(mData?.commission ?? 0)),
+            bonus: formatCurrency(Number(mData?.bonus ?? 0)),
             count: mData?.count ?? 0,
             dpp: formatCurrency(Number(mData?.dpp ?? 0)),
             mrc: formatCurrency(Number(mData?.mrc ?? 0)),
@@ -993,10 +1024,11 @@ const fetchData = async () => {
         const mData = data.monthly[m]
         return {
             date: m.substring(0, 3),
-            total: Number(mData?.commission ?? 0),
-            new: Number(mData?.detail.new.commission ?? 0),
-            recurring: Number(mData?.detail.recurring.commission ?? 0),
-            prorate: Number(mData?.detail.prorate.commission ?? 0)
+            total: Number(mData?.totalCommission ?? 0),
+            new: Number(mData?.detail?.new?.commission ?? 0),
+            recurring: Number(mData?.detail?.recurring?.commission ?? 0),
+            prorate: Number(mData?.detail?.prorate?.commission ?? 0),
+            bonus: Number(mData?.bonus ?? 0)
         }
     })
 
@@ -1004,8 +1036,8 @@ const fetchData = async () => {
     commissionByServiceData.value = months.map(m => {
         const mData = data.monthly[m]
         const obj: any = { date: m.substring(0, 3) }
-        mData?.service.forEach((s: any) => {
-            obj[s.name] = Number(s.commission)
+        mData?.service?.forEach((s: any) => {
+            obj[s.name] = Number(s.commission ?? 0)
         })
         return obj
     })

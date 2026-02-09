@@ -26,6 +26,8 @@ export interface CommissionServiceItem extends CommissionDetailItem {
 
 export interface CommissionData {
     commission: string;
+    bonus: string;
+    totalCommission: string;
     mrc: string;
     dpp: string;
     count: number;
@@ -40,6 +42,8 @@ export interface CommissionData {
 
 export interface CommissionPeriodData {
     commission: string;
+    bonus: string;
+    totalCommission: string;
     mrc: string;
     dpp: string;
     count: number;
