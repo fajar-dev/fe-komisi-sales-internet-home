@@ -2,42 +2,74 @@ export interface InternalMouthlyQueryParams {
     year: number;
 }
 
-export interface MonthlyBucketDetailItem {
-    name: string;
+export interface InternalPeriodQueryParams {
+    start: string;
+    end: string;
+    status: string;
+}
+
+export interface CommissionDetailItem {
     count: number;
-    total: number;
+    commission: string;
+    mrc: string;
+    dpp: string;
 }
 
-export interface MonthlyDetailBreakdown {
-    startDate: string;
-    endDate: string;
-    total: number;
-    totalInternal: number;
-    totalResell: number;
-    internal: MonthlyBucketDetailItem[];
-    resell: MonthlyBucketDetailItem[];
+export interface CommissionServiceItem extends CommissionDetailItem {
+    name: string;
+    detail: {
+        new: CommissionDetailItem;
+        prorate: CommissionDetailItem;
+        recurring: CommissionDetailItem;
+    };
 }
 
-export interface InternalMonthlyData {
-    month: string;
-    detail: MonthlyDetailBreakdown[];
-    total: number;
+export interface CommissionData {
+    commission: string;
+    mrc: string;
+    dpp: string;
+    count: number;
+    detail: {
+        new: CommissionDetailItem;
+        prorate: CommissionDetailItem;
+        recurring: CommissionDetailItem;
+    };
+    service: CommissionServiceItem[];
+    monthly: Record<string, Omit<CommissionData, 'monthly'>>;
+}
+
+export interface CommissionPeriodData {
+    commission: string;
+    mrc: string;
+    dpp: string;
+    count: number;
+    detail: {
+        new: CommissionDetailItem;
+        prorate: CommissionDetailItem;
+        recurring: CommissionDetailItem;
+    };
+    service: CommissionServiceItem[];
+    achievement: {
+        status: string;
+        motivation: string;
+    }
 }
 
 export interface InternalMouthlyResponseData {
     success: boolean;
     message: string;
-    data: {
-        total: number;
-        totalInternal: number;
-        totalResell: number;
-        data: InternalMonthlyData[];
-    };
+    data: CommissionData;
+}
+
+export interface InternalPeriodResponseData {
+    success: boolean;
+    message: string;
+    data: CommissionPeriodData;
 }
 
 export interface SalesInvoiceQueryParams {
-    startDate: string;
-    endDate: string;
+    start: string;
+    end: string;
 }
 
 export interface InvoiceSalesResponseData {
@@ -69,6 +101,7 @@ export interface InvoiceSalesData {
     customerId: string;
     customerName: string;
     customerCompany: string;
+    customerServiceAccount: string;
     customerGroupId: string;
     serviceId: string;
     serviceName: string;

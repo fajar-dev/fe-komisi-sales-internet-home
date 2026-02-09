@@ -14,6 +14,7 @@ export interface Employee {
     organization_name: string
     job_level: string
     branch: string
+    status: string
     manager_id: number
 }
 
