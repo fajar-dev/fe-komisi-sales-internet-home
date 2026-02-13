@@ -3,9 +3,8 @@ export interface InternalMouthlyQueryParams {
 }
 
 export interface InternalPeriodQueryParams {
-    start: string;
-    end: string;
-    status: string;
+    month: number;
+    year: number;
 }
 
 export interface CommissionDetailItem {
@@ -21,6 +20,9 @@ export interface CommissionServiceItem extends CommissionDetailItem {
         new: CommissionDetailItem;
         prorate: CommissionDetailItem;
         recurring: CommissionDetailItem;
+        upgrade: CommissionDetailItem;
+        alat: CommissionDetailItem;
+        setup: CommissionDetailItem;
     };
 }
 
@@ -35,12 +37,25 @@ export interface CommissionData {
         new: CommissionDetailItem;
         prorate: CommissionDetailItem;
         recurring: CommissionDetailItem;
+        upgrade: CommissionDetailItem;
+        alat: CommissionDetailItem;
+        setup: CommissionDetailItem;
     };
+    startPeriod?: string;
+    endPeriod?: string;
     service: CommissionServiceItem[];
     monthly: Record<string, Omit<CommissionData, 'monthly'>>;
+    achievement: {
+        status: string;
+        motivation: string;
+        activity: number;
+        type?: string;
+    }
 }
 
 export interface CommissionPeriodData {
+    startPeriod: string;
+    endPeriod: string;
     commission: string;
     bonus: string;
     totalCommission: string;
@@ -51,11 +66,16 @@ export interface CommissionPeriodData {
         new: CommissionDetailItem;
         prorate: CommissionDetailItem;
         recurring: CommissionDetailItem;
+        upgrade: CommissionDetailItem;
+        alat: CommissionDetailItem;
+        setup: CommissionDetailItem;
     };
     service: CommissionServiceItem[];
     achievement: {
         status: string;
         motivation: string;
+        activity: number;
+        type?: string;
     }
 }
 
@@ -72,33 +92,17 @@ export interface InternalPeriodResponseData {
 }
 
 export interface SalesInvoiceQueryParams {
-    start: string;
-    end: string;
-}
-
-export interface InvoiceSalesResponseData {
-    success: boolean;
-    message: string;
-    data: {
-        data: InvoiceSalesData[];
-        totalCommission: number;
-        totalDpp: number;
-    };
-}
-
-export interface InvoiceSalesShowResponseData {
-    success: boolean;
-    message: string;
-    data: InvoiceSalesData;
+    month: number;
+    year: number;
 }
 
 export interface InvoiceSalesData {
     ai: number;
-    invoiceNumber: number;
-    invoiceOrder: number;
+    invoiceNumber?: number;
+    invoiceOrder?: number;
     invoiceDate: string;
-    dpp: number;
-    newSubscription: number;
+    dpp: number | string;
+    newSubscription: number | string;
     paidDate: string;
     month: number;
     customerServiceId: number;
@@ -106,20 +110,46 @@ export interface InvoiceSalesData {
     customerName: string;
     customerCompany: string;
     customerServiceAccount: string;
-    customerGroupId: string;
+    customerGroupId?: string;
     serviceId: string;
     serviceName: string;
     salesId: string;
-    managerSalesId: string;
-    referralId: string | null;
-    isNew: boolean;
-    isUpgrade: boolean;
-    isTermin: boolean;
+    managerSalesId?: string;
+    referralId?: string | null;
+    isNew?: boolean;
+    isUpgrade: number | boolean;
+    isTermin?: boolean;
     salesCommission: number;
-    isAdjustment: boolean;
+    isAdjustment: number | boolean;
+    category?: string;
     type: string;
-    modal: number;
-    typeSub: string;
+    modal?: number;
+    typeSub?: string;
     salesCommissionPercentage: number;
-    isDeleted: boolean;
+    isDeleted?: boolean;
+}
+
+export interface InvoiceSalesResponseData {
+    success: boolean;
+    message: string;
+    data: {
+        startPeriod: string;
+        endPeriod: string;
+        count: number;
+        commission: string;
+        dpp: string;
+        mrc: string;
+        new: { count?: number; commission?: string; dpp?: string; mrc?: string; data?: InvoiceSalesData[] };
+        upgrade: { count?: number; commission?: string; dpp?: string; mrc?: string; data?: InvoiceSalesData[] };
+        prorate: { count?: number; commission?: string; dpp?: string; mrc?: string; data?: InvoiceSalesData[] };
+        recurring: { count?: number; commission?: string; dpp?: string; mrc?: string; data?: InvoiceSalesData[] };
+        alat: { count?: number; commission?: string; dpp?: string; mrc?: string; data?: InvoiceSalesData[] };
+        setup: { count?: number; commission?: string; dpp?: string; mrc?: string; data?: InvoiceSalesData[] };
+    };
+}
+
+export interface InvoiceSalesShowResponseData {
+    success: boolean;
+    message: string;
+    data: InvoiceSalesData;
 }

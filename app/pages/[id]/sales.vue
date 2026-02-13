@@ -1,10 +1,5 @@
 <template>
     <UContainer>
-        <AdjustmentModal
-          :ai="invoiceAi"
-          v-model:open="isAdjustmentModalOpen"
-          @updated="fetchInvoiceData()"
-        />
         <HeroBackground />
         <CommissionHeader
             :employee="employee"
@@ -21,7 +16,7 @@
                         <div class="flex justify-between items-center">
                             <span class="text-sm font-medium text-gray-500 dark:text-gray-400 pe-2">Period: </span>
                             <span class="text-sm font-medium">
-                                {{ df.format(modelValue.start.toDate(getLocalTimeZone())) }} - {{ df.format(modelValue.end.toDate(getLocalTimeZone())) }}
+                                {{ df.format(parseDate(periodData.startPeriod).toDate(getLocalTimeZone())) }} - {{ df.format(parseDate(periodData.endPeriod).toDate(getLocalTimeZone())) }}
                             </span>
                         </div>
                         <div class="flex justify-between items-end mt-2">
@@ -70,12 +65,24 @@
                                 <span class="text-gray-500">Recurring</span>
                                 <span class="font-bold text-gray-900 dark:text-white bg-info-50 dark:bg-info-900/10 px-2 py-0.5 rounded text-info-600 dark:text-info-400">{{ periodData.detail.recurring.count }}</span>
                             </div>
+                             <div class="flex justify-between items-center mt-1 text-sm px-1">
+                                <span class="text-gray-500">Upgrade</span>
+                                <span class="font-bold text-gray-900 dark:text-white bg-indigo-50 dark:bg-indigo-900/10 px-2 py-0.5 rounded text-indigo-600 dark:text-indigo-400">{{ periodData.detail.upgrade.count }}</span>
+                            </div>
+                             <div class="flex justify-between items-center mt-1 text-sm px-1">
+                                <span class="text-gray-500">Alat</span>
+                                <span class="font-bold text-gray-900 dark:text-white bg-pink-50 dark:bg-pink-900/10 px-2 py-0.5 rounded text-pink-600 dark:text-pink-400">{{ periodData.detail.alat.count }}</span>
+                            </div>
+                             <div class="flex justify-between items-center mt-1 text-sm px-1">
+                                <span class="text-gray-500">Setup</span>
+                                <span class="font-bold text-gray-900 dark:text-white bg-teal-50 dark:bg-teal-900/10 px-2 py-0.5 rounded text-teal-600 dark:text-teal-400">{{ periodData.detail.setup.count }}</span>
+                            </div>
                         </div>
 
-                        <!-- Section 2: Financial Breakdown (Grid) -->
-                        <div class="grid grid-cols-2 gap-8 border-t border-gray-100 dark:border-gray-800 pt-5">
+                        <!-- Section 2: Financial Breakdown (Masonry) -->
+                        <div class="columns-1 md:columns-2 gap-8 border-t border-gray-100 dark:border-gray-800 pt-5 space-y-8">
                             <!-- Earnings -->
-                            <div>
+                            <div class="break-inside-avoid">
                                 <h4 class="text-xs font-bold text-gray-900 dark:text-gray-100 uppercase tracking-wider mb-3">
                                     Commission
                                 </h4>
@@ -103,6 +110,27 @@
                                     </li>
                                     <li class="flex justify-between items-center text-sm">
                                         <div class="flex items-center gap-1.5">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                                            <span class="text-gray-500 text-xs">Upgrade</span>
+                                        </div>
+                                        <span class="font-medium text-xs">{{ formatCurrency(Number(periodData.detail.upgrade.commission)) }}</span>
+                                    </li>
+                                    <li class="flex justify-between items-center text-sm">
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-pink-500"></span>
+                                            <span class="text-gray-500 text-xs">Alat</span>
+                                        </div>
+                                        <span class="font-medium text-xs">{{ formatCurrency(Number(periodData.detail.alat.commission)) }}</span>
+                                    </li>
+                                    <li class="flex justify-between items-center text-sm">
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-teal-500"></span>
+                                            <span class="text-gray-500 text-xs">Setup</span>
+                                        </div>
+                                        <span class="font-medium text-xs">{{ formatCurrency(Number(periodData.detail.setup.commission)) }}</span>
+                                    </li>
+                                    <li class="flex justify-between items-center text-sm">
+                                        <div class="flex items-center gap-1.5">
                                             <span class="w-1.5 h-1.5 rounded-full bg-black"></span>
                                             <span class="text-gray-500 text-xs">Bonus</span>
                                         </div>
@@ -116,7 +144,7 @@
                             </div>
 
                             <!-- MRC -->
-                            <div>
+                            <div class="break-inside-avoid">
                                 <h4 class="text-xs font-bold text-gray-900 dark:text-gray-100 uppercase tracking-wider mb-3">
                                     MRC
                                 </h4>
@@ -139,12 +167,9 @@
                                     </li>
                                 </ul>
                             </div>
-                        </div>
 
-                         <!-- Section 3: DPP Breakdown (Grid) -->
-                        <div class="grid grid-cols-2 gap-8 border-t border-gray-100 dark:border-gray-800 pt-5">
                             <!-- DPP New -->
-                            <div>
+                            <div class="break-inside-avoid">
                                 <h4 class="text-xs font-bold text-gray-900 dark:text-gray-100 uppercase tracking-wider mb-3">
                                     New Subscription
                                 </h4>
@@ -175,7 +200,7 @@
                             </div>
 
                             <!-- DPP Other -->
-                            <div>
+                            <div class="break-inside-avoid">
                                 <h4 class="text-xs font-bold text-gray-900 dark:text-gray-100 uppercase tracking-wider mb-3">
                                     Other Subscription
                                 </h4>
@@ -188,9 +213,21 @@
                                         <span class="text-gray-500 text-xs">Recurring</span>
                                         <span class="font-medium text-xs">{{ formatCurrency(Number(periodData.detail.recurring.dpp)) }}</span>
                                     </li>
+                                    <li class="flex justify-between items-center text-sm">
+                                        <span class="text-gray-500 text-xs">Upgrade</span>
+                                        <span class="font-medium text-xs">{{ formatCurrency(Number(periodData.detail.upgrade.dpp)) }}</span>
+                                    </li>
+                                    <li class="flex justify-between items-center text-sm">
+                                        <span class="text-gray-500 text-xs">Alat</span>
+                                        <span class="font-medium text-xs">{{ formatCurrency(Number(periodData.detail.alat.dpp)) }}</span>
+                                    </li>
+                                    <li class="flex justify-between items-center text-sm">
+                                        <span class="text-gray-500 text-xs">Setup</span>
+                                        <span class="font-medium text-xs">{{ formatCurrency(Number(periodData.detail.setup.dpp)) }}</span>
+                                    </li>
                                     <li class="flex justify-between items-center text-sm pt-2 border-t border-dashed border-gray-200 dark:border-gray-700">
                                         <span class="text-gray-900 dark:text-white font-bold text-xs">Total</span>
-                                        <span class="font-bold text-xs">{{ formatCurrency(Number(periodData.detail.prorate.dpp) + Number(periodData.detail.recurring.dpp)) }}</span>
+                                        <span class="font-bold text-xs">{{ formatCurrency(Number(periodData.detail.prorate.dpp) + Number(periodData.detail.recurring.dpp) + Number(periodData.detail.upgrade.dpp) + Number(periodData.detail.alat.dpp) + Number(periodData.detail.setup.dpp)) }}</span>
                                     </li>
                                 </ul>
                             </div>
@@ -198,21 +235,35 @@
 
                         <!-- Achievement Section -->
                         <div v-if="periodData.achievement" class="w-full pt-4 border-t border-gray-100 dark:border-gray-800 mt-auto">
-                             <div class="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-800 w-full shadow-sm">
-                                <div class="flex justify-between items-center mb-3 w-full">
-                                    <span class="text-xs font-bold text-gray-900 dark:text-gray-100 uppercase tracking-wider flex items-center gap-2">
-                                        <UIcon name="i-heroicons-trophy" class="w-4 h-4 text-yellow-500" />
-                                        Month Achievement
-                                    </span>
-                                    <span 
-                                        :class="['text-xs font-bold uppercase', getAchievementColor(periodData.achievement.status)]"
-                                    >
-                                        {{ periodData.achievement.status }}
-                                    </span>
+                            <div class="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-800 w-full shadow-sm">
+                                <div class="flex flex-col gap-3">
+                                    <div class="flex justify-between items-center w-full">
+                                        <span class="text-xs font-bold text-gray-900 dark:text-gray-100 uppercase tracking-wider flex items-center gap-2">
+                                            <UIcon name="i-heroicons-trophy" class="w-4 h-4 text-yellow-500" />
+                                            Month Achievement
+                                        </span>
+                                        <span 
+                                            :class="['text-xs font-bold uppercase', getAchievementColor(periodData.achievement.status)]"
+                                        >
+                                            {{ periodData.achievement.status }}
+                                        </span>
+                                    </div>
+
+                                    <div class="grid grid-cols-2 gap-4 border-t border-gray-200 dark:border-gray-700 py-3">
+                                        <div class="flex flex-col text-center">
+                                            <span class="text-[10px] text-gray-500 uppercase font-semibold">Type</span>
+                                            <span class="text-sm font-bold text-gray-900 dark:text-white">{{ periodData.achievement.type }}</span>
+                                        </div>
+                                        <div class="flex flex-col text-center border-l border-gray-200 dark:border-gray-700">
+                                            <span class="text-[10px] text-gray-500 uppercase font-semibold">Activity</span>
+                                            <span class="text-sm font-bold text-gray-900 dark:text-white">{{ periodData.achievement.activity }}</span>
+                                        </div>
+                                    </div>
+
+                                    <p class="text-sm text-center text-gray-600 dark:text-gray-300 italic leading-relaxed w-full font-medium border-t border-gray-200 dark:border-gray-700 pt-3">
+                                        "{{ periodData.achievement.motivation }}"
+                                    </p>
                                 </div>
-                                <p class="text-sm text-center text-gray-600 dark:text-gray-300 italic leading-relaxed w-full font-medium">
-                                    "{{ periodData.achievement.motivation }}"
-                                </p>
                             </div>
                         </div>
                     </div>
@@ -228,31 +279,37 @@
                     <div class="flex flex-col">
                         <span class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ card.mounth }}</span>
                         <span class="text-lg font-bold text-gray-900 dark:text-white">{{ card.total }}</span>
+                        <small class="text-xs text-gray-500 dark:text-gray-400">{{ card.startPeriod }} - {{ card.endPeriod }}</small>
                     </div>
                 </template>
                 
                 <template #default>
                     <div class="pt-2 border-t border-gray-100 dark:border-gray-800 space-y-1">
                         <div class="flex justify-between items-center text-xs">
-                            <span class="text-gray-500">Commission</span>
-                            <span class="font-medium text-gray-900 dark:text-white">{{ card.commission }}</span>
+                            <span class="text-gray-500">Activity</span>
+                            <span class="font-medium text-gray-900 dark:text-white">{{ card.count }}</span>
                         </div>
                         <div class="flex justify-between items-center text-xs">
                             <span class="text-gray-500">Bonus</span>
                             <span class="font-medium text-gray-900 dark:text-white">{{ card.bonus }}</span>
                         </div>
                         <div class="flex justify-between items-center text-xs">
-                            <span class="text-gray-500">New Customer</span>
-                            <span class="font-medium text-gray-900 dark:text-white">{{ card.detail.new.count }}</span>
+                            <span class="text-gray-500">Total Commission</span>
+                            <span class="font-medium text-gray-900 dark:text-white">{{ card.commission }}</span>
                         </div>
                         <div class="flex justify-between items-center text-xs">
-                            <span class="text-gray-500">New Subscription</span>
-                            <span class="font-medium text-gray-900 dark:text-white">{{ card.detail.new.dpp }}</span>
+                            <span class="text-gray-500">Total Subscription</span>
+                            <span class="font-medium text-gray-900 dark:text-white">{{ card.dpp }}</span>
                         </div>
                             <div class="flex justify-between items-center text-xs">
-                            <span class="text-gray-500">New MRC</span>
+                            <span class="text-gray-500">Total MRC</span>
                             <span class="font-medium text-gray-900 dark:text-white">
-                                {{ card.detail.new.mrc }}</span>
+                                {{ card.mrc }}</span>
+                        </div>
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-gray-500">Achievement</span>
+                            <span :class="getAchievementColor(card.status)">
+                                {{ card.status }}</span>
                         </div>
                     </div>
                 </template>
@@ -331,306 +388,38 @@
             </div>
         </div>
 
-        <!-- Service Charts -->
+
+
         <div class="py-2">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <UCard>
-            <template #header>
-                <h2>Commission by Service</h2>
-                <p class="text-sm text-gray-500 dark:text-gray-400">
-                Breakdown of commission by service type
-                </p>
-            </template>
-                <AreaChart
-                    :key="colorMode.value + '-service-commission'"
-                    :data="commissionByServiceData"
-                    :height="280"
-                    :categories="commissionByServiceChart"
-                    :stacked="true"
-                    :x-formatter="xFormatterCommissionService"
-                    :y-formatter="yFormatterCommission"
-                    :curve-type="CurveType.MonotoneX"
-                    :legend-position="LegendPosition.TopRight"
-                    :hide-legend="false"
-                    :y-grid-line="true"
-                    :x-grid-line="false"
-                />
-            </UCard>
-            <UCard>
-            <template #header>
-                <h2>Customer by Service</h2>
-                <p class="text-sm text-gray-500 dark:text-gray-400">
-                Number of customers by service
-                </p>
-            </template>
-                <BarChart
-                    :data="customerByServiceData"
-                    :height="300"
-                    :categories="customerByServiceChart"
-                    :y-axis="customerServiceKeys"
-                    :group-padding="0"
-                    :bar-padding="0.2"
-                    :x-num-ticks="6"
-                    :radius="4"
-                    :x-formatter="xFormatterCustomerService"
-                    :y-formatter="yFormatter"
-                    :legend-position="LegendPosition.TopRight"
-                    :hide-legend="false"
-                    :y-grid-line="true"
-                />
-            </UCard>
-        </div>
-        </div>
-
-        <!-- Additional Business Insights -->
-        <div class="py-2">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <UCard>
-                    <template #header>
-                        <h2>Commission Distribution</h2>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">
-                             Yearly Commission Split
-                        </p>
-                    </template>
-                    <DonutChart
-                        :data="commissionDistributionData"
-                        :height="280"
-                        :categories="commissionDistributionChart"
-                        :radius="80"
-                        :pad-angle="0.1"
-                        :arc-width="20"
-                        :value-formatter="donutValueFormatter"
-                    >
-                        <div class="text-center">
-                            <div class="text-sm text-gray-500 dark:text-gray-400">
-                                Total
-                            </div>
-                            <div class="text-xl font-bold text-gray-900 dark:text-white">
-                                {{ formatCurrency(commissionDistributionData.reduce((a, b) => a + b, 0)) }}
-                            </div>
-                        </div>
-                    </DonutChart>
-                </UCard>
-                <UCard>
-                    <template #header>
-                        <h2>Subscription Trend</h2>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">
-                             DPP vs MRC Performance
-                        </p>
-                    </template>
-                    <LineChart
-                        :data="revenueTrendData"
-                        :height="280"
-                        y-label="Amount"
-                        :x-num-ticks="6"
-                        :y-num-ticks="4"
-                        :categories="revenueTrendChart"
-                        :x-formatter="xFormatterRevenue"
-                        :y-formatter="yFormatterCommission"
-                        :y-grid-line="true"
-                        :curve-type="CurveType.MonotoneX"
-                        :legend-position="LegendPosition.TopRight"
-                        :hide-legend="false"
-                    />
-                </UCard>
-            </div>
-        </div>
-
-        <!-- Volume & Share Insights -->
-        <div class="py-2">
-            <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                <UCard class="col-span-12 md:col-span-8">
-                    <template #header>
-                        <h2>Sales Volume</h2>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">
-                             Count by Client Type
-                        </p>
-                    </template>
-                    <BarChart
-                        :data="salesVolumeData"
-                        :height="300"
-                        :categories="salesVolumeChart"
-                        :y-axis="['new', 'recurring', 'prorate']"
-                        :group-padding="0"
-                        :bar-padding="0.2"
-                        :x-num-ticks="6"
-                        :radius="4"
-                        :x-formatter="xFormatterSalesVolume"
-                        :y-formatter="yFormatter"
-                        :legend-position="LegendPosition.TopRight"
-                        :hide-legend="false"
-                        :y-grid-line="true"
-                    />
-                </UCard>
-                <UCard class="col-span-12 md:col-span-4">
-                    <template #header>
-                        <h2>Subscription Share</h2>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">
-                             DPP Contribution by Service
-                        </p>
-                    </template>
-                    <DonutChart
-                        :data="revenueShareDonutData"
-                        :height="280"
-                        :categories="revenueShareDonutChart"
-                        :radius="80"
-                        :pad-angle="0.1"
-                        :arc-width="20"
-                        :value-formatter="donutValueFormatter"
-                    >
-                        <div class="text-center">
-                            <div class="text-sm text-gray-500 dark:text-gray-400">
-                                Total DPP
-                            </div>
-                            <div class="text-xl font-bold text-gray-900 dark:text-white">
-                                {{ formatCurrency(revenueShareDonutData.reduce((a, b) => a + b, 0)) }}
-                            </div>
-                        </div>
-                    </DonutChart>
-                </UCard>
-            </div>
-        </div>
-
-        <!-- Efficiency & Growth -->
-        <div class="py-2">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <UCard>
-                    <template #header>
-                        <h2>Efficiency Metrics</h2>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">
-                                Commission Rate vs Average Subscription
-                        </p>
-                    </template>
-                    <LineChart
-                        :data="efficiencyData"
-                        :height="280"
-                        y-label="Value"
-                        :x-num-ticks="6"
-                        :y-num-ticks="4"
-                        :categories="efficiencyChart"
-                        :x-formatter="xFormatterEfficiency"
-                        :y-grid-line="true"
-                        :curve-type="CurveType.MonotoneX"
-                        :legend-position="LegendPosition.TopRight"
-                        :hide-legend="false"
-                    />
-                </UCard>
-                <UCard>
-                    <template #header>
-                        <h2>MRR Growth</h2>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">
-                             Monthly Recurring Revenue Composition
-                        </p>
-                    </template>
-                    <AreaChart
-                        :key="colorMode.value + '-mrc'"
-                        :data="mrcCompositionData"
-                        :height="280"
-                        :categories="mrcCompositionChart"
-                        :stacked="true"
-                        :x-formatter="xFormatterMrc"
-                        :y-formatter="yFormatterCommission"
-                        :curve-type="CurveType.MonotoneX"
-                        :legend-position="LegendPosition.TopRight"
-                        :hide-legend="false"
-                        :y-grid-line="true"
-                        :x-grid-line="false"
-                    />
-                </UCard>
-            </div>
-        </div>
-
-        <!-- Financial Performance & Growth -->
-        <div class="py-2">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <UCard>
-                    <template #header>
-                        <h2>ARPU Trend by Service</h2>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">
-                             Average Subscription Per Unit (User)
-                        </p>
-                    </template>
-                    <LineChart
-                        :data="arpuByServiceData"
-                        :height="280"
-                        y-label="ARPU (IDR)"
-                        :x-num-ticks="6"
-                        :y-num-ticks="4"
-                        :categories="arpuByServiceChart"
-                        :x-formatter="xFormatterArpu"
-                        :y-formatter="yFormatterCommission"
-                        :y-grid-line="true"
-                        :curve-type="CurveType.MonotoneX"
-                        :legend-position="LegendPosition.TopRight"
-                        :hide-legend="false"
-                    />
-                </UCard>
-                <UCard>
-                    <template #header>
-                        <h2>Cumulative Commission</h2>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">
-                             Total Accumulated Commission YTD
-                        </p>
-                    </template>
-                    <AreaChart
-                        :key="colorMode.value + '-cumulative'"
-                        :data="cumulativeCommissionData"
-                        :height="280"
-                        :categories="cumulativeCommissionChart"
-                        :stacked="false"
-                        :x-formatter="xFormatterCumulative"
-                        :y-formatter="yFormatterCommission"
-                        :curve-type="CurveType.MonotoneX"
-                        :legend-position="LegendPosition.TopRight"
-                        :hide-legend="false"
-                        :y-grid-line="true"
-                        :x-grid-line="false"
-                    />
-                </UCard>
-            </div>
-        </div>
-
-        <div class="py-2">
-            <div class="grid grid-cols-1">
-                <UCard>
                 <template #header>
                     <div class="flex items-center justify-between">
                         <div>
                             <h2>Invoice</h2>
                             <p class="text-sm text-gray-500 dark:text-gray-400">
-                            Customer Invoice
+                                Customer Invoice
                             </p>
                         </div>
-                        <UPopover>
-                            <UButton color="neutral" variant="subtle" icon="i-lucide-calendar">
-                            <template v-if="modelValue.start">
-                                <template v-if="modelValue.end">
-                                {{ df.format(modelValue.start.toDate(getLocalTimeZone())) }} - {{ df.format(modelValue.end.toDate(getLocalTimeZone())) }}
-                                </template>
 
-                                <template v-else>
-                                {{ df.format(modelValue.start.toDate(getLocalTimeZone())) }}
-                                </template>
-                            </template>
-                            <template v-else>
-                                Pick a date
-                            </template>
-                            </UButton>
-
-                            <template #content>
-                            <UCalendar v-model="modelValue" class="p-2" :number-of-months="2" range />
-                            </template>
-                        </UPopover>
                     </div>
                 </template>
-                    <UTable sticky :data="data" :columns="columns" class="flex-1 max-h-[800px] [&_tr:has(.commission-zero)]:bg-yellow-50 dark:[&_tr:has(.commission-zero)]:bg-yellow-950/20 [&_tr:has(.row-deleted)]:bg-red-50 dark:[&_tr:has(.row-deleted)]:bg-red-950/20" />
-                    <div class="p-4 border-t border-gray-200 dark:border-gray-800" v-if="zeroCommissionCount > 0">
-                        <p class="text-sm text-yellow-500 font-medium">
-                            {{ zeroCommissionCount }} invoice doesn't have commission
-                        </p>
-                    </div>
-                </UCard>
-            </div>
+                
+                <UTabs :items="tabItems" class="w-full">
+                    <template #content="{ item }">
+                        <UTable 
+                            sticky 
+                            :data="getTabData(item.key)" 
+                            :columns="getColumns(item.key)" 
+                            class="flex-1 max-h-[800px] [&_tr:has(.commission-zero)]:bg-yellow-50 dark:[&_tr:has(.commission-zero)]:bg-yellow-950/20 [&_tr:has(.row-deleted)]:bg-red-50 dark:[&_tr:has(.row-deleted)]:bg-red-950/20" 
+                        />
+                        <div class="p-4 border-t border-gray-200 dark:border-gray-800" v-if="getZeroCommissionCount(item.key) > 0">
+                            <p class="text-sm text-yellow-500 font-medium">
+                                {{ getZeroCommissionCount(item.key) }} invoice doesn't have commission
+                            </p>
+                        </div>
+                    </template>
+                </UTabs>
+            </UCard>
         </div>
     </UContainer>
 </template>
@@ -641,214 +430,194 @@ import { EmployeeService } from '~/services/employee-service'
 import { InvoiceService } from '~/services/invoice-service'
 import type { Employee } from '~/types/employee'
 
-import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
+import { CalendarDate, DateFormatter, getLocalTimeZone, parseDate } from '@internationalized/date'
 import { type Row } from '@tanstack/table-core'
 
 const df = new DateFormatter('en-US', {
   dateStyle: 'medium'
 })
 
-const modelValue = shallowRef({
-    start: new CalendarDate(2026, 1, 1),
-    end: new CalendarDate(2026, 1, 31)
-})
-
-const isAdjustmentModalOpen = ref(false)
-const invoiceAi = ref<number>(0)
+const months = [
+    { label: 'January', value: 1 },
+    { label: 'February', value: 2 },
+    { label: 'March', value: 3 },
+    { label: 'April', value: 4 },
+    { label: 'May', value: 5 },
+    { label: 'June', value: 6 },
+    { label: 'July', value: 7 },
+    { label: 'August', value: 8 },
+    { label: 'September', value: 9 },
+    { label: 'October', value: 10 },
+    { label: 'November', value: 11 },
+    { label: 'December', value: 12 }
+]
+const selectedMonth = ref(new Date().getMonth() + 1)
 
 import { h, resolveComponent } from 'vue'
-import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
+import type { TableColumn } from '@nuxt/ui'
 import { AdditionalService } from '~/services/additional-service'
-import type { InvoiceSalesData, InvoiceSalesResponseData, CommissionDetailItem, CommissionPeriodData } from '~/types/sales'
+import type { InvoiceSalesData, CommissionDetailItem, CommissionPeriodData } from '~/types/sales'
 
 const UBadge = resolveComponent('UBadge')
 const UButton = resolveComponent('UButton')
-const UDropdownMenu = resolveComponent('UDropdownMenu')
-
-import { authService } from '~/services/auth-service'
 
 const route = useRoute()
-const data = ref<InvoiceSalesData[]>([])
-const responseData = ref<InvoiceSalesResponseData['data']>({ data: [], totalCommission: 0, totalDpp: 0 })
+const responseData = ref<any>({
+    startPeriod: '',
+    endPeriod: '',
+    count: 0,
+    commission: '0',
+    dpp: '0',
+    mrc: '0',
+    new: { data: [] },
+    upgrade: { data: [] },
+    prorate: { data: [] },
+    recurring: { data: [] },
+    alat: { data: [] },
+    setup: { data: [] }
+})
 
-    const zeroCommissionCount = computed(() => {
-        return data.value.filter(item => Number(item.salesCommission) === 0).length
-    })
+const tabItems = computed(() => [
+    { label: `New (${responseData.value.new?.data?.length || 0})`, key: 'new', icon: 'i-lucide-plus-circle' },
+    { label: `Recurring (${responseData.value.recurring?.data?.length || 0})`, key: 'recurring', icon: 'i-lucide-refresh-cw' },
+    { label: `Prorate (${responseData.value.prorate?.data?.length || 0})`, key: 'prorate', icon: 'i-lucide-calculator' },
+    { label: `Upgrade (${responseData.value.upgrade?.data?.length || 0})`, key: 'upgrade', icon: 'i-lucide-arrow-up-circle' },
+    { label: `Alat (${responseData.value.alat?.data?.length || 0})`, key: 'alat', icon: 'i-lucide-box' },
+    { label: `Setup (${responseData.value.setup?.data?.length || 0})`, key: 'setup', icon: 'i-lucide-settings' }
+])
 
-    const getRowItems = (row: Row<InvoiceSalesData>) => {
-        const items: DropdownMenuItem[] = [
-            {
-                label: 'Adjust Commission',
-                icon: 'i-lucide-edit',
-                size: 'xs',
-                onClick: () => {
-                     invoiceAi.value = row.original.ai
-                    isAdjustmentModalOpen.value = true
+const getTabData = (key: string) => {
+    return responseData.value[key]?.data || []
+}
+
+const getZeroCommissionCount = (key: string) => {
+    const data = getTabData(key)
+    return data.filter((item: InvoiceSalesData) => Number(item.salesCommission) === 0).length
+}
+
+const getColumns = (key: string): TableColumn<InvoiceSalesData>[] => {
+    const cols: TableColumn<InvoiceSalesData>[] = [
+        {
+            accessorKey: 'paidDate',
+            header: 'Paid Date',
+            cell: ({ row }) => {
+            return new Date(row.getValue('paidDate')).toLocaleString('en-US', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric'
+            })
+            }
+        },
+        {
+            id: 'label',
+            header: 'Label',
+            cell: ({ row }) => {            
+                if (row.original.type === 'new') {
+                    return h(UBadge, { label: 'New', color: 'success', variant: 'subtle' })
+                }
+                if (row.original.type === 'prorate') {
+                    return h(UBadge, { label: 'Prorate', color: 'warning', variant: 'subtle' })
+                }
+                if (row.original.type === 'recurring') {
+                    return h(UBadge, { label: 'Recurring', color: 'info', variant: 'subtle' })
+                }
+                if (row.original.category === 'alat') {
+                    return h(UBadge, { label: 'Alat', color: 'primary', variant: 'solid' })
+                }
+                if (row.original.category === 'setup') {
+                    return h(UBadge, { label: 'Setup', color: 'neutral', variant: 'solid' })
                 }
             }
-        ]
-        return items
-    }
-
-    const columns = computed<TableColumn<InvoiceSalesData>[]>(() => {
-        const cols: TableColumn<InvoiceSalesData>[] = [
-    {
-        accessorKey: 'invoiceNumber',
-        header: 'Invoice Number',
-        meta: {
-        class: {
-            td: 'font-bold'
-        }
         },
-        cell: ({ row }) => {
-            const invoiceNum = row.original.invoiceNumber
-            return h('a', { 
-                href: `https://isx.nusa.net.id/customer.php?module=customer&pid=printNewCustomerInvoice&invoiceNum=${invoiceNum}&urut=${row.original.invoiceOrder}&new=1&proforma=0&signature=0`,
-                target: '_blank',
-                class: ['text-blue-500 hover:underline', row.original.isDeleted ? 'row-deleted' : '']
-            }, `#${invoiceNum}`)
-        }
-    },
-    {
-        accessorKey: 'paidDate',
-        header: 'Paid Date',
-        cell: ({ row }) => {
-        return new Date(row.getValue('paidDate')).toLocaleString('en-US', {
-            day: 'numeric',
-            month: 'short',
-            year: 'numeric'
-        })
-        }
-    },
-    {
-        id: 'label',
-        header: 'Label',
-        cell: ({ row }) => {            
-            if (row.original.type === 'new') {
-                return h(UBadge, { label: 'New', color: 'success', variant: 'subtle' })
+        {
+            header: 'Service',
+            cell: ({ row }) => {
+            return h('div', { class: 'flex flex-col' }, [
+                h('a', { 
+                    href: `https://isx.nusa.net.id/v2/customer/service/${row.original.customerServiceId}/detail`,
+                    target: '_blank',
+                    class: ['text-blue-500 hover:underline font-semibold', row.original.isDeleted ? 'row-deleted' : '']
+                }, row.original.customerServiceAccount),
+                h('span', { class: 'text-sm whitespace-normal break-words' }, row.original.serviceName)
+            ])
             }
-            if (row.original.type === 'prorate') {
-                return h(UBadge, { label: 'Prorate', color: 'warning', variant: 'subtle' })
-            }
-            if (row.original.type === 'recurring') {
-                return h(UBadge, { label: 'Recurring', color: 'info', variant: 'subtle' })
-            }
-        }
-    },
-    {
-        header: 'Service',
-        cell: ({ row }) => {
-        return h('div', { class: 'flex flex-col' }, [
-            h('a', { 
-                href: `https://isx.nusa.net.id/v2/customer/service/${row.original.customerServiceId}/detail`,
-                target: '_blank',
-                class: ['text-blue-500 hover:underline font-semibold', row.original.isDeleted ? 'row-deleted' : '']
-            }, row.original.customerServiceAccount),
-            h('span', { class: 'text-sm' }, row.original.serviceName)
-        ])
-        }
-    },
-    {
-        header: 'Customer',
-        cell: ({ row }) => {
-        return h('div', { class: 'flex flex-col' }, [
-            h('a', { 
-                href: `https://isx.nusa.net.id/customer.php?custId=${row.original.customerId}&pid=profile`,
-                target: '_blank',
-                class: ['text-blue-500 hover:underline font-semibold', row.original.isDeleted ? 'row-deleted' : '']
-            }, row.original.customerId),
-            h('span', { class: 'text-sm' }, row.original.customerName)
-        ])
-        }
-    },
-    {
-        accessorKey: 'dpp',
-        header: 'DPP',
-        meta: {
-        class: {
-            th: 'text-right',
-            td: 'text-right font-medium'
-        }
         },
-        cell: ({ row }) => {
-        const amount = Number.parseFloat(row.getValue('dpp'))
-        return new Intl.NumberFormat('id-ID', {
-            style: 'currency',
-            currency: 'IDR'
-        }).format(amount)
+        {
+            header: 'Customer',
+            cell: ({ row }) => {
+            return h('div', { class: 'flex flex-col' }, [
+                h('a', { 
+                    href: `https://isx.nusa.net.id/customer.php?custId=${row.original.customerId}&pid=profile`,
+                    target: '_blank',
+                    class: ['text-blue-500 hover:underline font-semibold', row.original.isDeleted ? 'row-deleted' : '']
+                }, row.original.customerId),
+                h('span', { class: 'text-sm whitespace-normal break-words' }, row.original.customerName)
+            ])
+            }
         },
-        footer: () => {
-            return h('div', { class: 'text-right font-bold' }, new Intl.NumberFormat('id-ID', {
-                style: 'currency',
-                currency: 'IDR'
-            }).format(responseData.value.totalDpp ?? 0))
-        }
-    },
-    {
-        header: 'Month Period',
-        meta: {
+        {
+            accessorKey: 'dpp',
+            header: 'DPP',
+            meta: {
             class: {
                 th: 'text-right',
                 td: 'text-right font-medium'
             }
-        },
-        cell: ({ row }) => {
-        return row.original.month
-        }
-    },
-    {
-        header: 'Commission',
-        meta: {
-        class: {
-            th: 'text-right',
-            td: 'text-right font-medium'
-        }
-        },
-        cell: ({ row }) => {
-        const isZero = Number(row.original.salesCommission) === 0
-        return h('div', { class: ['flex flex-col', isZero ? 'commission-zero' : ''] }, [
-            h('span', { class: 'text-sm text-highlighted' }, Intl.NumberFormat('id-ID', { style: 'decimal' }).format(row.original.salesCommissionPercentage) + '%'),
-            h('span', { class: 'text-sm' }, new Intl.NumberFormat('id-ID', {
-                style: 'currency',
-                currency: 'IDR'
-            }).format(row.original.salesCommission))
-        ])
-        },
-        footer: () => {
-            return h('div', { class: 'text-right font-bold' }, new Intl.NumberFormat('id-ID', {
-                style: 'currency',
-                currency: 'IDR'
-            }).format(responseData.value.totalCommission ?? 0))
-        }
-    }
-]
-
-    if (authService.user.value?.employee_id === route.params.id) {
-        cols.push({
-            id: 'actions',
+            },
             cell: ({ row }) => {
-                return h(
-                    'div',
-                    { class: 'text-right' },
-                    h(
-                    UDropdownMenu,
-                    { content: { align: 'end' }, items: getRowItems(row) },
-                    () =>
-                        h(UButton, {
-                        icon: 'i-lucide-ellipsis-vertical',
-                        color: 'neutral',
-                        variant: 'ghost',
-                        class: 'ml-auto'
-                        })
-                    )
-                )
+            const amount = Number.parseFloat(row.getValue('dpp'))
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR'
+            }).format(amount)
+            },
+            footer: () => {
+                return h('div', { class: 'text-right font-bold' }, new Intl.NumberFormat('id-ID', {
+                    style: 'currency',
+                    currency: 'IDR'
+                }).format(Number(responseData.value[key]?.dpp ?? 0)))
             }
-        })
-    }
-
+        },
+        {
+            header: 'Month Period',
+            meta: {
+                class: {
+                    th: 'text-right',
+                    td: 'text-right font-medium'
+                }
+            },
+            cell: ({ row }) => {
+            return row.original.month
+            }
+        },
+        {
+            header: 'Commission',
+            meta: {
+            class: {
+                th: 'text-right',
+                td: 'text-right font-medium'
+            }
+            },
+            cell: ({ row }) => {
+            const isZero = Number(row.original.salesCommission) === 0
+            return h('div', { class: ['flex flex-col', isZero ? 'commission-zero' : ''] }, [
+                h('span', { class: 'text-sm text-highlighted' }, Intl.NumberFormat('id-ID', { style: 'decimal' }).format(row.original.salesCommissionPercentage) + '%'),
+                h('span', { class: 'text-sm' }, new Intl.NumberFormat('id-ID', {
+                    style: 'currency',
+                    currency: 'IDR'
+                }).format(row.original.salesCommission))
+            ])
+            },
+            footer: () => {
+                return h('div', { class: 'text-right font-bold' }, new Intl.NumberFormat('id-ID', {
+                    style: 'currency',
+                    currency: 'IDR'
+                }).format(Number(responseData.value[key]?.commission ?? 0)))
+            }
+        }
+    ]
     return cols
-})
-
+}
 
 const employee = ref<Employee>()  
 
@@ -860,12 +629,12 @@ const colorMode = useColorMode()
 
 const getAchievementColor = (status: string) => {
     const s = status.toLowerCase()
-    if (s.includes('tidak capai') || s.includes('sp1')) return 'text-red-500 dark:text-red-400'
-    if (s.includes('average')) return 'text-orange-500 dark:text-orange-400'
-    if (s.includes('bonus')) return 'text-violet-500 dark:text-violet-400'
-    if (s.includes('excelent') || s.includes('excellent')) return 'text-emerald-500 dark:text-emerald-400'
-    if (s.includes('very good')) return 'text-teal-500 dark:text-teal-400'
-    if (s.includes('capai target')) return 'text-green-500 dark:text-green-400'
+    if (s.includes('tidak capai') || s.includes('sp1')) return 'font-bold text-red-500 dark:text-red-400'
+    if (s.includes('average')) return 'font-bold text-orange-500 dark:text-orange-400'
+    if (s.includes('bonus')) return 'font-bold text-violet-500 dark:text-violet-400'
+    if (s.includes('excelent') || s.includes('excellent')) return 'font-bold text-emerald-500 dark:text-emerald-400'
+    if (s.includes('very good')) return 'font-bold text-teal-500 dark:text-teal-400'
+    if (s.includes('capai target')) return 'font-bold text-green-500 dark:text-green-400'
     return 'text-primary-500 dark:text-primary-400'
 }
 
@@ -890,23 +659,6 @@ const donutValueFormatter = (value: number): string => {
     return formatCurrency(value)
 }
 
-// Commission By Service (Area Chart)
-const commissionByServiceData = ref<any[]>([])
-const commissionByServiceChart = computed<Record<string, BulletLegendItemInterface>>(() => {
-    return {
-        Home: { name: 'Home', color: '#3b82f6' },
-        Nusafiber: { name: 'Nusafiber', color: '#22c55e' },
-        NusaSelecta: { name: 'NusaSelecta', color: '#f97316' },
-    }
-})
-const xFormatterCommissionService = (tick: number, _i?: number, _ticks?: number[]): string => {
-    return String(commissionByServiceData.value[tick]?.date ?? '')
-}
-
-const yFormatterCommission = (value: number): string => {
-    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value)
-}
-
 // Total Commission Chart (Line Chart)
 const totalCommissionData = ref<{
     date: string;
@@ -914,6 +666,9 @@ const totalCommissionData = ref<{
     new: number;
     recurring: number;
     prorate: number;
+    upgrade: number;
+    alat: number;
+    setup: number;
     bonus: number;
 }[]>([])
 
@@ -922,54 +677,27 @@ const totalCommissionChart: Record<string, BulletLegendItemInterface> = {
     new: { name: 'New', color: '#3b82f6' },
     recurring: { name: 'Recurring', color: '#f97316' },
     prorate: { name: 'Prorate', color: '#8b5cf6' },
-    bonus: { name: 'Bonus', color: '#ec4899' },
+    upgrade: { name: 'Upgrade', color: '#6366f1' },
+    alat: { name: 'Alat', color: '#ec4899' },
+    setup: { name: 'Setup', color: '#14b8a6' },
+    bonus: { name: 'Bonus', color: '#d946ef' },
 }
 
 const xFormatterTotalCommission = (tick: number, _i?: number, _ticks?: number[]): string => {
     return String(totalCommissionData.value[tick]?.date ?? '')
 }
 
-// Customer Count By Service (Bar Chart)
-const customerByServiceData = ref<any[]>([])
-const customerByServiceChart = computed(() => commissionByServiceChart.value)
-const customerServiceKeys = computed(() => Object.keys(customerByServiceChart.value))
-
-const xFormatterCustomerService = (i: number): string => `${customerByServiceData.value[i]?.date}`
-const yFormatter = (tick: number) => tick.toString()
+const yFormatterCommission = (value: number): string => {
+    return formatCurrency(value)
+}
 
 // Month Card
 const defaultDetailItem: CommissionDetailItem = { count: 0, commission: '0', mrc: '0', dpp: '0' }
-const monthcard = ref<{ mounth: string; total: string; commission: string; bonus: string; count: number; dpp: string; mrc: string; detail: { new: CommissionDetailItem; recurring: CommissionDetailItem; prorate: CommissionDetailItem } }[]>([])
+const monthcard = ref<{ mounth: string; total: string; commission: string; bonus: string; count: number; dpp: string; mrc: string; startPeriod: string; endPeriod: string; status: string; detail: { new: CommissionDetailItem; recurring: CommissionDetailItem; prorate: CommissionDetailItem; upgrade: CommissionDetailItem; alat: CommissionDetailItem; setup: CommissionDetailItem; } }[]>([])
 const periodData = ref<CommissionPeriodData | null>(null)
 
-const fetchData = async () => {
-    const additionalService = new AdditionalService()
-    const currentPeriod = await additionalService.getCurrentPeriod()
-    
-    // Instantiate services
+const fetchSalesData = async () => {
     const commissionService = new CommissionService()
-    const employeeService = new EmployeeService()
-
-    const employeeData = await employeeService.getEmployee(route.params.id as string)
-    employee.value = employeeData.data
-
-    if (currentPeriod?.start && currentPeriod?.end) {
-        const [startYear, startMonth, startDay] = currentPeriod.start.split('-').map(Number) as [number, number, number]
-        const [endYear, endMonth, endDay] = currentPeriod.end.split('-').map(Number) as [number, number, number]
-        
-        modelValue.value = {
-            start: new CalendarDate(startYear, startMonth, startDay),
-            end: new CalendarDate(endYear, endMonth, endDay)
-        }
-
-        const periodResponse = await commissionService.salesCommissionPeriod(route.params.id as string, {
-            start: currentPeriod.start,
-            end: currentPeriod.end,
-            status: employee.value?.status ?? ''
-        })
-        periodData.value = periodResponse.data
-    }
-    
     const response = await commissionService.salesCommission(route.params.id as string, { year: year.value })
     const data = response.data
     
@@ -982,7 +710,7 @@ const fetchData = async () => {
     
     // Month Card
     const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-    monthcard.value = months.map(m => {
+    monthcard.value = months.map((m, index) => {
         const mData = data.monthly[m]
         
         const detail = mData?.detail ? {
@@ -1000,11 +728,46 @@ const fetchData = async () => {
                  ...mData.detail.prorate, 
                  dpp: formatCurrency(Number(mData.detail.prorate?.dpp ?? 0)), 
                  mrc: formatCurrency(Number(mData.detail.prorate?.mrc ?? 0)) 
+             },
+             upgrade: { 
+                 ...mData.detail.upgrade, 
+                 dpp: formatCurrency(Number(mData.detail.upgrade?.dpp ?? 0)), 
+                 mrc: formatCurrency(Number(mData.detail.upgrade?.mrc ?? 0)) 
+             },
+             alat: { 
+                 ...mData.detail.alat, 
+                 dpp: formatCurrency(Number(mData.detail.alat?.dpp ?? 0)), 
+                 mrc: formatCurrency(Number(mData.detail.alat?.mrc ?? 0)) 
+             },
+             setup: { 
+                 ...mData.detail.setup, 
+                 dpp: formatCurrency(Number(mData.detail.setup?.dpp ?? 0)), 
+                 mrc: formatCurrency(Number(mData.detail.setup?.mrc ?? 0)) 
              }
         } : { 
             new: { ...defaultDetailItem, dpp: formatCurrency(0), mrc: formatCurrency(0) }, 
             recurring: { ...defaultDetailItem, dpp: formatCurrency(0), mrc: formatCurrency(0) }, 
-            prorate: { ...defaultDetailItem, dpp: formatCurrency(0), mrc: formatCurrency(0) } 
+            prorate: { ...defaultDetailItem, dpp: formatCurrency(0), mrc: formatCurrency(0) },
+            upgrade: { ...defaultDetailItem, dpp: formatCurrency(0), mrc: formatCurrency(0) },
+            alat: { ...defaultDetailItem, dpp: formatCurrency(0), mrc: formatCurrency(0) },
+            setup: { ...defaultDetailItem, dpp: formatCurrency(0), mrc: formatCurrency(0) }
+        }
+
+        let startPeriod = '-'
+        let endPeriod = '-'
+
+        if (mData?.startPeriod) {
+            const [y, month, d] = mData.startPeriod.split('-').map(Number)
+            if (y !== undefined && month !== undefined && d !== undefined) {
+                startPeriod = df.format(new Date(y, month - 1, d))
+            }
+        }
+
+        if (mData?.endPeriod) {
+            const [y, month, d] = mData.endPeriod.split('-').map(Number)
+            if (y !== undefined && month !== undefined && d !== undefined) {
+                endPeriod = df.format(new Date(y, month - 1, d))
+            }
         }
 
         return {
@@ -1012,9 +775,12 @@ const fetchData = async () => {
             total: formatCurrency(Number(mData?.totalCommission ?? 0)),
             commission: formatCurrency(Number(mData?.commission ?? 0)),
             bonus: formatCurrency(Number(mData?.bonus ?? 0)),
-            count: mData?.count ?? 0,
+            count: mData?.achievement?.activity ?? 0,
             dpp: formatCurrency(Number(mData?.dpp ?? 0)),
             mrc: formatCurrency(Number(mData?.mrc ?? 0)),
+            startPeriod: startPeriod,
+            endPeriod: endPeriod,
+            status: mData?.achievement?.status ?? '-',
             detail: detail
         }
     })
@@ -1028,205 +794,63 @@ const fetchData = async () => {
             new: Number(mData?.detail?.new?.commission ?? 0),
             recurring: Number(mData?.detail?.recurring?.commission ?? 0),
             prorate: Number(mData?.detail?.prorate?.commission ?? 0),
+            upgrade: Number(mData?.detail?.upgrade?.commission ?? 0),
+            alat: Number(mData?.detail?.alat?.commission ?? 0),
+            setup: Number(mData?.detail?.setup?.commission ?? 0),
             bonus: Number(mData?.bonus ?? 0)
         }
     })
+}
 
-    // Commission Internal (Service Breakdown)
-    commissionByServiceData.value = months.map(m => {
-        const mData = data.monthly[m]
-        const obj: any = { date: m.substring(0, 3) }
-        mData?.service?.forEach((s: any) => {
-            obj[s.name] = Number(s.commission ?? 0)
+const initData = async () => {
+    const additionalService = new AdditionalService()
+    const currentPeriod = await additionalService.getCurrentPeriod()
+    
+    // Instantiate services
+    const commissionService = new CommissionService()
+    const employeeService = new EmployeeService()
+
+    const employeeData = await employeeService.getEmployee(route.params.id as string)
+    employee.value = employeeData.data
+
+    if (currentPeriod?.start && currentPeriod?.end) {
+        if (currentPeriod.month && currentPeriod.year) {
+             selectedMonth.value = currentPeriod.month
+             year.value = currentPeriod.year
+        } else {
+             const [endYear, endMonth, endDay] = currentPeriod.end.split('-').map(Number)
+             selectedMonth.value = endMonth ?? (new Date().getMonth() + 1)
+             year.value = endYear ?? new Date().getFullYear()
+        }
+
+        const periodResponse = await commissionService.salesCommissionPeriod(route.params.id as string, {
+            month: currentPeriod.month,
+            year: currentPeriod.year
         })
-        return obj
-    })
-
-    // Customer Internal (Service Breakdown)
-    customerByServiceData.value = months.map(m => {
-        const mData = data.monthly[m]
-        const obj: any = { date: m.substring(0, 3) }
-        mData?.service.forEach((s: any) => {
-            obj[s.name] = s.count
-        })
-        return obj
-    })
-
-    // Commission By Type (Bar Chart)
-    commissionByTypeData.value = months.map(m => {
-        const mData = data.monthly[m]
-        return {
-            date: m.substring(0, 3),
-            new: Number(mData?.detail.new.commission ?? 0),
-            recurring: Number(mData?.detail.recurring.commission ?? 0),
-            prorate: Number(mData?.detail.prorate.commission ?? 0)
-        }
-    })
-
-    // Revenue Trend (DPP vs MRC)
-    revenueTrendData.value = months.map(m => {
-        const mData = data.monthly[m]
-        return {
-            date: m.substring(0, 3),
-            dpp: Number(mData?.dpp ?? 0),
-            mrc: Number(mData?.mrc ?? 0)
-        }
-    })
-
-    // Commission Distribution Data
-    const totalNew = totalCommissionData.value.reduce((sum, item) => sum + item.new, 0)
-    const totalRecurring = totalCommissionData.value.reduce((sum, item) => sum + item.recurring, 0)
-    const totalProrate = totalCommissionData.value.reduce((sum, item) => sum + item.prorate, 0)
-    commissionDistributionData.value = [totalNew, totalRecurring, totalProrate]
-
-    // Sales Volume By Type (Bar Chart)
-    salesVolumeData.value = months.map(m => {
-        const mData = data.monthly[m]
-        return {
-            date: m.substring(0, 3),
-            new: mData?.detail.new.count ?? 0,
-            recurring: mData?.detail.recurring.count ?? 0,
-            prorate: mData?.detail.prorate.count ?? 0
-        }
-    })
-
-    // Revenue Share By Service (Donut Chart)
-    revenueShareDonutData.value = data.service.map((s: any) => Number(s.dpp))
-
-    // Efficiency Metrics (Rate & ARPU)
-    efficiencyData.value = months.map(m => {
-        const mData = data.monthly[m]
-        const dpp = Number(mData?.dpp ?? 0)
-        const comm = Number(mData?.commission ?? 0)
-        const count = mData?.count ?? 0
-        return {
-            date: m.substring(0, 3),
-            commissionRate: dpp > 0 ? (comm / dpp) * 100 : 0,
-            arpu: count > 0 ? dpp / count : 0
-        }
-    })
-
-    // MRC Composition (New vs Recurring Value)
-    mrcCompositionData.value = months.map(m => {
-        const mData = data.monthly[m]
-        return {
-            date: m.substring(0, 3),
-            newMrc: Number(mData?.detail.new.mrc ?? 0),
-            prorateMrc: Number(mData?.detail.prorate.mrc ?? 0)
-        }
-    })
-
-    // ARPU by Service (Trend)
-    arpuByServiceData.value = months.map(m => {
-        const mData = data.monthly[m]
-        const obj: any = { date: m.substring(0, 3) }
-        mData?.service.forEach((s: any) => {
-            const dpp = Number(s.dpp ?? 0)
-            const count = s.count ?? 0
-            obj[s.name] = count > 0 ? dpp / count : 0
-        })
-        return obj
-    })
-
-    // Cumulative Commission (Growth)
-    let cum = 0;
-    cumulativeCommissionData.value = months.map(m => {
-        const mData = data.monthly[m]
-        const comm = Number(mData?.commission ?? 0)
-        cum += comm;
-        return {
-            date: m.substring(0, 3),
-            cumulative: cum,
-            monthly: comm
-        }
-    })
+        periodData.value = periodResponse.data
+    }
+    
+    await fetchSalesData()
 }
-
-// ARPU by Service
-const arpuByServiceData = ref<any[]>([])
-const arpuByServiceChart = computed(() => commissionByServiceChart.value)
-const xFormatterArpu = (tick: number) => String(arpuByServiceData.value[tick]?.date ?? '')
-
-// Cumulative Commission
-const cumulativeCommissionData = ref<any[]>([])
-const cumulativeCommissionChart = {
-    cumulative: { name: 'Cumulative Commission', color: '#8b5cf6' },
-    // monthly: { name: 'Monthly Commission', color: '#cbd5e1' }
-}
-const xFormatterCumulative = (tick: number) => String(cumulativeCommissionData.value[tick]?.date ?? '')
-
-// Efficiency Metrics
-const efficiencyData = ref<any[]>([])
-const efficiencyChart = {
-    commissionRate: { name: 'Commission Rate (%)', color: '#f59e0b' },
-    arpu: { name: 'Avg Subscription / Sale', color: '#8b5cf6' },
-}
-const xFormatterEfficiency = (tick: number) => String(efficiencyData.value[tick]?.date ?? '')
-
-// MRC Composition
-const mrcCompositionData = ref<any[]>([])
-const mrcCompositionChart = {
-    newMrc: { name: 'New MRR', color: '#3b82f6' },
-    prorateMrc: { name: 'Prorate MRR', color: '#f97316' },
-}
-const xFormatterMrc = (tick: number) => String(mrcCompositionData.value[tick]?.date ?? '')
-
-// Sales Volume By Type
-const salesVolumeData = ref<any[]>([])
-const salesVolumeChart = {
-    new: { name: 'New Customer', color: '#3b82f6' },
-    recurring: { name: 'Recurring Customer', color: '#22c55e' },
-    prorate: { name: 'Prorate', color: '#f97316' },
-}
-const xFormatterSalesVolume = (i: number) => `${salesVolumeData.value[i]?.date}`
-
-// Revenue Share Donut
-const revenueShareDonutData = ref<number[]>([])
-const revenueShareDonutChart = computed<Record<string, BulletLegendItemInterface>>(() => 
-    Object.fromEntries(donutLabels.value.map(i => [i.name, { name: i.name, color: i.color }]))
-)
-
-// Commission By Type (Bar Chart)
-const commissionByTypeData = ref<any[]>([])
-const xFormatterCommissionType = (i: number) => `${commissionByTypeData.value[i]?.date}`
-
-// Commission Distribution (Donut Chart)
-const commissionDistributionData = ref<number[]>([])
-const commissionDistributionChart = {
-    new: { name: 'New', color: '#3b82f6' },
-    recurring: { name: 'Recurring', color: '#22c55e' },
-    prorate: { name: 'Prorate', color: '#f97316' },
-}
-
-// Revenue Trend (Line Chart)
-const revenueTrendData = ref<any[]>([])
-const revenueTrendChart = {
-    dpp: { name: 'Total DPP (Subscription)', color: '#8b5cf6' },
-    mrc: { name: 'Total MRC (Monthly)', color: '#06b6d4' },
-}
-const xFormatterRevenue = (tick: number) => String(revenueTrendData.value[tick]?.date ?? '')
 
 const fetchInvoiceData = async () => {
-    if (!modelValue.value.start || !modelValue.value.end) return
-
     const invoiceService = new InvoiceService()
     const response = await invoiceService.getInvoiceSales(route.params.id as string, {
-        start: modelValue.value.start.toString(),
-        end: modelValue.value.end.toString()
+        month: selectedMonth.value,
+        year: year.value
     })
     responseData.value = response.data
-    data.value = response.data.data
 }
 
 watch(year, () => {
-    fetchData()
-})
-
-watch(modelValue, () => {
+    fetchSalesData()
     fetchInvoiceData()
 })
 
-fetchData()
-fetchInvoiceData()
+watch(selectedMonth, () => {
+    fetchInvoiceData()
+})
 
+initData()
+fetchInvoiceData()
 </script>
