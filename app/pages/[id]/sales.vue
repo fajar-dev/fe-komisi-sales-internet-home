@@ -311,7 +311,7 @@
                     <template #header>
                     <h2>Total Commission</h2>
                     <p class="text-sm text-gray-500 dark:text-gray-400">
-                        Total Yearly Commission
+                        Total Yearly Commission by Type
                     </p>
                     </template>
                     <DonutChart
@@ -327,21 +327,73 @@
                             <div class="text-sm text-gray-500 dark:text-gray-400">
                                 Total
                             </div>
-                            <div class="text-2xl font-bold text-gray-900 dark:text-white">
+                            <div class="text-xl font-bold text-gray-900 dark:text-white">
                                 {{ formatCurrency(totalCommissionDonutData.reduce((a, b) => a + b, 0)) }}
                             </div>
                         </div>
                     </DonutChart>
                 </UCard>
 
-                <!-- 8 kolom -->
+                <UCard class="lg:col-span-4">
+                    <template #header>
+                    <h2>Service Breakdown</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                        Commission by Service Product
+                    </p>
+                    </template>
+                    <DonutChart
+                        :data="serviceCommissionDonutData"
+                        :height="280"
+                        :categories="serviceCommissionDonutChart"
+                        :radius="80"
+                        :pad-angle="0.1"
+                        :arc-width="20"
+                        :value-formatter="donutValueFormatter"
+                    >
+                        <div class="text-center">
+                            <div class="text-sm text-gray-500 dark:text-gray-400">
+                                Total
+                            </div>
+                            <div class="text-xl font-bold text-gray-900 dark:text-white">
+                                {{ formatCurrency(serviceCommissionDonutData.reduce((a, b) => a + b, 0)) }}
+                            </div>
+                        </div>
+                    </DonutChart>
+                </UCard>
+                
+                <UCard class="lg:col-span-4">
+                     <template #header>
+                        <h2>Commission vs Bonus</h2>
+                         <p class="text-sm text-gray-500 dark:text-gray-400">Comparison of Base Commission vs Bonus</p>
+                    </template>
+                     <DonutChart
+                        v-if="commissionVsBonusData.length > 0"
+                        :data="commissionVsBonusData"
+                        :height="280"
+                        :categories="commissionVsBonusChart"
+                        :radius="80"
+                        :pad-angle="0.1"
+                        :arc-width="20"
+                        :value-formatter="donutValueFormatter"
+                     >
+                        <div class="text-center">
+                            <div class="text-sm text-gray-500 dark:text-gray-400">
+                                Total
+                            </div>
+                            <div class="text-xl font-bold text-gray-900 dark:text-white">
+                                {{ formatCurrency(commissionVsBonusData.reduce((a, b) => a + b, 0)) }}
+                            </div>
+                        </div>
+                     </DonutChart>
+                </UCard>
+
                 <UCard class="lg:col-span-8">
                     <template #header>
                     <div class="lg:flex items-center justify-between">
                         <div>
-                        <h2>Monthly Commission</h2>
+                        <h2>Monthly Commission Trend</h2>
                         <p class="text-sm text-gray-500 dark:text-gray-400">
-                            Total monthly commission
+                            Stacked view of commission by type
                         </p>
                         </div>
                         <div>
@@ -359,20 +411,122 @@
                     </div>
                     </template>
 
-                    <LineChart
+                    <AreaChart
+                    v-if="totalCommissionData.length > 0"
                     :data="totalCommissionData"
-                    :height="280"
+                    index="date"
+                    :categories="totalCommissionChart"
                     y-label="Total Commission"
                     :x-num-ticks="4"
                     :y-num-ticks="4"
-                    :categories="totalCommissionChart"
-                    :x-formatter="xFormatterTotalCommission"
                     :y-formatter="yFormatterCommission"
+                    :x-formatter="xFormatterTotalCommission "
                     :y-grid-line="true"
                     :curve-type="CurveType.MonotoneX"
+                    :height="320"
                     :legend-position="LegendPosition.TopRight"
-                    :hide-legend="false"
+                    :stacked="true"
                     />
+                </UCard>
+
+                <UCard class="lg:col-span-4">
+                     <template #header>
+                        <h2>Commission Composition</h2>
+                         <p class="text-sm text-gray-500 dark:text-gray-400">Monthly Comparison of DPP, MRC, and Commission</p>
+                    </template>
+                     <BarChart
+                        v-if="commissionCompositionData.length > 0"
+                        :data="commissionCompositionData"
+                        :stacked="true"
+                        :height="300"
+                        :categories="commissionCompositionChart"
+                        :y-axis="['dpp', 'mrc', 'commission']"
+                        :group-padding="0"
+                        :bar-padding="0.2"
+                        :x-num-ticks="6"
+                        :radius="4"
+                        :orientation="Orientation.Horizontal"
+                        :x-formatter="xFormatterComposition"
+                        :y-formatter="yFormatterComposition"
+                        :legend-position="LegendPosition.TopRight"
+                        :hide-legend="false"
+                        :x-grid-line="true"
+                     />
+                </UCard>
+
+                <UCard class="lg:col-span-12">
+                    <template #header>
+                        <div class="lg:flex items-center justify-between">
+                            <div>
+                                <h2>Monthly Service Performance</h2>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">
+                                    Commission comparison by service product
+                                </p>
+                            </div>
+                        </div>
+                    </template>
+
+                    <BarChart
+                    v-if="monthlyServiceData.length > 0"
+                    :data="monthlyServiceData"
+                    index="date"
+                    :categories="serviceChart"
+                    :y-axis="serviceKeys"
+                    y-label="Commission"
+                    :x-num-ticks="4"
+                    :y-num-ticks="4"
+                    :y-formatter="yFormatterCommission"
+                    :x-formatter="xFormatterTotalCommission"
+                    :y-grid-line="true"
+                    :height="320"
+                    :legend-position="LegendPosition.TopRight"
+                    :rounded-corners="4"
+                    />
+                </UCard>
+
+                <UCard class="lg:col-span-6">
+                     <template #header>
+                        <h2>Monthly Sales Count</h2>
+                         <p class="text-sm text-gray-500 dark:text-gray-400">Total number of sales per month</p>
+                    </template>
+                     <LineChart
+                        v-if="monthlySalesCountData.length > 0"
+                        :data="monthlySalesCountData"
+                        index="date"
+                        :categories="salesCountChart"
+                        :y-axis="['total']"
+                        y-label="Count"
+                         :x-num-ticks="4"
+                        :y-num-ticks="4"
+                         :y-grid-line="true"
+                         :x-formatter="xFormatterTotalCommission"
+                         :curve-type="CurveType.MonotoneX"
+                         :height="320"
+                        :legend-position="LegendPosition.TopRight"
+                     />
+                </UCard>
+
+                 <UCard class="lg:col-span-6">
+                     <template #header>
+                        <h2>Monthly Bonus</h2>
+                         <p class="text-sm text-gray-500 dark:text-gray-400">Total bonus received per month</p>
+                    </template>
+                     <BarChart
+                        v-if="monthlyBonusData.length > 0"
+                        :data="monthlyBonusData"
+                        index="date"
+                        :categories="bonusChart"
+                        :y-axis="['total']"
+                        y-label="Bonus"
+                         :x-num-ticks="4"
+                        :y-num-ticks="4"
+                         :y-formatter="yFormatterCommission"
+                         :x-formatter="xFormatterTotalCommission"
+                         :y-grid-line="true"
+                         :height="320"
+                        :legend-position="LegendPosition.TopRight"
+                        :rounded-corners="4"
+                     />
                 </UCard>
             </div>
         </div>
@@ -584,6 +738,26 @@ const totalCommissionDonutChart = computed<Record<string, BulletLegendItemInterf
     Object.fromEntries(donutLabels.value.map(i => [i.name, { name: i.name, color: i.color }]))
 )
 
+// Service Commission Donut Chart Data
+const serviceCommissionDonutData = ref<number[]>([])
+const serviceCommissionDonutLabels = ref<{ name: string; color: string }[]>([])
+const serviceCommissionDonutChart = computed<Record<string, BulletLegendItemInterface>>(() => 
+    Object.fromEntries(serviceCommissionDonutLabels.value.map(i => [i.name, { name: i.name, color: i.color }]))
+)
+
+const commissionVsBonusData = ref<number[]>([])
+const commissionVsBonusLabels = ref<{ name: string; color: string }[]>([])
+const commissionVsBonusChart = computed<Record<string, BulletLegendItemInterface>>(() => 
+    Object.fromEntries(commissionVsBonusLabels.value.map(i => [i.name, { name: i.name, color: i.color }]))
+)
+
+const commissionCompositionData = ref<{ date: string; dpp: number; mrc: number; commission: number }[]>([])
+const commissionCompositionChart = {
+    dpp: { name: 'DPP (Revenue)', color: '#3b82f6' },
+    mrc: { name: 'MRC', color: '#f97316' },
+    commission: { name: 'Commission', color: '#10b981' }
+}
+
 const donutValueFormatter = (value: number): string => {
     return formatCurrency(value)
 }
@@ -608,6 +782,35 @@ const totalCommissionChart: Record<string, BulletLegendItemInterface> = {
     upgrade: { name: 'Upgrade', color: '#6366f1' },
     alat: { name: 'Alat', color: '#ec4899' },
     setup: { name: 'Setup', color: '#14b8a6' },
+}
+
+const monthlyServiceData = ref<{
+    date: string;
+    Home: number;
+    Nusafiber: number;
+    NusaSelecta: number;
+}[]>([])
+
+const serviceChart: Record<string, BulletLegendItemInterface> = {
+    Home: { name: 'Home', color: '#0ea5e9' },
+    Nusafiber: { name: 'Nusafiber', color: '#a855f7' },
+    NusaSelecta: { name: 'NusaSelecta', color: '#f97316' }
+}
+
+const serviceKeys = Object.keys(serviceChart) as any
+
+const monthlySalesCountData = ref<{ date: string; total: number }[]>([])
+const monthlyDppData = ref<{ date: string; total: number }[]>([])
+const monthlyBonusData = ref<{ date: string; total: number }[]>([])
+
+const salesCountChart: Record<string, BulletLegendItemInterface> = {
+    total: { name: 'Total Sales', color: '#22c55e' }
+}
+const dppChart: Record<string, BulletLegendItemInterface> = {
+    total: { name: 'Total Revenue (DPP)', color: '#eab308' }
+}
+const bonusChart: Record<string, BulletLegendItemInterface> = {
+    total: { name: 'Total Bonus', color: '#ef4444' }
 }
 
 const xFormatterTotalCommission = (tick: number, _i?: number, _ticks?: number[]): string => {
@@ -641,6 +844,15 @@ const fetchSalesData = async () => {
     totalCommissionDonutData.value = donutItems.map(item => item.value)
     donutLabels.value = donutItems.map(item => ({ name: item.label, color: item.color }))
     
+    // Donut Chart Data - By Service
+    const serviceItems = data.service.map((s: any) => ({
+        label: s.name,
+        value: Number(s.commission ?? 0),
+        color: s.name === 'Home' ? '#0ea5e9' : s.name === 'NusaSelecta' ? '#f97316' : '#a855f7'
+    }))
+    serviceCommissionDonutData.value = serviceItems.map((item: any) => item.value)
+    serviceCommissionDonutLabels.value = serviceItems.map((item: any) => ({ name: item.label, color: item.color }))
+
     // Month Card
     const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
     monthcard.value = months.map((m, index) => {
@@ -721,18 +933,90 @@ const fetchSalesData = async () => {
     // Total Commission Trend
     totalCommissionData.value = months.map(m => {
         const mData = data.monthly[m]
+        const detail = mData?.detail
         return {
             date: m.substring(0, 3),
             total: Number(mData?.totalCommission ?? 0),
-            new: Number(mData?.detail?.new?.commission ?? 0),
-            recurring: Number(mData?.detail?.recurring?.commission ?? 0),
-            prorate: Number(mData?.detail?.prorate?.commission ?? 0),
-            upgrade: Number(mData?.detail?.upgrade?.commission ?? 0),
-            alat: Number(mData?.detail?.alat?.commission ?? 0),
-            setup: Number(mData?.detail?.setup?.commission ?? 0),
+            new: Number(detail?.new?.commission ?? 0),
+            recurring: Number(detail?.recurring?.commission ?? 0),
+            prorate: Number(detail?.prorate?.commission ?? 0),
+            upgrade: Number(detail?.upgrade?.commission ?? 0),
+            alat: Number(detail?.alat?.commission ?? 0),
+            setup: Number(detail?.setup?.commission ?? 0),
             bonus: Number(mData?.bonus ?? 0)
         }
     })
+
+    // Monthly Service Performance
+    monthlyServiceData.value = months.map(m => {
+        const mData = data.monthly[m]
+        const services = mData?.service || []
+        const home = services.find((s: any) => s.name === 'Home')?.commission || 0
+        const nusafiber = services.find((s: any) => s.name === 'Nusafiber')?.commission || 0
+        const nusaselecta = services.find((s: any) => s.name === 'NusaSelecta')?.commission || 0
+        
+        return {
+            date: m.substring(0, 3),
+            Home: Number(home),
+            Nusafiber: Number(nusafiber),
+            NusaSelecta: Number(nusaselecta)
+        }
+    })
+
+    // Monthly Sales Count Trend
+    monthlySalesCountData.value = months.map(m => {
+        return {
+            date: m.substring(0, 3),
+            total: Number(data.monthly[m]?.count ?? 0)
+        }
+    })
+
+    // Monthly DPP (Revenue) Data
+    monthlyDppData.value = months.map(m => {
+        return {
+            date: m.substring(0, 3),
+            total: Number(data.monthly[m]?.dpp ?? 0)
+        }
+    })
+
+    // Monthly Bonus Data
+    monthlyBonusData.value = months.map(m => {
+        return {
+            date: m.substring(0, 3),
+            total: Number(data.monthly[m]?.bonus ?? 0)
+        }
+    })
+
+    // Commission vs Bonus Data
+    // Commission vs Bonus Data
+    const totalCommission = totalCommissionData.value.reduce((total, item) => total + item.total, 0)
+    const totalBonus = monthlyBonusData.value.reduce((total, item) => total + item.total, 0)
+    
+    const vsItems = [
+        { label: 'Commission', value: totalCommission, color: '#10b981' },
+        { label: 'Bonus', value: totalBonus, color: '#f59e0b' }
+    ]
+    commissionVsBonusData.value = vsItems.map(i => i.value)
+    commissionVsBonusLabels.value = vsItems.map(i => ({ name: i.label, color: i.color }))
+
+    // Commission Composition Data (Monthly: DPP, MRC, Commission)
+    commissionCompositionData.value = months.map(m => {
+        const mData = data.monthly[m]
+        return {
+            date: m.substring(0, 3),
+            dpp: Number(mData?.dpp ?? 0),
+            mrc: Number(mData?.mrc ?? 0),
+            commission: Number(mData?.commission ?? 0)
+        }
+    })
+}
+
+const yFormatterComposition = (i: number): string => {
+    return commissionCompositionData.value[i]?.date ?? ''
+}
+
+const xFormatterComposition = (tick: number | number, _i?: number, _ticks?: number[]): string => {
+    return formatCurrency(Number(tick))
 }
 
 const initData = async () => {
