@@ -305,6 +305,7 @@
                 </UTabs>
             </UCard>
         </div>
+        
         <div class="py-2">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
                 <UCard class="lg:col-span-4">
@@ -539,7 +540,6 @@ import { EmployeeService } from '~/services/employee-service'
 import { InvoiceService } from '~/services/invoice-service'
 import type { Employee } from '~/types/employee'
 import { DateFormatter, getLocalTimeZone, parseDate } from '@internationalized/date'
-import { h, resolveComponent } from 'vue'
 import type { SelectMenuItem, TableColumn } from '@nuxt/ui'
 import { AdditionalService } from '~/services/additional-service'
 import type { InvoiceSalesData, CommissionDetailItem, CommissionPeriodData } from '~/types/sales'
@@ -692,7 +692,7 @@ const getColumns = (key: string): TableColumn<InvoiceSalesData>[] => {
             ])
             },
             footer: () => {
-                return h('div', { class: 'text-right font-bold text-primary-600 dark:text-primary-400' }, new Intl.NumberFormat('id-ID', {
+                return h('div', { class: 'text-right font-bold text-gray-900 dark:text-white' }, new Intl.NumberFormat('id-ID', {
                     style: 'currency',
                     currency: 'IDR'
                 }).format(Number(responseData.value[key]?.commission ?? 0)))
