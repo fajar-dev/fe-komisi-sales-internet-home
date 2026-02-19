@@ -42,7 +42,7 @@
 
                     <!-- Team Performance Summary -->
                     <div class="mt-4 md:mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" v-if="periodData.sales">
-                        <div class="p-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+                        <div class="p-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-transparent">
                             <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Team Composition</h4>
                             <div class="space-y-3">
                                 <div class="flex justify-between items-center">
@@ -60,7 +60,7 @@
                             </div>
                         </div>
 
-                        <div class="p-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+                        <div class="p-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-transparent">
                             <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Activity Performance</h4>
                             <div class="flex flex-col gap-2">
                                 <span class="text-3xl font-bold text-gray-900 dark:text-white">{{ periodData.sales.activity }}</span>
@@ -68,7 +68,7 @@
                             </div>
                         </div>
 
-                        <div class="p-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+                        <div class="p-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-transparent">
                             <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Team Achievement</h4>
                             <div class="flex flex-col gap-3">
                                 <span class="text-3xl font-bold text-gray-900 dark:text-white">{{ periodData.sales.percentage }}</span>
@@ -109,12 +109,163 @@
             <UCard>
                 <UTable 
                     sticky 
+                    v-model:expanded="expanded"
                     :data="formattedRows" 
                     :columns="columns" 
-                    class="flex-1 max-h-[800px] [&_tr:has(.commission-zero)]:bg-yellow-50 dark:[&_tr:has(.commission-zero)]:bg-yellow-950/20 [&_tr:has(.row-deleted)]:bg-red-50 dark:[&_tr:has(.row-deleted)]:bg-red-950/20" 
-                />
+                    class="flex-1 max-h-[800px] [&_tr:has(.row-deleted)]:bg-red-50 dark:[&_tr:has(.row-deleted)]:bg-red-950/20" 
+                >
+                    <template #expanded="{ row }">
+                         <div class="p-4 bg-gray-50 dark:bg-gray-800/50">
+                            <h4 class="text-sm font-bold text-gray-700 dark:text-gray-200 mb-3">New Service</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div v-for="(service, index) in row.original.newService" :key="index" class="p-3 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <span class="font-semibold text-gray-900 dark:text-white">{{ service.name }}</span>
+                                        <span class="font-medium">{{ service.count }}</span>
+                                    </div>
+                                    <div class="space-y-1 text-xs text-gray-600 dark:text-gray-400">
+                                        <div class="flex justify-between">
+                                            <span>MRC:</span>
+                                            <span class="font-medium">{{ formatCurrency(Number(service.mrc)) }}</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span>Subscription:</span>
+                                            <span class="font-medium">{{ formatCurrency(Number(service.subscription)) }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </UTable>
             </UCard>
         </div>
+
+        <div class="py-2 grid grid-cols-1 lg:grid-cols-2 gap-4" v-if="yearlyData">
+            <UCard>
+                <template #header>
+                    <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+                        Total Commission Composition
+                    </h3>
+                </template>
+                 <div class="h-80 w-full flex justify-center items-center">
+                    <DonutChart
+                        :data="yearlyDonutData"
+                        :categories="yearlyDonutCategories"
+                        :value-formatter="formatCurrency"
+                    />
+                </div>
+            </UCard>
+            <UCard>
+                <template #header>
+                    <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+                        Revenue Trend (Yearly)
+                    </h3>
+                </template>
+                <div class="h-80 w-full">
+                    <BarChart 
+                        :data="revenueTrendData" 
+                        index="date" 
+                        :categories="revenueCategories" 
+                        :y-formatter="formatCurrency"
+                        :y-axis="revenueYAxis"
+                    />
+                </div>
+            </UCard>
+            <UCard class="col-span-1 lg:col-span-2">
+                <template #header>
+                    <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+                        Commission Trend (Yearly)
+                    </h3>
+                </template>
+                <div class="h-80 w-full">
+                     <AreaChart 
+                        :data="commissionTrendData" 
+                        index="date" 
+                        :categories="commissionCategories" 
+                        :y-formatter="formatCurrency"
+                    />
+                </div>
+            </UCard>
+            <UCard>
+                 <template #header>
+                    <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+                        Team Performance Trend
+                    </h3>
+                </template>
+                <div class="h-80 w-full">
+                    <LineChart 
+                        :data="salesTrendData" 
+                        index="date" 
+                        :categories="salesCategories" 
+                    />
+                </div>
+            </UCard>
+            <UCard>
+                 <template #header>
+                    <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+                        Sales Contribution (Permanent vs Probation)
+                    </h3>
+                </template>
+                <div class="h-80 w-full">
+                    <BarChart 
+                        :data="salesSourceTrendData" 
+                        index="date" 
+                        :categories="salesSourceCategories" 
+                        :y-axis="salesSourceYAxis"
+                        :stacked="true"
+                    />
+                </div>
+            </UCard>
+            <UCard>
+                 <template #header>
+                    <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+                        Service Product Trend
+                    </h3>
+                </template>
+                <div class="h-80 w-full">
+                    <BarChart 
+                        :data="serviceTrendData" 
+                        index="date" 
+                        :categories="serviceCategories" 
+                        :y-axis="serviceYAxis"
+                        :stacked="true"
+                    />
+                </div>
+            </UCard>
+            <UCard>
+                 <template #header>
+                    <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+                        Productivity Trend (Sales/Employee)
+                    </h3>
+                </template>
+                <div class="h-80 w-full">
+                    <LineChart 
+                        :data="productivityTrendData" 
+                        index="date" 
+                        :categories="productivityCategories" 
+                        :y-num-ticks="4"
+                    />
+                </div>
+            </UCard>
+            <UCard class="col-span-1 lg:col-span-2">
+                 <template #header>
+                    <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+                        Commission Rate Trend (% of Revenue)
+                    </h3>
+                </template>
+                <div class="h-80 w-full">
+                    <LineChart 
+                        :data="costOfSalesTrendData" 
+                        index="date" 
+                        :categories="costOfSalesCategories" 
+                        :value-formatter="(val: number) => val + '%'"
+                        :y-num-ticks="4"
+                    />
+                </div>
+            </UCard>
+        </div>
+
     </UContainer>
 </template>
 
@@ -123,7 +274,7 @@ import { CommissionService } from '~/services/commission-service'
 import { EmployeeService } from '~/services/employee-service'
 import type { Employee } from '~/types/employee'
 import type { TableColumn } from '@nuxt/ui'
-import type { ManagerPeriodData, ManagerEmployeePerformance } from '~/types/manager'
+import type { ManagerPeriodData, ManagerEmployeePerformance, ManagerMouthlyResponseData } from '~/types/manager'
 import { resolveComponent, computed, ref, watch, h } from 'vue'
 import { DateFormatter, getLocalTimeZone, parseDate } from '@internationalized/date'
 
@@ -162,6 +313,9 @@ const periodData = ref<ManagerPeriodData>()
 
 const UAvatar = resolveComponent('UAvatar')
 const UBadge = resolveComponent('UBadge')
+const UButton = resolveComponent('UButton')
+
+const expanded = ref({})
 
 const getBadgeColor = (status: string) => {
     const s = status.toLowerCase()
@@ -174,12 +328,12 @@ const getBadgeColor = (status: string) => {
     return 'primary'
 }
 
-const formatCurrency = (value: number): string => {
-    return new Intl.NumberFormat('id-ID', { 
-        style: 'currency', 
-        currency: 'IDR', 
+const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
         minimumFractionDigits: 0,
-        maximumFractionDigits: 0 
+        maximumFractionDigits: 0
     }).format(value)
 }
 
@@ -189,12 +343,32 @@ const formattedRows = computed(() => {
 
 const columns = computed<TableColumn<ManagerEmployeePerformance>[]>(() => [
     {
+        id: 'expand',
+        header: '',
+        cell: ({ row }) => h(UButton, {
+            color: 'gray',
+            variant: 'ghost',
+            icon: 'i-heroicons-chevron-down-20-solid',
+            class: 'transition-transform duration-200', 
+            ui: { 
+                 rounded: 'rounded-full'
+            },
+            style: {
+                 transform: row.getIsExpanded() ? 'rotate(180deg)' : 'rotate(0deg)'
+            },
+            onClick: () => row.toggleExpanded()
+        })
+    },
+    {
         accessorKey: 'employee',
         header: 'Employee',
-        cell: ({ row }) => h('div', { class: 'flex items-center gap-3' }, [
-            h(UAvatar, { src: row.original.photoProfile, alt: row.original.name, size: 'sm' }),
+        cell: ({ row }) => h(resolveComponent('NuxtLink'), { 
+            class: 'flex items-center gap-3 group',
+            to: `/${row.original.employeeId}/sales`,
+        }, () => [
+            h(UAvatar, { src: row.original.photoProfile, alt: row.original.name, size: 'md' }),
             h('div', { class: 'flex flex-col' }, [
-                h('span', { class: 'text-sm font-medium text-gray-900 dark:text-white' }, row.original.name),
+                h('span', { class: 'text-sm font-medium text-gray-900 dark:text-white group-hover:text-primary-500 transition-colors' }, row.original.name),
                 h('span', { class: 'text-xs text-gray-500' }, row.original.employeeId)
             ])
         ]),
@@ -239,9 +413,12 @@ const columns = computed<TableColumn<ManagerEmployeePerformance>[]>(() => [
     {
         accessorKey: 'managerNewCommission',
         header: () => h('div', { class: 'text-right' }, 'Manager New Commission'),
-        cell: ({ row }) => h('div', { class: 'text-right font-medium text-gray-900 dark:text-white' }, 
-            formatCurrency(Number(row.original.managerNewCommission))
-        ),
+        cell: ({ row }) => {
+            return h('div', { class: 'flex flex-col items-end' }, [
+                h('span', { class: 'text-xs font-medium bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-gray-600 dark:text-gray-300 mb-1' }, Intl.NumberFormat('id-ID', { style: 'decimal' }).format(row.original.managerNewCommissionPercentage) + '%'),
+                h('span', { class: 'text-sm font-bold text-gray-900 dark:text-white' }, formatCurrency(Number(row.original.managerNewCommission)))
+            ])
+        },
         footer: () => {
             const total = formattedRows.value.reduce((sum, row) => sum + (Number(row.managerNewCommission) || 0), 0)
             return h('div', { class: 'text-right font-bold text-gray-900 dark:text-white py-3' }, formatCurrency(total))
@@ -250,9 +427,12 @@ const columns = computed<TableColumn<ManagerEmployeePerformance>[]>(() => [
     {
         accessorKey: 'managerRecurringCommission',
         header: () => h('div', { class: 'text-right' }, 'Manager Recurring Commission'),
-        cell: ({ row }) => h('div', { class: 'text-right font-medium text-gray-900 dark:text-white' }, 
-            formatCurrency(Number(row.original.managerRecurringCommission))
-        ),
+        cell: ({ row }) => {
+            return h('div', { class: 'flex flex-col items-end' }, [
+                h('span', { class: 'text-xs font-medium bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-gray-600 dark:text-gray-300 mb-1' }, Intl.NumberFormat('id-ID', { style: 'decimal' }).format(row.original.managerRecurringCommissionPercentage) + '%'),
+                h('span', { class: 'text-sm font-bold text-gray-900 dark:text-white' }, formatCurrency(Number(row.original.managerRecurringCommission)))
+            ])
+        },
         footer: () => {
             const total = formattedRows.value.reduce((sum, row) => sum + (Number(row.managerRecurringCommission) || 0), 0)
             return h('div', { class: 'text-right font-bold text-gray-900 dark:text-white py-3' }, formatCurrency(total))
@@ -261,23 +441,175 @@ const columns = computed<TableColumn<ManagerEmployeePerformance>[]>(() => [
 ])
 
 
+const yearlyData = ref<ManagerMouthlyResponseData['data']>()
+
+const updatePeriodData = () => {
+    if (yearlyData.value && selectedMonth.value?.label) {
+        periodData.value = yearlyData.value.monthly[selectedMonth.value.label]
+    }
+}
+
 const fetchData = async () => {
     const employeeService = new EmployeeService()
     const employeeData = await employeeService.getEmployee(route.params.id as string)
     employee.value = employeeData.data
 
     const commissionService = new CommissionService()
-    const data = await commissionService.managerCommissionPeriod(route.params.id as string, { 
-        year: year.value, 
-        month: selectedMonth.value?.id ?? 0 
+    const response = await commissionService.managerCommission(route.params.id as string, { 
+        year: year.value 
     })
     
-    periodData.value = data.data
+    if (response.success) {
+        yearlyData.value = response.data
+        updatePeriodData()
+    }
 }
 
-watch([year, selectedMonth], () => {
+watch([year], () => {
     fetchData()
 })
+
+watch([selectedMonth], () => {
+    updatePeriodData()
+})
+
+const revenueTrendData = computed(() => {
+    if (!yearlyData.value) return []
+    return Object.entries(yearlyData.value.monthly).map(([month, data]) => ({
+        date: month,
+        'New Subscription': Number(data.monthlyNewSubscription),
+        'Recurring Subscription': Number(data.monthlyRecurringSubscription),
+        'New MRC': Number(data.monthlyNewMrc),
+    }))
+})
+
+const revenueCategories = {
+    'New Subscription': { name: 'New Subscription', color: '#6366f1' },
+    'Recurring Subscription': { name: 'Recurring Subscription', color: '#f97316' },
+    'New MRC': { name: 'New MRC', color: '#10b981' },
+}
+
+const revenueYAxis = ['New Subscription', 'Recurring Subscription', 'New MRC'] as any
+
+const commissionTrendData = computed(() => {
+    if (!yearlyData.value) return []
+    return Object.entries(yearlyData.value.monthly).map(([month, data]) => ({
+        date: month,
+        'New Commission': Number(data.monthlyNewCommission),
+        'Recurring Commission': Number(data.monthlyRecurringCommission)
+    }))
+})
+
+const commissionCategories = {
+    'New Commission': { name: 'New Commission', color: '#10b981' }, 
+    'Recurring Commission': { name: 'Recurring Commission', color: '#3b82f6' }
+}
+
+const salesTrendData = computed(() => {
+    if (!yearlyData.value) return []
+    return Object.entries(yearlyData.value.monthly).map(([month, data]) => ({
+        date: month,
+        'Total Sales': data.sales?.total || 0,
+        'Activity': data.sales?.activity || 0
+    }))
+})
+
+const salesCategories = {
+    'Total Sales': { name: 'Total Sales', color: '#f59e0b' },
+    'Activity': { name: 'Activity', color: '#ec4899' }
+}
+
+const salesSourceTrendData = computed(() => {
+    if (!yearlyData.value) return []
+    return Object.entries(yearlyData.value.monthly).map(([month, data]) => ({
+        date: month,
+        'Permanent': data.sales?.Permanent || 0,
+        'Probation': data.sales?.Probation || 0
+    }))
+})
+
+const salesSourceCategories = {
+    'Permanent': { name: 'Permanent', color: '#0ea5e9' },
+    'Probation': { name: 'Probation', color: '#f59e0b' }
+}
+
+const serviceTrendData = computed(() => {
+    if (!yearlyData.value) return []
+    return Object.entries(yearlyData.value.monthly).map(([month, data]) => {
+        const counts: Record<string, number> = { 'Home': 0, 'Nusafiber': 0, 'NusaSelecta': 0 }
+        
+        data.employee?.forEach(emp => {
+            emp.newService?.forEach(svc => {
+                 // Simple matching, assumes service names are consistent
+                 if (svc.name === 'Home' || svc.name === 'Nusafiber' || svc.name === 'NusaSelecta') {
+                     counts[svc.name] = (counts[svc.name] || 0) + svc.count
+                 }
+            })
+        })
+        
+        return {
+            date: month,
+            ...counts
+        }
+    })
+})
+
+const serviceCategories = {
+    'Home': { name: 'Home', color: '#0ea5e9' },
+    'Nusafiber': { name: 'Nusafiber', color: '#a855f7' },
+    'NusaSelecta': { name: 'NusaSelecta', color: '#f97316' }
+}
+
+const salesSourceYAxis = ['Permanent', 'Probation'] as any
+const serviceYAxis = ['Home', 'Nusafiber', 'NusaSelecta'] as any
+
+const productivityTrendData = computed(() => {
+    if (!yearlyData.value) return []
+    return Object.entries(yearlyData.value.monthly).map(([month, data]) => {
+        const headcount = data.employee?.length || 1
+        const totalSales = data.sales?.total || 0
+        return {
+            date: month,
+            'Avg Sales': Number((totalSales / headcount).toFixed(2))
+        }
+    })
+})
+
+const productivityCategories = {
+    'Avg Sales': { name: 'Avg Sales per Employee', color: '#14b8a6' }
+}
+
+const costOfSalesTrendData = computed(() => {
+    if (!yearlyData.value) return []
+    return Object.entries(yearlyData.value.monthly).map(([month, data]) => {
+        const revenue = Number(data.monthlyNewSubscription) + Number(data.monthlyRecurringSubscription) + Number(data.monthlyNewMrc)
+        const commission = Number(data.monthlyNewCommission) + Number(data.monthlyRecurringCommission)
+        const ratio = revenue > 0 ? (commission / revenue) * 100 : 0
+        return {
+            date: month,
+            'Commission Rate': Number(ratio.toFixed(2))
+        }
+    })
+})
+
+const costOfSalesCategories = {
+    'Commission Rate': { name: 'Commission Rate (%)', color: '#f43f5e' }
+}
+
+const yearlyDonutData = computed(() => {
+    if (!yearlyData.value) return []
+
+    return [
+        Number(yearlyData.value.yearlyNewCommission),
+        Number(yearlyData.value.yearlyRecurringCommission)
+    ]
+})
+
+const yearlyDonutCategories = computed(() => ({
+    'New Commission': { name: 'New Commission', color: '#10b981' }, 
+    'Recurring Commission': { name: 'Recurring Commission', color: '#3b82f6' }
+}))
+
 
 fetchData()
 </script>

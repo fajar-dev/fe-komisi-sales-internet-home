@@ -18,8 +18,12 @@ export interface ManagerMouthlyResponseData {
     success: boolean;
     message: string;
     data: {
-        total: number;
-        data: ManagerMonthlyData[];
+        yearlyNewMrc: string;
+        yearlyNewSubscription: string;
+        yearlyNewCommission: string;
+        yearlyRecurringSubscription: string;
+        yearlyRecurringCommission: string;
+        monthly: Record<string, ManagerPeriodData>;
     };
 }
 
@@ -67,7 +71,9 @@ export interface ManagerEmployeePerformance {
     recurringSubscription: string;
     recurringCommission: string;
     managerNewCommission: string;
+    managerNewCommissionPercentage: number;
     managerRecurringCommission: string;
+    managerRecurringCommissionPercentage: number;
 }
 
 export interface ManagerPeriodAchievement {
