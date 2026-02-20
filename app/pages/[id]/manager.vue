@@ -57,26 +57,44 @@
                                     <span class="text-sm text-gray-600 dark:text-gray-400">Probation</span>
                                     <span class="text-sm font-bold text-gray-900 dark:text-white">{{ periodData.sales.Probation }}</span>
                                 </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">Target</span>
+                                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ periodData.sales.target }}</span>
+                                </div>
                             </div>
                         </div>
 
                         <div class="p-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-transparent">
-                            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Activity Performance</h4>
-                            <div class="flex flex-col gap-2">
-                                <span class="text-3xl font-bold text-gray-900 dark:text-white">{{ periodData.sales.activity }}</span>
-                                <span class="text-xs text-gray-500">Average Activity Score</span>
+                            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Commission Achievement</h4>
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">New Commission ({{ periodData.achievement.newCommissionPercentage }}%)</span>
+                                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.achievement.newCommission)) }}</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">Recurring ({{ periodData.achievement.recurringCommissionPercentage }}%)</span>
+                                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.achievement.recurringCommission)) }}</span>
+                                </div>
+                                <div class="pt-2 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center">
+                                    <span class="text-sm font-bold text-gray-900 dark:text-white">Total</span>
+                                    <span class="text-base font-bold text-primary-500 dark:text-primary-400">{{ formatCurrency(Number(periodData.achievement.totalCommission)) }}</span>
+                                </div>
                             </div>
                         </div>
 
                         <div class="p-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-transparent">
-                            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Team Achievement</h4>
+                            <div class="flex justify-between items-center mb-4">
+                                <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider">Team Achievement</h4>
+                                <UBadge :color="getBadgeColor(periodData.sales.status)" variant="subtle">
+                                    {{ periodData.sales.status }}
+                                </UBadge>
+                            </div>
                             <div class="flex flex-col gap-3">
                                 <span class="text-3xl font-bold text-gray-900 dark:text-white">{{ periodData.sales.percentage }}</span>
-                                <div>
-                                    <UBadge :color="getBadgeColor(periodData.sales.status)" variant="subtle">
-                                        {{ periodData.sales.status }}
-                                    </UBadge>
-                                </div>
+                            </div>
+                            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 mt-6">Activity Performance</h4>
+                            <div class="flex flex-col gap-2">
+                                <span class="text-3xl font-bold text-gray-900 dark:text-white">{{ periodData.sales.activity }}</span>
                             </div>
                         </div>
                     </div>
@@ -234,7 +252,7 @@
                 </div>
             </UCard>
             <UCard>
-                 <template #header>
+                <template #header>
                     <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
                         Productivity Trend (Sales/Employee)
                     </h3>
@@ -249,7 +267,7 @@
                 </div>
             </UCard>
             <UCard class="col-span-1 lg:col-span-2">
-                 <template #header>
+                <template #header>
                     <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
                         Commission Rate Trend (% of Revenue)
                     </h3>
@@ -393,11 +411,29 @@ const columns = computed<TableColumn<ManagerEmployeePerformance>[]>(() => [
         }
     },
     {
+        accessorKey: 'newCommission',
+        header: () => h('div', { class: 'text-right' }, 'New Commission'),
+        cell: ({ row }) => h('div', { class: 'text-right font-medium' }, formatCurrency(Number(row.original.newCommission))),
+        footer: () => {
+            const total = formattedRows.value.reduce((sum, row) => sum + (Number(row.newCommission) || 0), 0)
+            return h('div', { class: 'text-right font-bold py-3' }, formatCurrency(total))
+        }
+    },
+    {
         accessorKey: 'recurringSubscription',
         header: () => h('div', { class: 'text-right' }, 'Recurring Subscription'),
         cell: ({ row }) => h('div', { class: 'text-right font-medium' }, formatCurrency(Number(row.original.recurringSubscription))),
         footer: () => {
             const total = formattedRows.value.reduce((sum, row) => sum + (Number(row.recurringSubscription) || 0), 0)
+            return h('div', { class: 'text-right font-bold py-3' }, formatCurrency(total))
+        }
+    },
+    {
+        accessorKey: 'recurringCommission',
+        header: () => h('div', { class: 'text-right' }, 'Recurring Commission'),
+        cell: ({ row }) => h('div', { class: 'text-right font-medium' }, formatCurrency(Number(row.original.recurringCommission))),
+        footer: () => {
+            const total = formattedRows.value.reduce((sum, row) => sum + (Number(row.recurringCommission) || 0), 0)
             return h('div', { class: 'text-right font-bold py-3' }, formatCurrency(total))
         }
     },
@@ -408,20 +444,6 @@ const columns = computed<TableColumn<ManagerEmployeePerformance>[]>(() => [
         footer: () => {
             const total = formattedRows.value.reduce((sum, row) => sum + (Number(row.newMrc) || 0), 0)
             return h('div', { class: 'text-right font-bold py-3' }, formatCurrency(total))
-        }
-    },
-    {
-        accessorKey: 'managerNewCommission',
-        header: () => h('div', { class: 'text-right' }, 'Manager New Commission'),
-        cell: ({ row }) => {
-            return h('div', { class: 'flex flex-col items-end' }, [
-                h('span', { class: 'text-xs font-medium bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-gray-600 dark:text-gray-300 mb-1' }, Intl.NumberFormat('id-ID', { style: 'decimal' }).format(row.original.managerNewCommissionPercentage) + '%'),
-                h('span', { class: 'text-sm font-bold text-gray-900 dark:text-white' }, formatCurrency(Number(row.original.managerNewCommission)))
-            ])
-        },
-        footer: () => {
-            const total = formattedRows.value.reduce((sum, row) => sum + (Number(row.managerNewCommission) || 0), 0)
-            return h('div', { class: 'text-right font-bold text-gray-900 dark:text-white py-3' }, formatCurrency(total))
         }
     },
     {

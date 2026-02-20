@@ -70,14 +70,14 @@ export interface ManagerEmployeePerformance {
     newCommission: string;
     recurringSubscription: string;
     recurringCommission: string;
-    managerNewCommission: string;
-    managerNewCommissionPercentage: number;
     managerRecurringCommission: string;
     managerRecurringCommissionPercentage: number;
 }
 
 export interface ManagerPeriodAchievement {
+    newCommissionPercentage: string;
     newCommission: string;
+    recurringCommissionPercentage: string;
     recurringCommission: string;
     totalCommission: string;
 }
@@ -89,6 +89,7 @@ export interface ManagerSalesSummary {
     activity: number;
     percentage: string;
     status: string;
+    target: number;
 }
 
 export interface ManagerPeriodData {
