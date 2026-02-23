@@ -92,7 +92,7 @@
                             <div class="flex flex-col gap-3">
                                 <span class="text-3xl font-bold text-gray-900 dark:text-white">{{ periodData.sales.percentage }}</span>
                             </div>
-                            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 mt-6">New Activity</h4>
+                            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 mt-6">New Service</h4>
                             <div class="flex flex-col gap-2">
                                 <span class="text-3xl font-bold text-gray-900 dark:text-white">{{ periodData.sales.activity }}</span>
                             </div>
@@ -394,7 +394,7 @@ const columns = computed<TableColumn<ManagerEmployeePerformance>[]>(() => [
     },
     {
         accessorKey: 'activity',
-        header: 'New Activity',
+        header: 'New Service',
         cell: ({ row }) => h('div', { class: 'text-center font-medium' }, row.original.achievement.activity),
         footer: () => {
             const total = formattedRows.value.reduce((sum, row) => sum + (Number(row.achievement.activity) || 0), 0)
@@ -532,13 +532,13 @@ const salesTrendData = computed(() => {
     return Object.entries(yearlyData.value.monthly).map(([month, data]) => ({
         date: month,
         'Total Sales': data.sales?.total || 0,
-        'New Activity': data.sales?.activity || 0
+        'New Service': data.sales?.activity || 0
     }))
 })
 
 const salesCategories = {
     'Total Sales': { name: 'Total Sales', color: '#f59e0b' },
-    'New Activity': { name: 'New Activity', color: '#ec4899' }
+    'New Service': { name: 'New Service', color: '#ec4899' }
 }
 
 const salesSourceTrendData = computed(() => {

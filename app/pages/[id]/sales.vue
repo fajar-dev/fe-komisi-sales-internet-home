@@ -143,12 +143,6 @@
                                                 </span>
                                             </div>
                                         </div>
-                                        <div class="text-right">
-                                            <p class="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400 mb-1 tracking-wide">New Activity</p>
-                                            <span class="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight" :class="getAchievementColor(periodData.achievement.status)">
-                                                {{ periodData.achievement.activity }}
-                                            </span>
-                                        </div>
                                     </div>
                                     
                                     <div class="pt-3 md:pt-4 border-t border-gray-100 dark:border-gray-800">
