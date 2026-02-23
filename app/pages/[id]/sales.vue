@@ -606,22 +606,24 @@ const getColumns = (key: string): TableColumn<InvoiceSalesData>[] => {
         {
             id: 'label',
             header: 'Label',
-            cell: ({ row }) => {            
-                if (row.original.type === 'new') {
-                    return h(UBadge, { label: 'New', color: 'success', variant: 'subtle' })
+            cell: ({ row }) => {
+                const serviceId: string = row.original.serviceId ?? ''
+
+                const nusafiberCodes = ['BFLITE']
+                const nusaSelectaCodes = ['NFSP030', 'NFSP100', 'NFSP200']
+                const homeCodes = ['HOME100', 'HOMEADV200', 'HOMEADV', 'HOMEPREM300' , 'HOMESTD100']
+
+                if (nusafiberCodes.some(code => serviceId.startsWith(code))) {
+                    return h(UBadge, { label: 'Nusafiber', color: 'info', variant: 'subtle' })
                 }
-                if (row.original.type === 'prorate') {
-                    return h(UBadge, { label: 'Prorate', color: 'warning', variant: 'subtle' })
+                if (nusaSelectaCodes.some(code => serviceId.startsWith(code))) {
+                    return h(UBadge, { label: 'NusaSelecta', color: 'warning', variant: 'subtle' })
                 }
-                if (row.original.type === 'recurring') {
-                    return h(UBadge, { label: 'Recurring', color: 'info', variant: 'subtle' })
+                if (homeCodes.some(code => serviceId.startsWith(code))) {
+                    return h(UBadge, { label: 'Home', color: 'primary', variant: 'subtle' })
                 }
-                if (row.original.category === 'alat') {
-                    return h(UBadge, { label: 'Alat', color: 'primary', variant: 'solid' })
-                }
-                if (row.original.category === 'setup') {
-                    return h(UBadge, { label: 'Setup', color: 'neutral', variant: 'solid' })
-                }
+
+                return null
             }
         },
         {
