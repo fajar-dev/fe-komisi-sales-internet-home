@@ -674,6 +674,23 @@ const getColumns = (key: string): TableColumn<InvoiceSalesData>[] => {
             }
         },
         {
+            accessorKey: 'mrc',
+            header: 'MRC',
+            cell: ({ row }) => {
+                const amount = Number.parseFloat(row.getValue('mrc'))
+                return h('span', { class: 'font-medium' }, new Intl.NumberFormat('id-ID', {
+                    style: 'currency',
+                    currency: 'IDR'
+                }).format(amount))
+            },
+            footer: () => {
+                return h('div', { class: 'hidden lg:block text-right font-bold' }, new Intl.NumberFormat('id-ID', {
+                    style: 'currency',
+                    currency: 'IDR'
+                }).format(Number(responseData.value[key]?.mrc ?? 0)))
+            }
+        },
+        {
             header: 'Month Period',
             cell: ({ row }) => {
                 return h('span', { class: 'font-medium' }, row.original.month)
