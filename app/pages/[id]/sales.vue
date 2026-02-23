@@ -764,7 +764,7 @@ const commissionVsBonusChart = computed<Record<string, BulletLegendItemInterface
 
 const commissionCompositionData = ref<{ date: string; dpp: number; mrc: number; commission: number }[]>([])
 const commissionCompositionChart = {
-    dpp: { name: 'DPP (Revenue)', color: '#3b82f6' },
+    dpp: { name: 'DPP (Subscription)', color: '#3b82f6' },
     mrc: { name: 'MRC', color: '#f97316' },
     commission: { name: 'Commission', color: '#10b981' }
 }
@@ -982,7 +982,7 @@ const fetchSalesData = async () => {
         }
     })
 
-    // Monthly DPP (Revenue) Data
+    // Monthly DPP (Subscription) Data
     monthlyDppData.value = months.map(m => {
         return {
             date: m.substring(0, 3),
