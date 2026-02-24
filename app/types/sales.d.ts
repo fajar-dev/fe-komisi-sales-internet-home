@@ -105,6 +105,7 @@ export interface InvoiceSalesData {
     newSubscription: number | string;
     paidDate: string;
     month: number;
+    lateMonth: number;
     customerServiceId: number;
     customerId: string;
     customerName: string;

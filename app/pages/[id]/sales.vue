@@ -689,7 +689,13 @@ const getColumns = (key: string): TableColumn<InvoiceSalesData>[] => {
         {
             header: 'Month Period',
             cell: ({ row }) => {
-                return h('span', { class: 'font-medium' }, row.original.month)
+                return h('span', { class: 'font-medium text-center' }, row.original.month)
+            }
+        },
+        {
+            header: 'Month Late',
+            cell: ({ row }) => {
+                return h('span', { class: 'font-medium text-center' }, row.original.lateMonth)
             }
         },
         {
