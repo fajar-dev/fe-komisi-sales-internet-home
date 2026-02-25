@@ -466,6 +466,20 @@ const columns = computed<TableColumn<ManagerEmployeePerformance>[]>(() => [
         }
     },
     {
+        accessorKey: 'managerNewCommission',
+        header: () => h('div', { class: 'text-right' }, 'Manager New Commission'),
+        cell: ({ row }) => {
+            return h('div', { class: 'flex flex-col items-end' }, [
+                h('span', { class: 'text-xs font-medium bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-gray-600 dark:text-gray-300 mb-1' }, Intl.NumberFormat('id-ID', { style: 'decimal' }).format(row.original.managerNewCommissionPercentage) + '%'),
+                h('span', { class: 'text-sm font-bold text-gray-900 dark:text-white' }, formatCurrency(Number(row.original.managerNewCommission)))
+            ])
+        },
+        footer: () => {
+            const total = formattedRows.value.reduce((sum, row) => sum + (Number(row.managerNewCommission) || 0), 0)
+            return h('div', { class: 'text-right font-bold text-gray-900 dark:text-white py-3' }, formatCurrency(total))
+        }
+    },
+    {
         accessorKey: 'managerRecurringCommission',
         header: () => h('div', { class: 'text-right' }, 'Manager Recurring Commission'),
         cell: ({ row }) => {

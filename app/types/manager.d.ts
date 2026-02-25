@@ -72,6 +72,8 @@ export interface ManagerEmployeePerformance {
     recurringCommission: string;
     managerRecurringCommission: string;
     managerRecurringCommissionPercentage: number;
+    managerNewCommission: string;
+    managerNewCommissionPercentage: number;
 }
 
 export interface ManagerPeriodAchievement {
