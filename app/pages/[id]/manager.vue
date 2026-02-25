@@ -359,6 +359,17 @@ const formattedRows = computed(() => {
     return periodData.value?.employee || []
 })
 
+const getAchievementColor = (status: string) => {
+    const s = status.toLowerCase()
+    if (s.includes('tidak capai') || s.includes('sp1')) return 'font-bold text-red-500 dark:text-red-400'
+    if (s.includes('average')) return 'font-bold text-orange-500 dark:text-orange-400'
+    if (s.includes('bonus')) return 'font-bold text-violet-500 dark:text-violet-400'
+    if (s.includes('excelent') || s.includes('excellent')) return 'font-bold text-emerald-500 dark:text-emerald-400'
+    if (s.includes('very good')) return 'font-bold text-teal-500 dark:text-teal-400'
+    if (s.includes('capai target')) return 'font-bold text-green-500 dark:text-green-400'
+    return 'text-primary-500 dark:text-primary-400'
+}
+
 const columns = computed<TableColumn<ManagerEmployeePerformance>[]>(() => [
     {
         id: 'expand',
@@ -392,6 +403,14 @@ const columns = computed<TableColumn<ManagerEmployeePerformance>[]>(() => [
         ]),
         footer: () => h('div', { class: 'font-bold py-3' }, 'Total')
     },
+    {
+            id: 'achievement',
+            header: 'Achievement',
+            cell: ({ row }) => {
+                const status: string = row.original.achievement.status ?? ''
+                return h('div', { class: getAchievementColor(status) }, status)
+            }
+        },
     {
         accessorKey: 'activity',
         header: 'New Service',
