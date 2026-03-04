@@ -290,6 +290,7 @@
 <script setup lang="ts">
 import { CommissionService } from '~/services/commission-service'
 import { EmployeeService } from '~/services/employee-service'
+import { AdditionalService } from '~/services/additional-service'
 import type { Employee } from '~/types/employee'
 import type { TableColumn } from '@nuxt/ui'
 import type { ManagerPeriodData, ManagerEmployeePerformance, ManagerMouthlyResponseData } from '~/types/manager'
@@ -520,6 +521,26 @@ const fetchData = async () => {
     }
 }
 
+const initData = async () => {
+    const additionalService = new AdditionalService()
+    const currentPeriod = await additionalService.getCurrentPeriod()
+    
+    if (currentPeriod?.start && currentPeriod?.end) {
+        if (currentPeriod.month && currentPeriod.year) {
+            const m = monthSelect.value.find(x => x.id === currentPeriod.month)
+            if (m) selectedMonth.value = m
+            year.value = currentPeriod.year
+        } else {
+            const [endYear, endMonth] = currentPeriod.end.split('-').map(Number)
+            const m = monthSelect.value.find(x => x.id === endMonth)
+            if (m) selectedMonth.value = m
+            year.value = endYear ?? new Date().getFullYear()
+        }
+    }
+    
+    await fetchData()
+}
+
 watch([year], () => {
     fetchData()
 })
@@ -666,5 +687,5 @@ const yearlyDonutCategories = computed(() => ({
 }))
 
 
-fetchData()
+initData()
 </script>
