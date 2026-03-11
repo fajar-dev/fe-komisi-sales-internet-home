@@ -50,7 +50,12 @@ export interface CommissionData {
         motivation: string;
         activity: number;
         type?: string;
-    }
+    };
+    deduction?: {
+        mrc: string;
+        commission: string;
+        new: { name: string; count: number }[];
+    };
 }
 
 export interface CommissionPeriodData {
@@ -76,7 +81,12 @@ export interface CommissionPeriodData {
         motivation: string;
         activity: number;
         type?: string;
-    }
+    };
+    deduction?: {
+        mrc: string;
+        commission: string;
+        new: { name: string; count: number }[];
+    };
 }
 
 export interface InternalMouthlyResponseData {
@@ -128,6 +138,7 @@ export interface InvoiceSalesData {
     typeSub?: string;
     salesCommissionPercentage: number;
     isDeleted?: boolean;
+    baseCommission: string
 }
 
 export interface InvoiceSalesResponseData {
@@ -153,4 +164,30 @@ export interface InvoiceSalesShowResponseData {
     success: boolean;
     message: string;
     data: InvoiceSalesData;
+}
+
+export interface ChurnData {
+    customerServiceId: number;
+    customerId: string;
+    customerName: string;
+    customerServiceAccount: string;
+    serviceId: string;
+    serviceName: string;
+    registrationDate: string;
+    unregistrationDate: string;
+    subscriptionPeriod: string;
+    reason: string;
+    period: number;
+    price: number;
+    salesId: string;
+    managerId: string;
+    mrc: number;
+    commission: number;
+    commissionPercentage: number;
+}
+
+export interface ChurnResponseData {
+    success: boolean;
+    message: string;
+    data: ChurnData[];
 }

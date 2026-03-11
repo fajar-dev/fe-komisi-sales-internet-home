@@ -1,5 +1,5 @@
 import { apiService } from "./api-service"
-import type { InternalMouthlyQueryParams, InternalMouthlyResponseData, InternalPeriodQueryParams, InternalPeriodResponseData } from "~/types/sales"
+import type { InternalMouthlyQueryParams, InternalMouthlyResponseData, InternalPeriodQueryParams, InternalPeriodResponseData, ChurnResponseData } from "~/types/sales"
 import type { ManagerMouthlyQueryParams, ManagerMouthlyResponseData, ManagerPeriodQueryParams, ManagerPeriodResponseData } from "~/types/manager"
 
 export class CommissionService {
@@ -20,6 +20,20 @@ export class CommissionService {
     async salesCommissionPeriod(employeeId: string, params?: InternalPeriodQueryParams): Promise<InternalPeriodResponseData> {
         try {
             const response = await apiService.client.get(`/sales/${employeeId}/commission/period`, {
+                params,
+                headers: {
+                    authorization: `Bearer ${useAuth().state.token}`
+                }
+            })
+            return response.data
+        } catch (error: any) {
+            handleServiceError(error)
+        }
+    }
+
+    async salesChurn(employeeId: string, params?: InternalPeriodQueryParams): Promise<ChurnResponseData> {
+        try {
+            const response = await apiService.client.get(`/sales/${employeeId}/churn`, {
                 params,
                 headers: {
                     authorization: `Bearer ${useAuth().state.token}`

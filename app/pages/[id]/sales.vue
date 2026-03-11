@@ -160,7 +160,7 @@
                                 <UIcon name="i-heroicons-banknotes" class="w-4 h-4 sm:w-5 sm:h-5 text-primary-500" />
                                 Financial Breakdown
                             </h4>
-                            <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 p-4 md:p-5 rounded-xl md:rounded-2xl border border-gray-200 dark:border-gray-800">
+                            <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-5 gap-4 md:gap-6 p-4 md:p-5 rounded-xl md:rounded-2xl border border-gray-200 dark:border-gray-800">
                                 <!-- Earnings -->
                                 <div>
                                     <h5 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 md:mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">Commission</h5>
@@ -273,6 +273,28 @@
                                         <li class="flex justify-between items-center text-xs sm:text-sm pt-2 md:pt-3 border-t border-gray-200 dark:border-gray-700 mt-2">
                                             <span class="font-bold text-gray-900 dark:text-white">Total</span>
                                             <span class="font-bold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.detail.prorate.dpp) + Number(periodData.detail.recurring.dpp) + Number(periodData.detail.upgrade.dpp) + Number(periodData.detail.alat.dpp) + Number(periodData.detail.setup.dpp)) }}</span>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <!-- Deduction -->
+                                <div>
+                                    <h5 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 md:mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">Deduction</h5>
+                                    <ul class="space-y-2 md:space-y-3">
+                                        <li class="flex justify-between items-center text-xs sm:text-sm">
+                                            <span class="text-gray-600 dark:text-gray-400">MRC</span>
+                                            <span class="font-semibold text-red-500 dark:text-red-400">-{{ formatCurrency(Number(periodData.deduction?.mrc ?? 0)) }}</span>
+                                        </li>
+                                        <li class="flex justify-between items-center text-xs sm:text-sm">
+                                            <span class="text-gray-600 dark:text-gray-400">Commission</span>
+                                            <span class="font-semibold text-red-500 dark:text-red-400">-{{ formatCurrency(Number(periodData.deduction?.commission ?? 0)) }}</span>
+                                        </li>
+                                        <li class="pt-2 md:pt-3 border-t border-gray-200 dark:border-gray-700 mt-2">
+                                            <div class="text-[10px] uppercase font-bold text-gray-500 mb-1">Service Impact (New)</div>
+                                            <div v-for="d in periodData.deduction?.new" :key="d.name" class="flex justify-between items-center text-xs mb-1">
+                                                <span class="text-gray-500">{{ d.name }}</span>
+                                                <span class="font-medium text-red-500">-{{ d.count }}</span>
+                                            </div>
                                         </li>
                                     </ul>
                                 </div>
@@ -536,7 +558,7 @@ import type { Employee } from '~/types/employee'
 import { DateFormatter, getLocalTimeZone, parseDate } from '@internationalized/date'
 import type { SelectMenuItem, TableColumn } from '@nuxt/ui'
 import { AdditionalService } from '~/services/additional-service'
-import type { InvoiceSalesData, CommissionDetailItem, CommissionPeriodData } from '~/types/sales'
+import type { InvoiceSalesData, CommissionDetailItem, CommissionPeriodData, ChurnData } from '~/types/sales'
 
 const df = new DateFormatter('en-US', {
     dateStyle: 'medium'
@@ -582,15 +604,82 @@ const tabItems = computed(() => [
     { label: `Prorate (${responseData.value.prorate?.data?.length || 0})`, key: 'prorate'},
     { label: `Upgrade (${responseData.value.upgrade?.data?.length || 0})`, key: 'upgrade'},
     { label: `Alat (${responseData.value.alat?.data?.length || 0})`, key: 'alat'},
-    { label: `Setup (${responseData.value.setup?.data?.length || 0})`, key: 'setup'}
+    { label: `Setup (${responseData.value.setup?.data?.length || 0})`, key: 'setup'},
+    { label: `Churn (${churnData.value.length})`, key: 'churn'}
 ])
 
+const churnData = ref<ChurnData[]>([])
+
 const getTabData = (key: string) => {
+    if (key === 'churn') return churnData.value
     return responseData.value[key]?.data || []
 }
 
 
-const getColumns = (key: string): TableColumn<InvoiceSalesData>[] => {
+const getColumns = (key: string): TableColumn<any>[] => {
+    if (key === 'churn') {
+        return [
+            {
+                header: 'Service',
+                cell: ({ row }) => {
+                    return h('div', { class: 'flex flex-col min-w-[120px]' }, [
+                        h('a', { 
+                            href: `https://isx.nusa.net.id/v2/customer/service/${row.original.customerServiceId}/detail`,
+                            target: '_blank',
+                            class: 'text-blue-500 hover:underline font-semibold text-sm break-all'
+                        }, row.original.customerServiceAccount),
+                        h('span', { class: 'text-xs text-gray-500 dark:text-gray-400 whitespace-normal break-words line-clamp-2' }, row.original.serviceName)
+                    ])
+                }
+            },
+            {
+                header: 'Customer',
+                cell: ({ row }) => {
+                    return h('div', { class: 'flex flex-col min-w-[120px]' }, [
+                        h('a', { 
+                            href: `https://isx.nusa.net.id/customer.php?custId=${row.original.customerId}&pid=profile`,
+                            target: '_blank',
+                            class: 'text-blue-500 hover:underline font-semibold text-sm'
+                        }, row.original.customerId),
+                        h('span', { class: 'text-xs text-gray-500 dark:text-gray-400 whitespace-normal break-words line-clamp-2' }, row.original.customerName)
+                    ])
+                }
+            },
+            {
+                accessorKey: 'reason',
+                header: 'Reason',
+                cell: ({ row }) => h('span', { class: 'text-xs italic text-gray-500 dark:text-gray-400 whitespace-normal line-clamp-2 min-w-[150px]' }, row.original.reason)
+            },
+            {
+                header: 'Duration',
+                cell: ({ row }) => {
+                    return h('div', { class: 'flex flex-col' }, [
+                        h('span', { class: 'text-sm font-medium' }, row.original.subscriptionPeriod),
+                        h('span', { class: 'text-[10px] text-gray-400 dark:text-gray-500' }, `${df.format(parseDate(row.original.registrationDate.split('T')[0]).toDate(getLocalTimeZone()))} - ${df.format(parseDate(row.original.unregistrationDate.split('T')[0]).toDate(getLocalTimeZone()))}`)
+                    ])
+                }
+            },
+            {
+                header: 'Subscription',
+                cell: ({ row }) => h('span', { class: 'font-medium' }, formatCurrency(row.original.price))
+            },
+            {
+                header: 'MRC',
+                cell: ({ row }) => h('span', { class: 'font-medium text-red-500 dark:text-red-400' }, `-${formatCurrency(row.original.mrc)}`)
+            },
+            {
+                header: 'Commission',
+                cell: ({ row }) => {
+                    return h('div', { class: 'flex flex-col items-end' }, [
+                         h('span', { class: 'text-xs font-medium bg-red-100 dark:bg-red-950/30 px-1.5 py-0.5 rounded text-red-600 dark:text-red-400 mb-1' }, 
+                            Intl.NumberFormat('id-ID', { style: 'decimal' }).format(row.original.commissionPercentage) + '%'),
+                        h('span', { class: 'text-sm font-bold text-red-600 dark:text-red-400' }, `-${formatCurrency(row.original.commission)}`)
+                    ])
+                }
+            }
+        ]
+    }
+
     const cols: TableColumn<InvoiceSalesData>[] = [
         {
             accessorKey: 'paidDate',
@@ -703,6 +792,10 @@ const getColumns = (key: string): TableColumn<InvoiceSalesData>[] => {
             cell: ({ row }) => {
             const isZero = Number(row.original.salesCommission) === 0
             return h('div', { class: ['flex flex-col items-end', isZero ? 'commission-zero' : ''] }, [
+                h('span', { class: 'text-xs text-gray-600 dark:text-white' }, new Intl.NumberFormat('id-ID', {
+                    style: 'currency',
+                    currency: 'IDR'
+                }).format(Number(row.original.baseCommission))),               
                 h('span', { class: 'text-xs font-medium bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-gray-600 dark:text-gray-300 mb-1' }, Intl.NumberFormat('id-ID', { style: 'decimal' }).format(row.original.salesCommissionPercentage) + '%'),
                 h('span', { class: 'text-sm font-bold text-gray-900 dark:text-white' }, new Intl.NumberFormat('id-ID', {
                     style: 'currency',
@@ -1087,17 +1180,29 @@ const fetchInvoiceData = async () => {
     responseData.value = response.data
 }
 
+const fetchChurnData = async () => {
+    const commissionService = new CommissionService()
+    const response = await commissionService.salesChurn(route.params.id as string, {
+        month: selectedMonth.value,
+        year: year.value
+    })
+    churnData.value = response.data
+}
+
 watch(year, () => {
     fetchSalesData()
     fetchInvoiceData()
     fetchPeriodData()
+    fetchChurnData()
 })
 
 watch(selectedMonth, () => {
     fetchInvoiceData()
     fetchPeriodData()
+    fetchChurnData()
 })
 
 initData()
 fetchInvoiceData()
+fetchChurnData()
 </script>
