@@ -289,6 +289,10 @@
                                             <span class="text-gray-600 dark:text-gray-400">Commission</span>
                                             <span class="font-semibold text-red-500 dark:text-red-400">-{{ formatCurrency(Number(periodData.deduction?.commission ?? 0)) }}</span>
                                         </li>
+                                        <li class="flex justify-between items-center text-xs sm:text-sm">
+                                            <span class="text-gray-600 dark:text-gray-400">Subscription</span>
+                                            <span class="font-semibold text-red-500 dark:text-red-400">-{{ formatCurrency(Number(periodData.deduction?.subscription ?? 0)) }}</span>
+                                        </li>
                                         <li class="pt-2 md:pt-3 border-t border-gray-200 dark:border-gray-700 mt-2">
                                             <div class="text-[10px] uppercase font-bold text-gray-500 mb-1">Service Impact (New)</div>
                                             <div v-for="d in periodData.deduction?.new" :key="d.name" class="flex justify-between items-center text-xs mb-1">
@@ -665,15 +669,15 @@ const getColumns = (key: string): TableColumn<any>[] => {
             },
             {
                 header: 'MRC',
-                cell: ({ row }) => h('span', { class: 'font-medium text-red-500 dark:text-red-400' }, `-${formatCurrency(row.original.mrc)}`)
+                cell: ({ row }) => h('span', { class: 'font-medium' }, formatCurrency(row.original.mrc))
             },
             {
                 header: 'Commission',
                 cell: ({ row }) => {
                     return h('div', { class: 'flex flex-col items-end' }, [
-                         h('span', { class: 'text-xs font-medium bg-red-100 dark:bg-red-950/30 px-1.5 py-0.5 rounded text-red-600 dark:text-red-400 mb-1' }, 
+                         h('span', { class: 'text-xs font-medium bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-gray-600 dark:text-gray-300 mb-1' }, 
                             Intl.NumberFormat('id-ID', { style: 'decimal' }).format(row.original.commissionPercentage) + '%'),
-                        h('span', { class: 'text-sm font-bold text-red-600 dark:text-red-400' }, `-${formatCurrency(row.original.commission)}`)
+                        h('span', { class: 'text-sm font-bold text-gray-900 dark:text-white' }, formatCurrency(row.original.commission))
                     ])
                 }
             }

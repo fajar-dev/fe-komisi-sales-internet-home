@@ -54,6 +54,7 @@ export interface CommissionData {
     deduction?: {
         mrc: string;
         commission: string;
+        subscription: string;
         new: { name: string; count: number }[];
     };
 }
@@ -85,6 +86,7 @@ export interface CommissionPeriodData {
     deduction?: {
         mrc: string;
         commission: string;
+        subscription: string;
         new: { name: string; count: number }[];
     };
 }
