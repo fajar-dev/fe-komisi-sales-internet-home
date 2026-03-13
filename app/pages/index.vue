@@ -62,6 +62,7 @@
 </template>
 
 <script setup lang="ts">
+const { setLoading } = useLoading()
 import { EmployeeService } from '~/services/employee-service';
 
 const { state: authState } = useAuth()
@@ -91,30 +92,43 @@ const filteredEmployeeCards = computed(() => {
 
 const fetchEmployeeCard = async () => {
     if (!authState.user?.employee_id) return
-    const employeeService = new EmployeeService()
-    const data = await employeeService.getEmployeeHierarchy(authState.user?.employee_id)
-    employeeCard.value = data.data.map((item) => {
-        return {
-            photoProfile: item.photo_profile,
-            name: item.name,
-            employeeId: item.employee_id,
-            position: item.job_position,
-            organizationName: item.organization_name,
-            jobLevel: item.job_level,
-            to: getRoute(item),
-        }
-    })
+    try {
+        const employeeService = new EmployeeService()
+        const data = await employeeService.getEmployeeHierarchy(authState.user?.employee_id)
+        employeeCard.value = data.data.map((item) => {
+            return {
+                photoProfile: item.photo_profile,
+                name: item.name,
+                employeeId: item.employee_id,
+                position: item.job_position,
+                organizationName: item.organization_name,
+                jobLevel: item.job_level,
+                to: getRoute(item),
+            }
+        })
+    } finally {
+        // setLoading managed by caller
+    }
+}
+
+const initData = async () => {
+    setLoading(true)
+    try {
+        await fetchEmployeeCard()
+    } finally {
+        setLoading(false)
+    }
 }
 
 watch(() => authState.user, (user) => {
     if (user?.employee_id) {
-        fetchEmployeeCard()
+        initData()
     }
 }, { immediate: true })
 
 onMounted(() => {
     if (authState.user?.employee_id) {
-        fetchEmployeeCard()
+        initData()
     }
 })
 

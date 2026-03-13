@@ -1,13 +1,15 @@
 
 <template>
     <div class="h-screen flex items-center justify-center px-4 relative overflow-hidden">
+
         <HeroBackground/>
 
-        <UContainer class="max-w-md relative z-10">
+        <UContainer
+            class="max-w-md relative z-10">
             <div
                 class="p-0"
             >
-                <UCard>
+                <UCard class="justify-center mx-auto max-w-sm">
                   <div class="space-y-4">
                     <div class="flex justify-center mb-5">
                         <img
@@ -76,6 +78,7 @@ definePageMeta({
   layout: 'auth',
   middleware: 'guest'
 })
+
 
 const googleLoading = ref(false)
 const toast = useToast()

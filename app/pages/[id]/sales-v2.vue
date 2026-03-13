@@ -428,6 +428,7 @@ import { CommissionService } from '~/services/commission-service'
 import { EmployeeService } from '~/services/employee-service'
 import { InvoiceService } from '~/services/invoice-service'
 import type { Employee } from '~/types/employee'
+const { setLoading } = useLoading()
 import { DateFormatter, getLocalTimeZone, parseDate } from '@internationalized/date'
 import { h, resolveComponent } from 'vue'
 import type { SelectMenuItem, TableColumn } from '@nuxt/ui'
@@ -728,155 +729,172 @@ const monthcard = ref<{ mounth: string; total: string; commission: string; bonus
 const periodData = ref<CommissionPeriodData | null>(null)
 
 const fetchSalesData = async () => {
-    const commissionService = new CommissionService()
-    const response = await commissionService.salesCommission(route.params.id as string, { year: year.value })
-    const data = response.data
-    
-    // Donut Chart Data - By Category
-    const donutItems = [
-        { label: 'New', value: Number(data.detail.new?.commission ?? 0), color: '#3b82f6' },
-        { label: 'Recurring', value: Number(data.detail.recurring?.commission ?? 0), color: '#f97316' },
-        { label: 'Prorate', value: Number(data.detail.prorate?.commission ?? 0), color: '#8b5cf6' },
-        { label: 'Upgrade', value: Number(data.detail.upgrade?.commission ?? 0), color: '#6366f1' },
-        { label: 'Alat', value: Number(data.detail.alat?.commission ?? 0), color: '#ec4899' },
-        { label: 'Setup', value: Number(data.detail.setup?.commission ?? 0), color: '#14b8a6' }
-    ]
-
-    totalCommissionDonutData.value = donutItems.map(item => item.value)
-    donutLabels.value = donutItems.map(item => ({ name: item.label, color: item.color }))
-    
-    // Month Card
-    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-    monthcard.value = months.map((m, index) => {
-        const mData = data.monthly[m]
+    try {
+        const commissionService = new CommissionService()
+        const response = await commissionService.salesCommission(route.params.id as string, { year: year.value })
+        const data = response.data
         
-        const detail = mData?.detail ? {
-                new: { 
-                    ...mData.detail.new, 
-                    dpp: formatCurrency(Number(mData.detail.new?.dpp ?? 0)), 
-                    mrc: formatCurrency(Number(mData.detail.new?.mrc ?? 0)) 
-                },
-                recurring: { 
-                    ...mData.detail.recurring, 
-                    dpp: formatCurrency(Number(mData.detail.recurring?.dpp ?? 0)), 
-                    mrc: formatCurrency(Number(mData.detail.recurring?.mrc ?? 0)) 
-                },
-                prorate: { 
-                    ...mData.detail.prorate, 
-                    dpp: formatCurrency(Number(mData.detail.prorate?.dpp ?? 0)), 
-                    mrc: formatCurrency(Number(mData.detail.prorate?.mrc ?? 0)) 
-                },
-                upgrade: { 
-                    ...mData.detail.upgrade, 
-                    dpp: formatCurrency(Number(mData.detail.upgrade?.dpp ?? 0)), 
-                    mrc: formatCurrency(Number(mData.detail.upgrade?.mrc ?? 0)) 
-                },
-                alat: { 
-                    ...mData.detail.alat, 
-                    dpp: formatCurrency(Number(mData.detail.alat?.dpp ?? 0)), 
-                    mrc: formatCurrency(Number(mData.detail.alat?.mrc ?? 0)) 
-                },
-                setup: { 
-                    ...mData.detail.setup, 
-                    dpp: formatCurrency(Number(mData.detail.setup?.dpp ?? 0)), 
-                    mrc: formatCurrency(Number(mData.detail.setup?.mrc ?? 0)) 
+        // Donut Chart Data - By Category
+        const donutItems = [
+            { label: 'New', value: Number(data.detail.new?.commission ?? 0), color: '#3b82f6' },
+            { label: 'Recurring', value: Number(data.detail.recurring?.commission ?? 0), color: '#f97316' },
+            { label: 'Prorate', value: Number(data.detail.prorate?.commission ?? 0), color: '#8b5cf6' },
+            { label: 'Upgrade', value: Number(data.detail.upgrade?.commission ?? 0), color: '#6366f1' },
+            { label: 'Alat', value: Number(data.detail.alat?.commission ?? 0), color: '#ec4899' },
+            { label: 'Setup', value: Number(data.detail.setup?.commission ?? 0), color: '#14b8a6' },
+            { label: 'Bonus', value: Number(data.bonus ?? 0), color: '#eab308' }
+        ]
+
+        totalCommissionDonutData.value = donutItems.map(item => item.value)
+        donutLabels.value = donutItems.map(item => ({ name: item.label, color: item.color }))
+        
+        // Month Card
+        const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+        monthcard.value = months.map((m, index) => {
+            const mData = data.monthly[m]
+            
+            const detail = mData?.detail ? {
+                    new: { 
+                        ...mData.detail.new, 
+                        dpp: formatCurrency(Number(mData.detail.new?.dpp ?? 0)), 
+                        mrc: formatCurrency(Number(mData.detail.new?.mrc ?? 0)) 
+                    },
+                    recurring: { 
+                        ...mData.detail.recurring, 
+                        dpp: formatCurrency(Number(mData.detail.recurring?.dpp ?? 0)), 
+                        mrc: formatCurrency(Number(mData.detail.recurring?.mrc ?? 0)) 
+                    },
+                    prorate: { 
+                        ...mData.detail.prorate, 
+                        dpp: formatCurrency(Number(mData.detail.prorate?.dpp ?? 0)), 
+                        mrc: formatCurrency(Number(mData.detail.prorate?.mrc ?? 0)) 
+                    },
+                    upgrade: { 
+                        ...mData.detail.upgrade, 
+                        dpp: formatCurrency(Number(mData.detail.upgrade?.dpp ?? 0)), 
+                        mrc: formatCurrency(Number(mData.detail.upgrade?.mrc ?? 0)) 
+                    },
+                    alat: { 
+                        ...mData.detail.alat, 
+                        dpp: formatCurrency(Number(mData.detail.alat?.dpp ?? 0)), 
+                        mrc: formatCurrency(Number(mData.detail.alat?.mrc ?? 0)) 
+                    },
+                    setup: { 
+                        ...mData.detail.setup, 
+                        dpp: formatCurrency(Number(mData.detail.setup?.dpp ?? 0)), 
+                        mrc: formatCurrency(Number(mData.detail.setup?.mrc ?? 0)) 
+                    }
+            } : { 
+                new: { ...defaultDetailItem, dpp: formatCurrency(0), mrc: formatCurrency(0) }, 
+                recurring: { ...defaultDetailItem, dpp: formatCurrency(0), mrc: formatCurrency(0) }, 
+                prorate: { ...defaultDetailItem, dpp: formatCurrency(0), mrc: formatCurrency(0) },
+                upgrade: { ...defaultDetailItem, dpp: formatCurrency(0), mrc: formatCurrency(0) },
+                alat: { ...defaultDetailItem, dpp: formatCurrency(0), mrc: formatCurrency(0) },
+                setup: { ...defaultDetailItem, dpp: formatCurrency(0), mrc: formatCurrency(0) }
+            }
+
+            let startPeriod = '-'
+            let endPeriod = '-'
+
+            if (mData?.startPeriod) {
+                const [y, month, d] = mData.startPeriod.split('-').map(Number)
+                if (y !== undefined && month !== undefined && d !== undefined) {
+                    startPeriod = df.format(new Date(y, month - 1, d))
                 }
-        } : { 
-            new: { ...defaultDetailItem, dpp: formatCurrency(0), mrc: formatCurrency(0) }, 
-            recurring: { ...defaultDetailItem, dpp: formatCurrency(0), mrc: formatCurrency(0) }, 
-            prorate: { ...defaultDetailItem, dpp: formatCurrency(0), mrc: formatCurrency(0) },
-            upgrade: { ...defaultDetailItem, dpp: formatCurrency(0), mrc: formatCurrency(0) },
-            alat: { ...defaultDetailItem, dpp: formatCurrency(0), mrc: formatCurrency(0) },
-            setup: { ...defaultDetailItem, dpp: formatCurrency(0), mrc: formatCurrency(0) }
-        }
-
-        let startPeriod = '-'
-        let endPeriod = '-'
-
-        if (mData?.startPeriod) {
-            const [y, month, d] = mData.startPeriod.split('-').map(Number)
-            if (y !== undefined && month !== undefined && d !== undefined) {
-                startPeriod = df.format(new Date(y, month - 1, d))
             }
-        }
 
-        if (mData?.endPeriod) {
-            const [y, month, d] = mData.endPeriod.split('-').map(Number)
-            if (y !== undefined && month !== undefined && d !== undefined) {
-                endPeriod = df.format(new Date(y, month - 1, d))
+            if (mData?.endPeriod) {
+                const [y, month, d] = mData.endPeriod.split('-').map(Number)
+                if (y !== undefined && month !== undefined && d !== undefined) {
+                    endPeriod = df.format(new Date(y, month - 1, d))
+                }
             }
-        }
 
-        return {
-            mounth: m,
-            total: formatCurrency(Number(mData?.totalCommission ?? 0)),
-            commission: formatCurrency(Number(mData?.commission ?? 0)),
-            bonus: formatCurrency(Number(mData?.bonus ?? 0)),
-            count: mData?.achievement?.activity ?? 0,
-            dpp: formatCurrency(Number(mData?.dpp ?? 0)),
-            mrc: formatCurrency(Number(mData?.mrc ?? 0)),
-            startPeriod: startPeriod,
-            endPeriod: endPeriod,
-            status: mData?.achievement?.status ?? '-',
-            detail: detail
-        }
-    })
-    
-    // Total Commission Trend
-    totalCommissionData.value = months.map(m => {
-        const mData = data.monthly[m]
-        return {
-            date: m.substring(0, 3),
-            total: Number(mData?.totalCommission ?? 0),
-            new: Number(mData?.detail?.new?.commission ?? 0),
-            recurring: Number(mData?.detail?.recurring?.commission ?? 0),
-            prorate: Number(mData?.detail?.prorate?.commission ?? 0),
-            upgrade: Number(mData?.detail?.upgrade?.commission ?? 0),
-            alat: Number(mData?.detail?.alat?.commission ?? 0),
-            setup: Number(mData?.detail?.setup?.commission ?? 0),
-            bonus: Number(mData?.bonus ?? 0)
-        }
-    })
+            return {
+                mounth: m,
+                total: formatCurrency(Number(mData?.totalCommission ?? 0)),
+                commission: formatCurrency(Number(mData?.commission ?? 0)),
+                bonus: formatCurrency(Number(mData?.bonus ?? 0)),
+                count: mData?.achievement?.activity ?? 0,
+                dpp: formatCurrency(Number(mData?.dpp ?? 0)),
+                mrc: formatCurrency(Number(mData?.mrc ?? 0)),
+                startPeriod: startPeriod,
+                endPeriod: endPeriod,
+                status: mData?.achievement?.status ?? '-',
+                detail: detail
+            }
+        })
+        
+        // Total Commission Trend
+        totalCommissionData.value = months.map(m => {
+            const mData = data.monthly[m]
+            return {
+                date: m.substring(0, 3),
+                total: Number(mData?.totalCommission ?? 0),
+                new: Number(mData?.detail?.new?.commission ?? 0),
+                recurring: Number(mData?.detail?.recurring?.commission ?? 0),
+                prorate: Number(mData?.detail?.prorate?.commission ?? 0),
+                upgrade: Number(mData?.detail?.upgrade?.commission ?? 0),
+                alat: Number(mData?.detail?.alat?.commission ?? 0),
+                setup: Number(mData?.detail?.setup?.commission ?? 0),
+                bonus: Number(mData?.bonus ?? 0)
+            }
+        })
+    } finally {
+        // No longer setting loading false here
+    }
 }
 
 const initData = async () => {
-    const additionalService = new AdditionalService()
-    const currentPeriod = await additionalService.getCurrentPeriod()
-    
-    // Instantiate services
-    const commissionService = new CommissionService()
-    const employeeService = new EmployeeService()
+    setLoading(true)
+    try {
+        const additionalService = new AdditionalService()
+        const currentPeriod = await additionalService.getCurrentPeriod()
+        
+        // Instantiate services
+        const commissionService = new CommissionService()
+        const employeeService = new EmployeeService()
 
-    const employeeData = await employeeService.getEmployee(route.params.id as string)
-    employee.value = employeeData.data
+        const employeeData = await employeeService.getEmployee(route.params.id as string)
+        employee.value = employeeData.data
 
-    if (currentPeriod?.start && currentPeriod?.end) {
-        if (currentPeriod.month && currentPeriod.year) {
-                selectedMonth.value = currentPeriod.month
-                year.value = currentPeriod.year
-        } else {
-                const [endYear, endMonth, endDay] = currentPeriod.end.split('-').map(Number)
-                selectedMonth.value = endMonth ?? (new Date().getMonth() + 1)
-                year.value = endYear ?? new Date().getFullYear()
+        if (currentPeriod?.start && currentPeriod?.end) {
+            if (currentPeriod.month && currentPeriod.year) {
+                    selectedMonth.value = currentPeriod.month
+                    year.value = currentPeriod.year
+            } else {
+                    const [endYear, endMonth, endDay] = currentPeriod.end.split('-').map(Number)
+                    selectedMonth.value = endMonth ?? (new Date().getMonth() + 1)
+                    year.value = endYear ?? new Date().getFullYear()
+            }
+
+            const periodResponse = await commissionService.salesCommissionPeriod(route.params.id as string, {
+                month: currentPeriod.month,
+                year: currentPeriod.year
+            })
+            periodData.value = periodResponse.data
         }
-
-        const periodResponse = await commissionService.salesCommissionPeriod(route.params.id as string, {
-            month: currentPeriod.month,
-            year: currentPeriod.year
-        })
-        periodData.value = periodResponse.data
+        
+        await Promise.all([
+            fetchSalesData(),
+            fetchInvoiceData()
+        ])
+    } finally {
+        setLoading(false)
     }
-    
-    await fetchSalesData()
 }
 
 const fetchInvoiceData = async () => {
-    const invoiceService = new InvoiceService()
-    const response = await invoiceService.getInvoiceSales(route.params.id as string, {
-        month: selectedMonth.value,
-        year: year.value
-    })
-    responseData.value = response.data
+    try {
+        const invoiceService = new InvoiceService()
+        const response = await invoiceService.getInvoiceSales(route.params.id as string, {
+            month: selectedMonth.value,
+            year: year.value
+        })
+        responseData.value = response.data
+    } finally {
+        // No longer setting loading false here
+    }
 }
 
 watch(year, () => {
@@ -889,5 +907,5 @@ watch(selectedMonth, () => {
 })
 
 initData()
-fetchInvoiceData()
+
 </script>

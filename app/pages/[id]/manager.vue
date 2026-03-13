@@ -294,6 +294,7 @@ import { AdditionalService } from '~/services/additional-service'
 import type { Employee } from '~/types/employee'
 import type { TableColumn } from '@nuxt/ui'
 import type { ManagerPeriodData, ManagerEmployeePerformance, ManagerMouthlyResponseData } from '~/types/manager'
+const { setLoading } = useLoading()
 import { resolveComponent, computed, ref, watch, h } from 'vue'
 import { DateFormatter, getLocalTimeZone, parseDate } from '@internationalized/date'
 
@@ -542,39 +543,48 @@ const updatePeriodData = () => {
 }
 
 const fetchData = async () => {
-    const employeeService = new EmployeeService()
-    const employeeData = await employeeService.getEmployee(route.params.id as string)
-    employee.value = employeeData.data
+    try {
+        const employeeService = new EmployeeService()
+        const employeeData = await employeeService.getEmployee(route.params.id as string)
+        employee.value = employeeData.data
 
-    const commissionService = new CommissionService()
-    const response = await commissionService.managerCommission(route.params.id as string, { 
-        year: year.value 
-    })
-    
-    if (response.success) {
-        yearlyData.value = response.data
-        updatePeriodData()
+        const commissionService = new CommissionService()
+        const response = await commissionService.managerCommission(route.params.id as string, { 
+            year: year.value 
+        })
+        
+        if (response.success) {
+            yearlyData.value = response.data
+            updatePeriodData()
+        }
+    } finally {
+        // No longer setting loading false here
     }
 }
 
 const initData = async () => {
-    const additionalService = new AdditionalService()
-    const currentPeriod = await additionalService.getCurrentPeriod()
-    
-    if (currentPeriod?.start && currentPeriod?.end) {
-        if (currentPeriod.month && currentPeriod.year) {
-            const m = monthSelect.value.find(x => x.id === currentPeriod.month)
-            if (m) selectedMonth.value = m
-            year.value = currentPeriod.year
-        } else {
-            const [endYear, endMonth] = currentPeriod.end.split('-').map(Number)
-            const m = monthSelect.value.find(x => x.id === endMonth)
-            if (m) selectedMonth.value = m
-            year.value = endYear ?? new Date().getFullYear()
+    setLoading(true)
+    try {
+        const additionalService = new AdditionalService()
+        const currentPeriod = await additionalService.getCurrentPeriod()
+        
+        if (currentPeriod?.start && currentPeriod?.end) {
+            if (currentPeriod.month && currentPeriod.year) {
+                const m = monthSelect.value.find(x => x.id === currentPeriod.month)
+                if (m) selectedMonth.value = m
+                year.value = currentPeriod.year
+            } else {
+                const [endYear, endMonth] = currentPeriod.end.split('-').map(Number)
+                const m = monthSelect.value.find(x => x.id === endMonth)
+                if (m) selectedMonth.value = m
+                year.value = endYear ?? new Date().getFullYear()
+            }
         }
+        
+        await fetchData()
+    } finally {
+        setLoading(false)
     }
-    
-    await fetchData()
 }
 
 watch([year], () => {

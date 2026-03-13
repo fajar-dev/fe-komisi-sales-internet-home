@@ -1,5 +1,6 @@
 <template>
-    <div>
+    <div class="relative min-h-screen">
+        <LoadingOverlay :is-loading="isLoading" />
         <AppHeader />
 
         <UMain>
@@ -13,3 +14,7 @@
         </UFooter>
     </div>
 </template>
+
+<script setup lang="ts">
+const { isLoading } = useLoading()
+</script>
