@@ -254,53 +254,78 @@
                                     </ul>
                                 </div>
 
-                                <!-- DPP Other -->
-                                <div>
-                                    <h5 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 md:mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">Subscription (Other)</h5>
-                                    <ul class="space-y-2 md:space-y-3">
-                                        <li class="flex justify-between items-center text-xs sm:text-sm">
-                                            <span class="text-gray-600 dark:text-gray-400">Recurring</span>
-                                            <span class="font-semibold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.detail.recurring.dpp)) }}</span>
-                                        </li>
-                                        <li class="flex justify-between items-center text-xs sm:text-sm">
-                                            <span class="text-gray-600 dark:text-gray-400">Alat</span>
-                                            <span class="font-semibold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.detail.alat.dpp)) }}</span>
-                                        </li>
-                                        <li class="flex justify-between items-center text-xs sm:text-sm">
-                                            <span class="text-gray-600 dark:text-gray-400">Setup</span>
-                                            <span class="font-semibold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.detail.setup.dpp)) }}</span>
-                                        </li>
-                                        <li class="flex justify-between items-center text-xs sm:text-sm pt-2 md:pt-3 border-t border-gray-200 dark:border-gray-700 mt-2">
-                                            <span class="font-bold text-gray-900 dark:text-white">Total</span>
-                                            <span class="font-bold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.detail.prorate.dpp) + Number(periodData.detail.recurring.dpp) + Number(periodData.detail.upgrade.dpp) + Number(periodData.detail.alat.dpp) + Number(periodData.detail.setup.dpp)) }}</span>
-                                        </li>
-                                    </ul>
+                                <div class="flex flex-col md:flex-col gap-4">
+                                    <!-- DPP Recurring -->
+                                    <div>
+                                        <h5 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 md:mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">Subscription (Recurring)</h5>
+                                        <ul class="space-y-2 md:space-y-3">
+                                            <li class="flex justify-between items-center text-xs sm:text-sm">
+                                                <span class="text-gray-600 dark:text-gray-400">Home</span>
+                                                <span class="font-semibold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.service.find(s => s.name === 'Home')?.detail.recurring.dpp ?? 0)) }}</span>
+                                            </li>
+                                            <li class="flex justify-between items-center text-xs sm:text-sm">
+                                                <span class="text-gray-600 dark:text-gray-400">NusaSelecta</span>
+                                                <span class="font-semibold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.service.find(s => s.name === 'NusaSelecta')?.detail.recurring.dpp ?? 0)) }}</span>
+                                            </li>
+                                            <li class="flex justify-between items-center text-xs sm:text-sm">
+                                                <span class="text-gray-600 dark:text-gray-400">Nusafiber</span>
+                                                <span class="font-semibold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.service.find(s => s.name === 'Nusafiber')?.detail.recurring.dpp ?? 0)) }}</span>
+                                            </li>
+                                            <li class="flex justify-between items-center text-xs sm:text-sm pt-2 md:pt-3 border-t border-gray-200 dark:border-gray-700 mt-2">
+                                                <span class="font-bold text-gray-900 dark:text-white">Total</span>
+                                                <span class="font-bold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.summary.recurring.dpp)) }}</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+
+                                    <!-- DPP  Other -->
+                                    <div>
+                                        <h5 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 md:mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">Subscription (Other)</h5>
+                                        <ul class="space-y-2 md:space-y-3">
+                                            <li class="flex justify-between items-center text-xs sm:text-sm">
+                                                <span class="text-gray-600 dark:text-gray-400">Alat</span>
+                                                <span class="font-semibold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.detail.alat.dpp)) }}</span>
+                                            </li>
+                                            <li class="flex justify-between items-center text-xs sm:text-sm">
+                                                <span class="text-gray-600 dark:text-gray-400">Setup</span>
+                                                <span class="font-semibold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.detail.setup.dpp)) }}</span>
+                                            </li>
+                                            <li class="flex justify-between items-center text-xs sm:text-sm pt-2 md:pt-3 border-t border-gray-200 dark:border-gray-700 mt-2">
+                                                <span class="font-bold text-gray-900 dark:text-white">Total</span>
+                                                <span class="font-bold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.summary.other.dpp)) }}</span>
+                                            </li>
+                                        </ul>
+                                    </div>
                                 </div>
 
                                 <!-- Deduction -->
-                                <div>
-                                    <h5 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 md:mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">Deduction (churn)</h5>
-                                    <ul class="space-y-2 md:space-y-3">
-                                        <li class="flex justify-between items-center text-xs sm:text-sm">
-                                            <span class="text-gray-600 dark:text-gray-400">MRC</span>
-                                            <span class="font-semibold text-red-500 dark:text-red-400">-{{ formatCurrency(Number(periodData.deduction?.mrc ?? 0)) }}</span>
-                                        </li>
-                                        <li class="flex justify-between items-center text-xs sm:text-sm">
-                                            <span class="text-gray-600 dark:text-gray-400">Commission</span>
-                                            <span class="font-semibold text-red-500 dark:text-red-400">-{{ formatCurrency(Number(periodData.deduction?.commission ?? 0)) }}</span>
-                                        </li>
-                                        <li class="flex justify-between items-center text-xs sm:text-sm">
-                                            <span class="text-gray-600 dark:text-gray-400">Subscription</span>
-                                            <span class="font-semibold text-red-500 dark:text-red-400">-{{ formatCurrency(Number(periodData.deduction?.subscription ?? 0)) }}</span>
-                                        </li>
-                                        <li class="pt-2 md:pt-3 border-t border-gray-200 dark:border-gray-700 mt-2">
-                                            <div class="text-[10px] uppercase font-bold text-gray-500 mb-1">Service Impact (New)</div>
-                                            <div v-for="d in periodData.deduction?.new" :key="d.name" class="flex justify-between items-center text-xs mb-1">
-                                                <span class="text-gray-500">{{ d.name }}</span>
-                                                <span class="font-medium text-red-500">-{{ d.count }}</span>
-                                            </div>
-                                        </li>
-                                    </ul>
+                                <div class="flex flex-col md:flex-col gap-4">
+                                    <div>
+                                        <h5 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 md:mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">Deduction (churn)</h5>
+                                        <ul class="space-y-2 md:space-y-3">
+                                            <li class="flex justify-between items-center text-xs sm:text-sm">
+                                                <span class="text-gray-600 dark:text-gray-400">MRC</span>
+                                                <span class="font-semibold text-red-500 dark:text-red-400">-{{ formatCurrency(Number(periodData.deduction?.mrc ?? 0)) }}</span>
+                                            </li>
+                                            <li class="flex justify-between items-center text-xs sm:text-sm">
+                                                <span class="text-gray-600 dark:text-gray-400">Commission</span>
+                                                <span class="font-semibold text-red-500 dark:text-red-400">-{{ formatCurrency(Number(periodData.deduction?.commission ?? 0)) }}</span>
+                                            </li>
+                                            <li class="flex justify-between items-center text-xs sm:text-sm">
+                                                <span class="text-gray-600 dark:text-gray-400">Subscription</span>
+                                                <span class="font-semibold text-red-500 dark:text-red-400">-{{ formatCurrency(Number(periodData.deduction?.subscription ?? 0)) }}</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <h5 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 md:mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">Service (churn)</h5>
+                                        <ul class="space-y-2 md:space-y-3">
+                                            <li v-for="d in periodData.deduction?.new" :key="d.name" class="flex justify-between items-center text-xs sm:text-sm">
+                                                <span class="text-gray-600 dark:text-gray-400">{{ d.name }}</span>
+                                                <span class="font-semibold text-red-500 dark:text-red-400">-{{ d.count }}</span>
+                                            </li>
+                                        </ul>
+                                    </div>
                                 </div>
                             </div>
                         </div>
