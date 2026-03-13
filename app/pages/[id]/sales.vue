@@ -239,9 +239,17 @@
                                             <span class="text-gray-600 dark:text-gray-400">Nusafiber</span>
                                             <span class="font-semibold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.service.find(s => s.name === 'Nusafiber')?.detail.new.dpp ?? 0)) }}</span>
                                         </li>
+                                        <li class="flex justify-between items-center text-xs sm:text-sm">
+                                            <span class="text-gray-600 dark:text-gray-400">Prorate</span>
+                                            <span class="font-semibold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.detail.prorate.dpp)) }}</span>
+                                        </li>
+                                        <li class="flex justify-between items-center text-xs sm:text-sm">
+                                            <span class="text-gray-600 dark:text-gray-400">Upgrade</span>
+                                            <span class="font-semibold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.detail.upgrade.dpp)) }}</span>
+                                        </li>
                                         <li class="flex justify-between items-center text-xs sm:text-sm pt-2 md:pt-3 border-t border-gray-200 dark:border-gray-700 mt-2">
                                             <span class="font-bold text-gray-900 dark:text-white">Total</span>
-                                            <span class="font-bold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.detail.new.dpp)) }}</span>
+                                            <span class="font-bold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.summary.new.dpp)) }}</span>
                                         </li>
                                     </ul>
                                 </div>
@@ -251,16 +259,8 @@
                                     <h5 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 md:mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">Subscription (Other)</h5>
                                     <ul class="space-y-2 md:space-y-3">
                                         <li class="flex justify-between items-center text-xs sm:text-sm">
-                                            <span class="text-gray-600 dark:text-gray-400">Prorate</span>
-                                            <span class="font-semibold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.detail.prorate.dpp)) }}</span>
-                                        </li>
-                                        <li class="flex justify-between items-center text-xs sm:text-sm">
                                             <span class="text-gray-600 dark:text-gray-400">Recurring</span>
                                             <span class="font-semibold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.detail.recurring.dpp)) }}</span>
-                                        </li>
-                                        <li class="flex justify-between items-center text-xs sm:text-sm">
-                                            <span class="text-gray-600 dark:text-gray-400">Upgrade</span>
-                                            <span class="font-semibold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.detail.upgrade.dpp)) }}</span>
                                         </li>
                                         <li class="flex justify-between items-center text-xs sm:text-sm">
                                             <span class="text-gray-600 dark:text-gray-400">Alat</span>
@@ -279,7 +279,7 @@
 
                                 <!-- Deduction -->
                                 <div>
-                                    <h5 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 md:mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">Deduction</h5>
+                                    <h5 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 md:mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">Deduction (churn)</h5>
                                     <ul class="space-y-2 md:space-y-3">
                                         <li class="flex justify-between items-center text-xs sm:text-sm">
                                             <span class="text-gray-600 dark:text-gray-400">MRC</span>

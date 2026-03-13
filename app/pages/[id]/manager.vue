@@ -458,6 +458,42 @@ const columns = computed<TableColumn<ManagerEmployeePerformance>[]>(() => [
         }
     },
     {
+        accessorKey: 'otherSubscription',
+        header: () => h('div', { class: 'text-right' }, 'Other Subscription'),
+        cell: ({ row }) => h('div', { class: 'text-right font-medium' }, formatCurrency(Number(row.original.otherSubscription))),
+        footer: () => {
+            const total = formattedRows.value.reduce((sum, row) => sum + (Number(row.otherSubscription) || 0), 0)
+            return h('div', { class: 'text-right font-bold py-3' }, formatCurrency(total))
+        }
+    },
+    {
+        accessorKey: 'otherCommission',
+        header: () => h('div', { class: 'text-right' }, 'Other Commission'),
+        cell: ({ row }) => h('div', { class: 'text-right font-medium' }, formatCurrency(Number(row.original.otherCommission))),
+        footer: () => {
+            const total = formattedRows.value.reduce((sum, row) => sum + (Number(row.otherCommission) || 0), 0)
+            return h('div', { class: 'text-right font-bold py-3' }, formatCurrency(total))
+        }
+    },
+    {
+        accessorKey: 'bonus',
+        header: () => h('div', { class: 'text-right' }, 'Bonus'),
+        cell: ({ row }) => h('div', { class: 'text-right font-medium' }, formatCurrency(Number(row.original.bonus))),
+        footer: () => {
+            const total = formattedRows.value.reduce((sum, row) => sum + (Number(row.bonus) || 0), 0)
+            return h('div', { class: 'text-right font-bold py-3' }, formatCurrency(total))
+        }
+    },
+    {
+        accessorKey: 'totalCommission',
+        header: () => h('div', { class: 'text-right' }, 'Total Commission'),
+        cell: ({ row }) => h('div', { class: 'text-right font-medium' }, formatCurrency(Number(row.original.totalCommission))),
+        footer: () => {
+            const total = formattedRows.value.reduce((sum, row) => sum + (Number(row.totalCommission) || 0), 0)
+            return h('div', { class: 'text-right font-bold py-3' }, formatCurrency(total))
+        }
+    },
+    {
         accessorKey: 'newMrc',
         header: () => h('div', { class: 'text-right' }, 'New MRC'),
         cell: ({ row }) => h('div', { class: 'text-right font-medium' }, formatCurrency(Number(row.original.newMrc))),

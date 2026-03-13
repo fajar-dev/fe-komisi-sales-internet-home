@@ -14,6 +14,21 @@ export interface CommissionDetailItem {
     dpp: string;
 }
 
+export interface summary{
+    new: {
+        dpp: string;
+        commission: string;
+    },
+    recurring: {
+        dpp: string;
+        commission: string;
+    },
+    other: {
+        dpp: string;
+        commission: string;
+    }
+}
+
 export interface CommissionServiceItem extends CommissionDetailItem {
     name: string;
     detail: {
@@ -68,6 +83,7 @@ export interface CommissionPeriodData {
     mrc: string;
     dpp: string;
     count: number;
+    summary: summary;
     detail: {
         new: CommissionDetailItem;
         prorate: CommissionDetailItem;

@@ -70,6 +70,10 @@ export interface ManagerEmployeePerformance {
     newCommission: string;
     recurringSubscription: string;
     recurringCommission: string;
+    otherSubscription: string;
+    otherCommission: string;
+    bonus: string;
+    totalCommission: string;
     managerRecurringCommission: string;
     managerRecurringCommissionPercentage: number;
     managerNewCommission: string;
