@@ -167,128 +167,162 @@
         </div>
 
         <div class="py-2 grid grid-cols-1 lg:grid-cols-2 gap-4" v-if="yearlyData">
-            <UCard>
+            <!-- Financial and Performance Trends -->
+            <div class="lg:col-span-2 grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <UCard>
+                    <template #header>
+                        <div>
+                            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+                                Target vs New Service
+                            </h3>
+                            <p class="text-xs text-gray-500">Monthly comparison of team targets vs actual achievement</p>
+                        </div>
+                    </template>
+                    <div class="h-80 w-full">
+                        <LineChart 
+                            v-if="salesTrendData.length > 0"
+                            :data="salesTrendData" 
+                            index="date" 
+                            :categories="salesCategories" 
+                            :x-formatter="(i: number) => salesTrendData[i]?.date ?? ''"
+                            :y-formatter="(tick: number) => Math.floor(tick).toString()"
+                        />
+                    </div>
+                </UCard>
+                <UCard>
+                    <template #header>
+                        <div>
+                            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+                                Commission Trend (Yearly)
+                            </h3>
+                            <p class="text-xs text-gray-500">Yearly trend of new and recurring commission income</p>
+                        </div>
+                    </template>
+                    <div class="h-80 w-full">
+                        <AreaChart 
+                            v-if="commissionTrendData.length > 0"
+                            :data="commissionTrendData" 
+                            index="date" 
+                            :categories="commissionCategories" 
+                            :x-formatter="(i: number) => commissionTrendData[i]?.date ?? ''"
+                            :y-formatter="formatCurrency"
+                        />
+                    </div>
+                </UCard>
+                <UCard>
+                    <template #header>
+                        <div>
+                            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+                                Team Achievement
+                            </h3>
+                            <p class="text-xs text-gray-500">Monthly trend of team's total commissions, subscriptions and MRC</p>
+                        </div>
+                    </template>
+                    <div class="h-80 w-full">
+                        <BarChart 
+                            v-if="teamAchievementTrendData.length > 0"
+                            :data="teamAchievementTrendData" 
+                            index="date"
+                            :orientation="Orientation.Horizontal"
+                            :stacked="true"
+                            :categories="teamAchievementCategories" 
+                            :y-axis="teamAchievementYAxis"
+                            :y-formatter="yFormatterTeam"
+                            :x-formatter="formatCurrency"
+                            :group-padding="0"
+                            :bar-padding="0.2"
+                            :radius="4"
+                        />
+                    </div>
+                </UCard>
+            </div>
+
+            <!-- Priority Chart: Commission per Sales (Full Width) -->
+            <UCard class="lg:col-span-2">
                 <template #header>
-                    <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
-                        Total Commission Composition
-                    </h3>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+                                Monthly Total Commission per Sales
+                            </h3>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Monthly trend of total commission earned by each sales team member</p>
+                        </div>
+                    </div>
                 </template>
-                 <div class="h-80 w-full flex justify-center items-center">
-                    <DonutChart
-                        :data="yearlyDonutData"
-                        :categories="yearlyDonutCategories"
-                        :value-formatter="formatCurrency"
-                    />
-                </div>
-            </UCard>
-            <UCard>
-                <template #header>
-                    <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
-                        Revenue Trend (Yearly)
-                    </h3>
-                </template>
-                <div class="h-80 w-full">
+                <div class="w-full">
                     <BarChart 
-                        :data="revenueTrendData" 
-                        index="date" 
-                        :categories="revenueCategories" 
+                        v-if="teamCommissionTrendData.length > 0"
+                        :data="teamCommissionTrendData" 
+                        :height="400"
+                        index="date"
+                        :categories="teamCategories" 
+                        :y-axis="allTeamMembers"
                         :y-formatter="formatCurrency"
-                        :y-axis="revenueYAxis"
+                        :x-formatter="yFormatterTeam"
+                        :group-padding="0"
+                        :bar-padding="0.2"
+                        :radius="4"
                     />
                 </div>
             </UCard>
-            <UCard class="col-span-1 lg:col-span-2">
+
+            <!-- MRC and Subscription side by side -->
+            <UCard class="lg:col-span-2">
                 <template #header>
-                    <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
-                        Commission Trend (Yearly)
-                    </h3>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+                                Monthly New MRC per Sales
+                            </h3>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Monthly trend of new MRC generated by each sales team member</p>
+                        </div>
+                    </div>
                 </template>
-                <div class="h-80 w-full">
-                     <AreaChart 
-                        :data="commissionTrendData" 
-                        index="date" 
-                        :categories="commissionCategories" 
+                <div class="w-full">
+                    <BarChart 
+                        v-if="teamMrcTrendData.length > 0"
+                        :data="teamMrcTrendData" 
+                        :height="400"
+                        index="date"
+                        :categories="teamCategories" 
+                        :y-axis="allTeamMembers"
                         :y-formatter="formatCurrency"
+                        :x-formatter="yFormatterTeam"
+                        :group-padding="0"
+                        :bar-padding="0.2"
+                        :radius="4"
                     />
                 </div>
             </UCard>
-            <UCard>
-                 <template #header>
-                    <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
-                        Team Performance Trend
-                    </h3>
-                </template>
-                <div class="h-80 w-full">
-                    <LineChart 
-                        :data="salesTrendData" 
-                        index="date" 
-                        :categories="salesCategories" 
-                    />
-                </div>
-            </UCard>
-            <UCard>
-                 <template #header>
-                    <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
-                        Sales Contribution (Permanent vs Probation)
-                    </h3>
-                </template>
-                <div class="h-80 w-full">
-                    <BarChart 
-                        :data="salesSourceTrendData" 
-                        index="date" 
-                        :categories="salesSourceCategories" 
-                        :y-axis="salesSourceYAxis"
-                        :stacked="true"
-                    />
-                </div>
-            </UCard>
-            <UCard>
-                 <template #header>
-                    <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
-                        Service Product Trend
-                    </h3>
-                </template>
-                <div class="h-80 w-full">
-                    <BarChart 
-                        :data="serviceTrendData" 
-                        index="date" 
-                        :categories="serviceCategories" 
-                        :y-axis="serviceYAxis"
-                        :stacked="true"
-                    />
-                </div>
-            </UCard>
-            <UCard>
+
+            <UCard class="lg:col-span-2">
                 <template #header>
-                    <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
-                        Productivity Trend (Sales/Employee)
-                    </h3>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+                                Monthly Total Subscription per Sales
+                            </h3>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Monthly trend of total subscription (New & Recurring) generated by each sales team member</p>
+                        </div>
+                    </div>
                 </template>
-                <div class="h-80 w-full">
-                    <LineChart 
-                        :data="productivityTrendData" 
-                        index="date" 
-                        :categories="productivityCategories" 
-                        :y-num-ticks="4"
+                <div class="w-full">
+                    <BarChart 
+                        v-if="teamSubscriptionTrendData.length > 0"
+                        :data="teamSubscriptionTrendData" 
+                        :height="400"
+                        index="date"
+                        :categories="teamCategories" 
+                        :y-axis="allTeamMembers"
+                        :y-formatter="formatCurrency"
+                        :x-formatter="yFormatterTeam"
+                        :group-padding="0"
+                        :bar-padding="0.2"
+                        :radius="4"
                     />
                 </div>
             </UCard>
-            <UCard class="col-span-1 lg:col-span-2">
-                <template #header>
-                    <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
-                        Commission Rate Trend (% of Revenue)
-                    </h3>
-                </template>
-                <div class="h-80 w-full">
-                    <LineChart 
-                        :data="costOfSalesTrendData" 
-                        index="date" 
-                        :categories="costOfSalesCategories" 
-                        :value-formatter="(val: number) => val + '%'"
-                        :y-num-ticks="4"
-                    />
-                </div>
-            </UCard>
+
         </div>
 
     </UContainer>
@@ -613,31 +647,61 @@ watch([selectedMonth], () => {
     updatePeriodData()
 })
 
-const revenueTrendData = computed(() => {
+const allTeamMembers = computed<string[]>(() => {
     if (!yearlyData.value) return []
-    return Object.entries(yearlyData.value.monthly).map(([month, data]) => ({
-        date: month,
-        'New Subscription': Number(data.monthlyNewSubscription),
-        'Recurring Subscription': Number(data.monthlyRecurringSubscription),
-        'New MRC': Number(data.monthlyNewMrc),
-    }))
+    const members = new Set<string>()
+    Object.values(yearlyData.value.monthly).forEach(month => {
+        month.employee?.forEach(emp => {
+            members.add(emp.name)
+        })
+    })
+    return Array.from(members)
 })
 
-const revenueCategories = {
-    'New Subscription': { name: 'New Subscription', color: '#6366f1' },
-    'Recurring Subscription': { name: 'Recurring Subscription', color: '#f97316' },
-    'New MRC': { name: 'New MRC', color: '#10b981' },
-}
+const teamCategories = computed(() => {
+    const colors = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#a855f7', '#ec4899', '#14b8a6', '#f97316', '#3b82f6', '#8b5cf6']
+    const cat: any = {}
+    allTeamMembers.value.forEach((name, i) => {
+        cat[name] = { name: name, color: colors[i % colors.length] }
+    })
+    return cat
+})
 
-const revenueYAxis = ['New Subscription', 'Recurring Subscription', 'New MRC'] as any
+const teamCommissionTrendData = computed(() => {
+    if (!yearlyData.value) return []
+    
+    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+    
+    return months.map(m => {
+        const data = yearlyData.value!.monthly[m]
+        const row: any = { date: m }
+        
+        // Initialize all members to 0 for this month
+        allTeamMembers.value.forEach(name => {
+            row[name] = 0
+        })
+        
+        // Fill in actual values if month data exists
+        if (data) {
+            data.employee?.forEach(emp => {
+                row[emp.name] = Number(emp.totalCommission)
+            })
+        }
+        return row
+    })
+})
 
 const commissionTrendData = computed(() => {
     if (!yearlyData.value) return []
-    return Object.entries(yearlyData.value.monthly).map(([month, data]) => ({
-        date: month,
-        'New Commission': Number(data.monthlyNewCommission),
-        'Recurring Commission': Number(data.monthlyRecurringCommission)
-    }))
+    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+    return months.map(m => {
+        const data = yearlyData.value!.monthly[m]
+        return {
+            date: m,
+            'New Commission': Number(data?.monthlyNewCommission || 0),
+            'Recurring Commission': Number(data?.monthlyRecurringCommission || 0)
+        }
+    })
 })
 
 const commissionCategories = {
@@ -647,109 +711,111 @@ const commissionCategories = {
 
 const salesTrendData = computed(() => {
     if (!yearlyData.value) return []
-    return Object.entries(yearlyData.value.monthly).map(([month, data]) => ({
-        date: month,
-        'Total Sales': data.sales?.total || 0,
-        'New Service': data.sales?.activity || 0
-    }))
+    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+    return months.map(m => {
+        const data = yearlyData.value!.monthly[m]
+        return {
+            date: m,
+            'Target': data?.sales?.target || 0,
+            'New Service': data?.sales?.activity || 0
+        }
+    })
 })
 
 const salesCategories = {
-    'Total Sales': { name: 'Total Sales', color: '#f59e0b' },
+    'Target': { name: 'Target', color: '#f59e0b' },
     'New Service': { name: 'New Service', color: '#ec4899' }
 }
 
 const salesSourceTrendData = computed(() => {
     if (!yearlyData.value) return []
-    return Object.entries(yearlyData.value.monthly).map(([month, data]) => ({
-        date: month,
-        'Permanent': data.sales?.Permanent || 0,
-        'Probation': data.sales?.Probation || 0
-    }))
+    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+    return months.map(m => {
+        const data = yearlyData.value!.monthly[m]
+        return {
+            date: m,
+            'Permanent': data?.sales?.Permanent || 0,
+            'Probation': data?.sales?.Probation || 0
+        }
+    })
 })
 
-const salesSourceCategories = {
-    'Permanent': { name: 'Permanent', color: '#0ea5e9' },
-    'Probation': { name: 'Probation', color: '#f59e0b' }
+const teamAchievementTrendData = computed(() => {
+    if (!yearlyData.value) return []
+    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+    return months.map(m => {
+        const data = yearlyData.value!.monthly[m]
+        return {
+            date: m,
+            'New Commission': Number(data?.monthlyNewCommission || 0),
+            'Recurring Commission': Number(data?.monthlyRecurringCommission || 0),
+            'New Subscription': Number(data?.monthlyNewSubscription || 0),
+            'New MRC': Number(data?.monthlyNewMrc || 0)
+        }
+    })
+})
+
+const teamAchievementCategories = {
+    'New Commission': { name: 'New Commission', color: '#10b981' },
+    'Recurring Commission': { name: 'Recurring Commission', color: '#3b82f6' },
+    'New Subscription': { name: 'New Subscription', color: '#f59e0b' },
+    'New MRC': { name: 'New MRC', color: '#ec4899' }
 }
 
-const serviceTrendData = computed(() => {
+const teamAchievementYAxis = ['New Commission', 'Recurring Commission', 'New Subscription', 'New MRC'] as any
+
+
+const teamMrcTrendData = computed(() => {
     if (!yearlyData.value) return []
-    return Object.entries(yearlyData.value.monthly).map(([month, data]) => {
-        const counts: Record<string, number> = { 'Home': 0, 'Nusafiber': 0, 'NusaSelecta': 0 }
+    
+    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+    
+    return months.map(m => {
+        const data = yearlyData.value!.monthly[m]
+        const row: any = { date: m }
         
-        data.employee?.forEach(emp => {
-            emp.newService?.forEach(svc => {
-                 // Simple matching, assumes service names are consistent
-                 if (svc.name === 'Home' || svc.name === 'Nusafiber' || svc.name === 'NusaSelecta') {
-                     counts[svc.name] = (counts[svc.name] || 0) + svc.count
-                 }
-            })
+        allTeamMembers.value.forEach(name => {
+            row[name] = 0
         })
         
-        return {
-            date: month,
-            ...counts
+        if (data) {
+            data.employee?.forEach(emp => {
+                row[emp.name] = Number(emp.newMrc)
+            })
         }
+        return row
     })
 })
 
-const serviceCategories = {
-    'Home': { name: 'Home', color: '#0ea5e9' },
-    'Nusafiber': { name: 'Nusafiber', color: '#a855f7' },
-    'NusaSelecta': { name: 'NusaSelecta', color: '#f97316' }
-}
-
-const salesSourceYAxis = ['Permanent', 'Probation'] as any
-const serviceYAxis = ['Home', 'Nusafiber', 'NusaSelecta'] as any
-
-const productivityTrendData = computed(() => {
+const teamSubscriptionTrendData = computed(() => {
     if (!yearlyData.value) return []
-    return Object.entries(yearlyData.value.monthly).map(([month, data]) => {
-        const headcount = data.employee?.length || 1
-        const totalSales = data.sales?.total || 0
-        return {
-            date: month,
-            'Avg Sales': Number((totalSales / headcount).toFixed(2))
+    
+    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+    
+    return months.map(m => {
+        const data = yearlyData.value!.monthly[m]
+        const row: any = { date: m }
+        
+        allTeamMembers.value.forEach(name => {
+            row[name] = 0
+        })
+        
+        if (data) {
+            data.employee?.forEach(emp => {
+                row[emp.name] = Number(emp.newSubscription || 0) + Number(emp.recurringSubscription || 0)
+            })
         }
+        return row
     })
 })
 
-const productivityCategories = {
-    'Avg Sales': { name: 'Avg Sales per Employee', color: '#14b8a6' }
+const yFormatterTeam = (i: number): string => {
+    return teamCommissionTrendData.value[i]?.date ?? ''
 }
 
-const costOfSalesTrendData = computed(() => {
-    if (!yearlyData.value) return []
-    return Object.entries(yearlyData.value.monthly).map(([month, data]) => {
-        const revenue = Number(data.monthlyNewSubscription) + Number(data.monthlyRecurringSubscription) + Number(data.monthlyNewMrc)
-        const commission = Number(data.monthlyNewCommission) + Number(data.monthlyRecurringCommission)
-        const ratio = revenue > 0 ? (commission / revenue) * 100 : 0
-        return {
-            date: month,
-            'Commission Rate': Number(ratio.toFixed(2))
-        }
-    })
-})
-
-const costOfSalesCategories = {
-    'Commission Rate': { name: 'Commission Rate (%)', color: '#f43f5e' }
+const xFormatterTeam = (tick: number): string => {
+    return formatCurrency(tick)
 }
-
-const yearlyDonutData = computed(() => {
-    if (!yearlyData.value) return []
-
-    return [
-        Number(yearlyData.value.yearlyNewCommission),
-        Number(yearlyData.value.yearlyRecurringCommission)
-    ]
-})
-
-const yearlyDonutCategories = computed(() => ({
-    'New Commission': { name: 'New Commission', color: '#10b981' }, 
-    'Recurring Commission': { name: 'Recurring Commission', color: '#3b82f6' }
-}))
-
 
 initData()
 </script>
