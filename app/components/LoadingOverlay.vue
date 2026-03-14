@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="isLoading"
-    class="absolute inset-0 bg-white/45 dark:bg-black/45 backdrop-blur-xs z-20 flex items-center justify-center"
+    class="fixed inset-0 bg-white/45 dark:bg-black/45 backdrop-blur-xs z-[9999] flex items-center justify-center"
   >
     <div class="flex items-center gap-3">
       <UIcon

@@ -51,6 +51,20 @@
         </div>
         </template>
     </UHeader>
+    <UDashboardToolbar 
+        v-show="toolbar"
+        class="mx-auto px-4 sm:px-6 lg:px-8 max-w-full px-4 sm:px-6 lg:px-25"
+        :class="{ 'hidden': !toolbar }"
+    >
+        <template #left>
+        <div id="toolbar-left" />
+        <slot name="toolbar-left" />
+        </template>
+        <template #right>
+        <div id="toolbar-right" />
+        <slot name="toolbar-right" />
+        </template>
+    </UDashboardToolbar>
 </template>
 
 <script setup lang="ts">
@@ -76,4 +90,5 @@
         type: Boolean,
         default: false
     })
+    
 </script>

@@ -1,7 +1,7 @@
 <template>
     <div class="relative min-h-screen">
         <LoadingOverlay :is-loading="isLoading" />
-        <AppHeader />
+        <AppHeader v-bind="route.meta.headerProps || {}" />
 
         <UMain>
         <slot />
@@ -17,4 +17,5 @@
 
 <script setup lang="ts">
 const { isLoading } = useLoading()
+const route = useRoute()
 </script>

@@ -5,7 +5,7 @@
         <HeroBackground/>
 
         <UContainer
-            class="max-w-md relative z-10">
+            class="relative z-10">
             <div
                 class="p-0"
             >

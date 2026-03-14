@@ -5,7 +5,7 @@ export default defineAppConfig({
       neutral: 'neutral'
     },
     container: {
-      base: 'w-full min-w-screen mx-auto px-4 sm:px-6 lg:px-25'
+      base: 'mx-auto px-4 sm:px-6 lg:px-8 max-w-full px-4 sm:px-6 lg:px-25'
     }
   }
 })

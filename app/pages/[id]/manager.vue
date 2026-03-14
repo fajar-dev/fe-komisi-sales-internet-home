@@ -91,6 +91,13 @@
                             </div>
                             <div class="flex flex-col gap-3">
                                 <span class="text-3xl font-bold text-gray-900 dark:text-white">{{ periodData.sales.percentage }}</span>
+                                <div class="h-2 w-full bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                                    <div 
+                                        class="h-full" 
+                                        :class="getAchievementBg(periodData.sales.status)"
+                                        :style="{ width: periodData.sales.percentage }"
+                                    ></div>
+                                </div>
                             </div>
                             <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 mt-6">New Service</h4>
                             <div class="flex flex-col gap-2">
@@ -370,6 +377,17 @@ const getAchievementColor = (status: string) => {
     if (s.includes('very good')) return 'font-bold text-teal-500 dark:text-teal-400'
     if (s.includes('capai target')) return 'font-bold text-green-500 dark:text-green-400'
     return 'text-primary-500 dark:text-primary-400'
+}
+
+const getAchievementBg = (status: string) => {
+    const s = status.toLowerCase()
+    if (s.includes('tidak capai') || s.includes('sp1')) return 'bg-red-500'
+    if (s.includes('average')) return 'bg-orange-500'
+    if (s.includes('bonus')) return 'bg-violet-500'
+    if (s.includes('excelent') || s.includes('excellent')) return 'bg-emerald-500'
+    if (s.includes('very good')) return 'bg-teal-500'
+    if (s.includes('capai target')) return 'bg-green-500'
+    return 'bg-primary-500'
 }
 
 const columns = computed<TableColumn<ManagerEmployeePerformance>[]>(() => [

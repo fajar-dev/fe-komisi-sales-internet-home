@@ -1,8 +1,36 @@
 import { apiService } from "./api-service"
 import type { InternalMouthlyQueryParams, InternalMouthlyResponseData, InternalPeriodQueryParams, InternalPeriodResponseData, ChurnResponseData } from "~/types/sales"
 import type { ManagerMouthlyQueryParams, ManagerMouthlyResponseData, ManagerPeriodQueryParams, ManagerPeriodResponseData } from "~/types/manager"
+import type { SalesSummaryQueryParams, SalesSummaryResponseData, ManagerSummaryResponseData } from "~/types/summary"
 
 export class CommissionService {
+    async salesSummary(params?: SalesSummaryQueryParams): Promise<SalesSummaryResponseData> {
+        try {
+            const response = await apiService.client.get(`/sales/summary`, {
+                params,
+                headers: {
+                    authorization: `Bearer ${useAuth().state.token}`
+                }
+            })
+            return response.data
+        } catch (error: any) {
+            handleServiceError(error)
+        }
+    }
+
+    async managerSummary(params?: SalesSummaryQueryParams): Promise<ManagerSummaryResponseData> {
+        try {
+            const response = await apiService.client.get(`/manager/summary`, {
+                params,
+                headers: {
+                    authorization: `Bearer ${useAuth().state.token}`
+                }
+            })
+            return response.data
+        } catch (error: any) {
+            handleServiceError(error)
+        }
+    }
     async salesCommission(employeeId: string, params?: InternalMouthlyQueryParams): Promise<InternalMouthlyResponseData> {
         try {
             const response = await apiService.client.get(`/sales/${employeeId}/commission`, {
