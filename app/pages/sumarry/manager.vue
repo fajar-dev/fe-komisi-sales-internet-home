@@ -141,6 +141,11 @@ const columns: TableColumn<ManagerSummaryItem>[] = [
         cell: ({ row }) => h('div', { class: getAchievementColor(row.original.status) }, row.original.status)
     },
     {
+        accessorKey: 'newService',
+        header: () => h('div', { class: 'text-center' }, 'New Service'),
+        cell: ({ row }) => h('div', { class: 'text-center font-bold' }, row.original.newService)
+    },
+    {
         accessorKey: 'percentage',
         header: () => h('div', { class: 'text-center' }, 'Achv'),
         cell: ({ row }) => h('div', { class: 'text-center font-bold text-sm' }, row.original.percentage)

@@ -1,7 +1,7 @@
 import { apiService } from "./api-service"
 import type { InternalMouthlyQueryParams, InternalMouthlyResponseData, InternalPeriodQueryParams, InternalPeriodResponseData, ChurnResponseData } from "~/types/sales"
 import type { ManagerMouthlyQueryParams, ManagerMouthlyResponseData, ManagerPeriodQueryParams, ManagerPeriodResponseData } from "~/types/manager"
-import type { SalesSummaryQueryParams, SalesSummaryResponseData, ManagerSummaryResponseData } from "~/types/summary"
+import type { SalesSummaryQueryParams, SalesSummaryResponseData, ManagerSummaryResponseData, InvoiceSummaryResponseData, ChurnSummaryResponseData } from "~/types/summary"
 
 export class CommissionService {
     async salesSummary(params?: SalesSummaryQueryParams): Promise<SalesSummaryResponseData> {
@@ -90,6 +90,34 @@ export class CommissionService {
     async managerCommissionPeriod(employeeId: string, params?: ManagerPeriodQueryParams): Promise<ManagerPeriodResponseData> {
         try {
             const response = await apiService.client.get(`/manager/${employeeId}/commission/period`, {
+                params,
+                headers: {
+                    authorization: `Bearer ${useAuth().state.token}`
+                }
+            })
+            return response.data
+        } catch (error: any) {
+            handleServiceError(error)
+        }
+    }
+
+    async invoiceSummary(params?: SalesSummaryQueryParams): Promise<InvoiceSummaryResponseData> {
+        try {
+            const response = await apiService.client.get(`/invoice/summary`, {
+                params,
+                headers: {
+                    authorization: `Bearer ${useAuth().state.token}`
+                }
+            })
+            return response.data
+        } catch (error: any) {
+            handleServiceError(error)
+        }
+    }
+
+    async churnSummary(params?: SalesSummaryQueryParams): Promise<ChurnSummaryResponseData> {
+        try {
+            const response = await apiService.client.get(`/churn/summary`, {
                 params,
                 headers: {
                     authorization: `Bearer ${useAuth().state.token}`
