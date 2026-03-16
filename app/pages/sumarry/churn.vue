@@ -3,6 +3,8 @@
         <ClientOnly>
             <Teleport v-if="isMounted" to="#toolbar-left">
                 <div class="flex items-center gap-1">
+                    <UButton icon="i-lucide-arrow-left" size="lg" color="neutral" variant="ghost" to="/"/>
+                    <USeparator orientation="vertical" class="h-7 w-2" />
                     <UButton to="/sumarry/sales" icon="i-heroicons-users" :variant="$route.path === '/sumarry/sales' ? 'soft' : 'ghost'" :color="$route.path === '/sumarry/sales' ? 'primary' : 'neutral'" size="sm">Account Manager</UButton>
                     <USeparator orientation="vertical" class="h-7 w-2" />
                     <UButton to="/sumarry/manager" icon="i-heroicons-presentation-chart-line" :variant="$route.path === '/sumarry/manager' ? 'soft' : 'ghost'" :color="$route.path === '/sumarry/manager' ? 'primary' : 'neutral'" size="sm">Sales Manager</UButton>
@@ -95,8 +97,12 @@ const UAvatar = resolveComponent('UAvatar')
 const NuxtLink = resolveComponent('NuxtLink')
 const UButton = resolveComponent('UButton')
 const UBadge = resolveComponent('UBadge')
+const USwitch = resolveComponent('USwitch')
+const UIcon = resolveComponent('UIcon')
+const UTooltip = resolveComponent('UTooltip')
 
 const { setLoading } = useLoading()
+const toast = useToast()
 const commissionService = new CommissionService()
 const additionalService = new AdditionalService()
 
@@ -279,62 +285,38 @@ const columns: TableColumn<ChurnSummaryItem>[] = [
     {
         accessorKey: 'reason',
         header: 'Reason',
-        cell: ({ row }) => h('div', { class: 'text-xs italic text-gray-500 max-w-[200px] truncate', title: row.original.reason }, row.original.reason)
-    },
-    {
-        accessorKey: 'mrc',
-        header: ({ column }) => {
-            const isSorted = column.getIsSorted()
-            return h(UButton, {
-                color: 'neutral',
-                variant: 'ghost',
-                label: 'MRC',
-                icon: isSorted ? (isSorted === 'asc' ? 'i-lucide-arrow-up-narrow-wide' : 'i-lucide-arrow-down-wide-narrow') : 'i-lucide-arrow-up-down',
-                onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
-                class: 'ml-auto'
-            })
-        },
-        cell: ({ row }) => h('div', { class: 'text-right font-medium' }, formatCurrency(row.original.mrc))
-    },
-    {
-        accessorKey: 'commissionPercentage',
-        header: ({ column }) => {
-            const isSorted = column.getIsSorted()
-            return h(UButton, {
-                color: 'neutral',
-                variant: 'ghost',
-                label: 'Comm %',
-                icon: isSorted ? (isSorted === 'asc' ? 'i-lucide-arrow-up-narrow-wide' : 'i-lucide-arrow-down-wide-narrow') : 'i-lucide-arrow-up-down',
-                onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
-                class: 'ml-auto'
-            })
-        },
-        cell: ({ row }) => h('div', { class: 'text-right' }, `${row.original.commissionPercentage}%`)
-    },
-    {
-        accessorKey: 'commission',
-        header: ({ column }) => {
-            const isSorted = column.getIsSorted()
-            return h(UButton, {
-                color: 'neutral',
-                variant: 'ghost',
-                label: 'Comm Value',
-                icon: isSorted ? (isSorted === 'asc' ? 'i-lucide-arrow-up-narrow-wide' : 'i-lucide-arrow-down-wide-narrow') : 'i-lucide-arrow-up-down',
-                onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
-                class: 'ml-auto'
-            })
-        },
-        cell: ({ row }) => h('div', { class: 'text-right font-medium text-primary-600 dark:text-primary-400' }, formatCurrency(row.original.commission))
+        cell: ({ row }) => h('div', { class: 'text-xs italic text-gray-500 whitespace-normal min-w-[200px] max-w-[400px]', title: row.original.reason }, row.original.reason)
     },
     {
         accessorKey: 'isApproved',
-        header: 'Status',
-        cell: ({ row }) => h('div', { class: 'text-center' }, [
-            h(UBadge, {
-                color: row.original.isApproved === 1 ? 'success' : 'neutral',
-                variant: 'subtle',
-                size: 'sm'
-            }, () => row.original.isApproved === 1 ? 'Approved' : 'Pending')
+        header: () => h('div', { class: 'flex items-center justify-center gap-1' }, [
+            h('span', 'Approve'),
+            h(UTooltip, {
+                text: 'Approve to deduct commission',
+                delayDuration: 0
+            }, () => h(UIcon, {
+                name: 'i-lucide-info',
+                class: 'size-4 text-gray-400 cursor-help'
+            }))
+        ]),
+        cell: ({ row }) => h('div', { class: 'flex justify-center' }, [
+            h(USwitch, {
+                modelValue: row.original.isApproved === 1,
+                'onUpdate:modelValue': async (val: boolean) => {
+                    try {
+                        const response = await commissionService.updateChurnStatus(row.original.customerServiceId, val)
+                        if (response && response.success) {
+                            row.original.isApproved = val ? 1 : 0
+                        }
+                    } catch (error) {
+                        toast.add({
+                            title: 'Error',
+                            description: 'Failed to update status',
+                            color: 'error'
+                        })
+                    }
+                }
+            })
         ])
     }
 ]

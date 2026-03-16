@@ -6,7 +6,7 @@ import type { SalesSummaryQueryParams, SalesSummaryResponseData, ManagerSummaryR
 export class CommissionService {
     async salesSummary(params?: SalesSummaryQueryParams): Promise<SalesSummaryResponseData> {
         try {
-            const response = await apiService.client.get(`/sales/summary`, {
+            const response = await apiService.client.get(`/summary/sales`, {
                 params,
                 headers: {
                     authorization: `Bearer ${useAuth().state.token}`
@@ -20,7 +20,7 @@ export class CommissionService {
 
     async managerSummary(params?: SalesSummaryQueryParams): Promise<ManagerSummaryResponseData> {
         try {
-            const response = await apiService.client.get(`/manager/summary`, {
+            const response = await apiService.client.get(`/summary/manager`, {
                 params,
                 headers: {
                     authorization: `Bearer ${useAuth().state.token}`
@@ -103,7 +103,7 @@ export class CommissionService {
 
     async invoiceSummary(params?: SalesSummaryQueryParams): Promise<InvoiceSummaryResponseData> {
         try {
-            const response = await apiService.client.get(`/invoice/summary`, {
+            const response = await apiService.client.get(`/summary/invoice`, {
                 params,
                 headers: {
                     authorization: `Bearer ${useAuth().state.token}`
@@ -117,8 +117,38 @@ export class CommissionService {
 
     async churnSummary(params?: SalesSummaryQueryParams): Promise<ChurnSummaryResponseData> {
         try {
-            const response = await apiService.client.get(`/churn/summary`, {
+            const response = await apiService.client.get(`/summary/churn`, {
                 params,
+                headers: {
+                    authorization: `Bearer ${useAuth().state.token}`
+                }
+            })
+            return response.data
+        } catch (error: any) {
+            handleServiceError(error)
+        }
+    }
+
+    async updateChurnStatus(id: number, isApproved: boolean): Promise<any> {
+        try {
+            const response = await apiService.client.post(`/summary/churn/${id}`, {
+                isApproved
+            }, {
+                headers: {
+                    authorization: `Bearer ${useAuth().state.token}`
+                }
+            })
+            return response.data
+        } catch (error: any) {
+            handleServiceError(error)
+        }
+    }
+
+    async updateInvoiceStatus(ai: number, isApproved: boolean): Promise<any> {
+        try {
+            const response = await apiService.client.post(`/summary/invoice/${ai}`, {
+                isApproved
+            }, {
                 headers: {
                     authorization: `Bearer ${useAuth().state.token}`
                 }

@@ -81,6 +81,7 @@ export interface InvoiceSummaryItem {
     category: string;
     referralType: string;
     referralFee: string;
+    isApproved: number;
 }
 
 export interface InvoiceSummaryResponseData {

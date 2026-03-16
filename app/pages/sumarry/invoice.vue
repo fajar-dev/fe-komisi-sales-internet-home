@@ -3,6 +3,8 @@
         <ClientOnly>
             <Teleport v-if="isMounted" to="#toolbar-left">
                 <div class="flex items-center gap-1">
+                    <UButton icon="i-lucide-arrow-left" size="lg" color="neutral" variant="ghost" to="/"/>
+                    <USeparator orientation="vertical" class="h-7 w-2" />
                     <UButton to="/sumarry/sales" icon="i-heroicons-users" :variant="$route.path === '/sumarry/sales' ? 'soft' : 'ghost'" :color="$route.path === '/sumarry/sales' ? 'primary' : 'neutral'" size="sm">Account Manager</UButton>
                     <USeparator orientation="vertical" class="h-7 w-2" />
                     <UButton to="/sumarry/manager" icon="i-heroicons-presentation-chart-line" :variant="$route.path === '/sumarry/manager' ? 'soft' : 'ghost'" :color="$route.path === '/sumarry/manager' ? 'primary' : 'neutral'" size="sm">Sales Manager</UButton>
@@ -94,8 +96,12 @@ definePageMeta({
 const UAvatar = resolveComponent('UAvatar')
 const NuxtLink = resolveComponent('NuxtLink')
 const UButton = resolveComponent('UButton')
+const USwitch = resolveComponent('USwitch')
+const UIcon = resolveComponent('UIcon')
+const UTooltip = resolveComponent('UTooltip')
 
 const { setLoading } = useLoading()
+const toast = useToast()
 const commissionService = new CommissionService()
 const additionalService = new AdditionalService()
 
@@ -385,6 +391,42 @@ const columns: TableColumn<InvoiceSummaryItem>[] = [
             })
         },
         cell: ({ row }) => h('div', { class: 'text-center' }, row.original.lateMonth)
+    },
+    {
+        accessorKey: 'isApproved',
+        header: () => h('div', { class: 'flex items-center justify-center gap-1' }, [
+            h('span', 'Approve'),
+            h(UTooltip, {
+                text: 'Approve to pay late commission',
+                delayDuration: 0
+            }, () => h(UIcon, {
+                name: 'i-lucide-info',
+                class: 'size-4 text-gray-400 cursor-help'
+            }))
+        ]),
+        cell: ({ row }) => {
+            if (row.original.lateMonth <= 0) return null
+            
+            return h('div', { class: 'flex justify-center' }, [
+                h(USwitch, {
+                    modelValue: row.original.isApproved === 1,
+                    'onUpdate:modelValue': async (val: boolean) => {
+                        try {
+                            const response = await commissionService.updateInvoiceStatus(row.original.ai, val)
+                            if (response && response.success) {
+                                row.original.isApproved = val ? 1 : 0
+                            }
+                        } catch (error) {
+                            toast.add({
+                                title: 'Error',
+                                description: 'Failed to update status',
+                                color: 'error'
+                            })
+                        }
+                    }
+                })
+            ])
+        }
     }
 ]
 

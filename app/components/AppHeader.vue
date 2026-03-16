@@ -80,6 +80,11 @@
 
     const items = computed<DropdownMenuItem[]>(() => [
         {
+        label: 'Summary Dashboard',
+        icon: 'i-lucide-bar-chart-4',
+        onSelect: () => navigateTo('/sumarry/sales')
+        },
+        {
         label: 'Sign Out',
         icon: 'i-lucide-log-out',
         onSelect: handleLogout
