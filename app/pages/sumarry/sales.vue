@@ -68,6 +68,8 @@ definePageMeta({
 const UAvatar = resolveComponent('UAvatar')
 const UBadge = resolveComponent('UBadge')
 const NuxtLink = resolveComponent('NuxtLink')
+const UDropdownMenu = resolveComponent('UDropdownMenu')
+const UButton = resolveComponent('UButton')
 
 const { setLoading } = useLoading()
 const commissionService = new CommissionService()
@@ -79,6 +81,16 @@ const selectedMonth = ref(new Date().getMonth() + 1)
 const yearItems = ref<number[]>([])
 const hideValues = ref(true)
 const isMounted = ref(false)
+
+const getRowItems = (row: any) => [
+    [
+        {
+            label: 'View Details',
+            icon: 'i-heroicons-user-20-solid',
+            onSelect: () => useRouter().push(`/${row.original.employeeId}/sales`)
+        }
+    ]
+]
 
 const monthSelect = [
     { id: 1, label: 'January' },
@@ -191,7 +203,35 @@ const columns: TableColumn<SalesSummaryItem>[] = [
         accessorKey: 'totalCommission',
         header: () => h('div', { class: 'text-right' }, 'Total Commission'),
         cell: ({ row }) => h('div', { class: 'text-right font-bold text-primary-600 dark:text-primary-400' }, formatCurrency(row.original.totalCommission))
+    },
+    {
+    id: 'actions',
+    meta: {
+      class: {
+        td: 'text-right'
+      }
+    },
+    cell: ({ row }) => {
+      return h(
+        UDropdownMenu,
+        {
+          content: {
+            align: 'end'
+          },
+          items: getRowItems(row),
+          'aria-label': 'Actions dropdown'
+        },
+        () =>
+          h(UButton, {
+            icon: 'i-lucide-ellipsis-vertical',
+            color: 'neutral',
+            variant: 'ghost',
+            'aria-label': 'Actions dropdown'
+          })
+      )
     }
+  }
+
 ]
 
 const fetchSummary = async () => {

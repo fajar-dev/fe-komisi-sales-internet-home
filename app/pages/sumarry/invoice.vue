@@ -76,6 +76,13 @@
                 </UCard>
             </div>
         </UContainer>
+        <ReferralEditModal
+            v-model:open="isReferralModalOpen"
+            :ai="selectedInvoiceAi"
+            :referral-fee="selectedInvoiceFee"
+            :referral-type="selectedInvoiceType"
+            @success="fetchSummary"
+        />
     </div>
 </template>
 
@@ -99,11 +106,34 @@ const UButton = resolveComponent('UButton')
 const USwitch = resolveComponent('USwitch')
 const UIcon = resolveComponent('UIcon')
 const UTooltip = resolveComponent('UTooltip')
+const UDropdownMenu = resolveComponent('UDropdownMenu')
 
 const { setLoading } = useLoading()
 const toast = useToast()
 const commissionService = new CommissionService()
 const additionalService = new AdditionalService()
+
+const isReferralModalOpen = ref(false)
+const selectedInvoiceAi = ref<number | null>(null)
+const selectedInvoiceFee = ref(0)
+const selectedInvoiceType = ref<string | null>(null)
+
+const openReferralModal = (row: any) => {
+    selectedInvoiceAi.value = row.ai
+    selectedInvoiceFee.value = Number(row.referralFee)
+    selectedInvoiceType.value = row.referralType
+    isReferralModalOpen.value = true
+}
+
+const getRowItems = (row: any) => [
+    [
+        {
+            label: 'Edit Referral',
+            icon: 'i-heroicons-pencil-square-20-solid',
+            onSelect: () => openReferralModal(row.original)
+        }
+    ]
+]
 
 const table = useTemplateRef('table')
 const summaryData = ref<InvoiceSummaryItem[]>([])
@@ -426,6 +456,28 @@ const columns: TableColumn<InvoiceSummaryItem>[] = [
                     }
                 })
             ])
+        }
+    },
+    {
+        id: 'actions',
+        cell: ({ row }) => {
+            return h(
+                UDropdownMenu,
+                {
+                    content: {
+                        align: 'end'
+                    },
+                    items: getRowItems(row),
+                    'aria-label': 'Actions dropdown'
+                },
+                () =>
+                    h(UButton, {
+                        icon: 'i-lucide-ellipsis-vertical',
+                        color: 'neutral',
+                        variant: 'ghost',
+                        'aria-label': 'Actions dropdown'
+                    })
+            )
         }
     }
 ]

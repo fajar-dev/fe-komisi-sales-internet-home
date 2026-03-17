@@ -158,4 +158,17 @@ export class CommissionService {
             handleServiceError(error)
         }
     }
+
+    async updateReferralInvoice(ai: number, data: { referralFee: number, referralType: string }): Promise<any> {
+        try {
+            const response = await apiService.client.put(`/summary/invoice/${ai}`, data, {
+                headers: {
+                    authorization: `Bearer ${useAuth().state.token}`
+                }
+            })
+            return response.data
+        } catch (error: any) {
+            handleServiceError(error)
+        }
+    }
 }
