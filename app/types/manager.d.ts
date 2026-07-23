@@ -34,7 +34,7 @@ export interface ManagerPeriodQueryParams {
 }
 
 export interface ManagerEmployeeAchievement {
-    activity: number;
+    newAchievement: number;
     type: string;
     status: string;
 }
@@ -47,7 +47,7 @@ export interface ManagerEmployeeNewService {
 }
 
 export interface CreateManagerEmployeeAchievement {
-    activity: number;
+    newAchievement: number;
     type: string;
     status: string;
 }
@@ -92,7 +92,7 @@ export interface ManagerSalesSummary {
     Permanent: number;
     Probation: number;
     total: number;
-    activity: number;
+    newAchievement: number;
     percentage: string;
     status: string;
     target: number;
@@ -115,4 +115,61 @@ export interface ManagerPeriodResponseData {
     success: boolean;
     message: string;
     data: ManagerPeriodData;
+}
+// Invoice langsung SM (CRO/CS/jualan SM sendiri) — SE-002
+export interface ManagerInvoiceItem {
+    ai: number;
+    invoiceDate: string;
+    invoiceDueDate: string;
+    paidDate: string;
+    lateMonth: number;
+    month: number;
+    dpp: string;
+    mrc: string;
+    lineRental: string;
+    recurringRemainder: string;
+    newSubscription: string;
+    customerServiceId: number;
+    customerId: string;
+    customerName: string;
+    customerCompany: string;
+    customerServiceAccount: string;
+    serviceId: string;
+    serviceName: string;
+    salesId: string;
+    isAdjustment: number | boolean;
+    type: string;
+    smCommission: number;
+    smCommissionPercentage: number;
+}
+
+export interface ManagerInvoiceGroup {
+    count: number;
+    commission: string;
+    dpp: string;
+    mrc: string;
+    data: ManagerInvoiceItem[];
+}
+
+export interface ManagerInvoiceData {
+    startPeriod: string;
+    endPeriod: string;
+    status: string;
+    recurringRate: number;
+    count: number;
+    commission: string;
+    dpp: string;
+    mrc: string;
+    new: ManagerInvoiceGroup;
+    upgrade: ManagerInvoiceGroup;
+    prorate: ManagerInvoiceGroup;
+    recurring: ManagerInvoiceGroup;
+    alat: ManagerInvoiceGroup;
+    setup: ManagerInvoiceGroup;
+}
+
+export interface ManagerInvoiceResponseData {
+    success: boolean;
+    message: string;
+    data: ManagerInvoiceData;
 }

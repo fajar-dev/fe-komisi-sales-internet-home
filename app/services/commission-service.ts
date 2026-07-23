@@ -1,6 +1,6 @@
 import { apiService } from "./api-service"
 import type { InternalMouthlyQueryParams, InternalMouthlyResponseData, InternalPeriodQueryParams, InternalPeriodResponseData, ChurnResponseData } from "~/types/sales"
-import type { ManagerMouthlyQueryParams, ManagerMouthlyResponseData, ManagerPeriodQueryParams, ManagerPeriodResponseData } from "~/types/manager"
+import type { ManagerMouthlyQueryParams, ManagerMouthlyResponseData, ManagerPeriodQueryParams, ManagerPeriodResponseData, ManagerInvoiceResponseData } from "~/types/manager"
 import type { SalesSummaryQueryParams, SalesSummaryResponseData, ManagerSummaryResponseData, InvoiceSummaryResponseData, ChurnSummaryResponseData } from "~/types/summary"
 
 export class CommissionService {
@@ -76,6 +76,21 @@ export class CommissionService {
     async managerCommission(employeeId: string, params?: ManagerMouthlyQueryParams): Promise<ManagerMouthlyResponseData> {
         try {
             const response = await apiService.client.get(`/manager/${employeeId}/commission`, {
+                params,
+                headers: {
+                    authorization: `Bearer ${useAuth().state.token}`
+                }
+            })
+            return response.data
+        } catch (error: any) {
+            handleServiceError(error)
+        }
+    }
+
+    // Invoice langsung SM (CRO/CS/jualan SM sendiri) — komisi hanya recurring (SE-002)
+    async managerInvoice(employeeId: string, params?: ManagerPeriodQueryParams): Promise<ManagerInvoiceResponseData> {
+        try {
+            const response = await apiService.client.get(`/manager/${employeeId}/invoice`, {
                 params,
                 headers: {
                     authorization: `Bearer ${useAuth().state.token}`

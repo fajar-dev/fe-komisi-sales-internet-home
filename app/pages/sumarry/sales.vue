@@ -156,7 +156,7 @@ const columns: TableColumn<SalesSummaryItem>[] = [
     },
     {
         accessorKey: 'newService',
-        header: () => h('div', { class: 'text-center' }, 'New Service'),
+        header: () => h('div', { class: 'text-center' }, 'New Achievement'),
         cell: ({ row }) => h('div', { class: 'text-center font-bold' }, row.original.newService)
     },
     {

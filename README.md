@@ -1,60 +1,49 @@
-# Nuxt Starter Template
+# Komisi Sales — Frontend Dashboard
 
-[![Nuxt UI](https://img.shields.io/badge/Made%20with-Nuxt%20UI-00DC82?logo=nuxt&labelColor=020420)](https://ui.nuxt.com)
+Dashboard web (PWA) untuk **komisi Account Manager (Sales) & Manager Area** lini bisnis Internet Home Nusanet. Dibangun dengan **Nuxt 4 + Nuxt UI v4**, berjalan sebagai SPA dan terhubung ke [backend API Komisi Sales](../komisi-sales).
 
-Use this template to get started with [Nuxt UI](https://ui.nuxt.com) quickly.
+## Fitur
 
-- [Live demo](https://starter-template.nuxt.dev/)
-- [Documentation](https://ui.nuxt.com/docs/getting-started/installation/nuxt)
+- 🔐 Login via **Employee ID/password** atau **Google Sign-In**, dengan refresh token otomatis.
+- 👥 **Beranda tim** — daftar bawahan berdasarkan hierarki pegawai.
+- 📊 **Dashboard Sales** — pencapaian aktivitas, bonus, breakdown komisi per tipe & service, invoice, churn.
+- 🧑‍💼 **Dashboard Manager** — komisi overriding (New & Recurring), performa tim, rincian per anggota.
+- 🛠️ **Halaman Admin** (`/sumarry/*`) — rekap komisi semua sales/manager, approval invoice telat & churn, edit referral.
+- 📝 **Adjustment** — pengajuan koreksi data dengan alur approval.
+- 📱 **PWA** — installable, cache aset, auto-update.
 
-<a href="https://starter-template.nuxt.dev/" target="_blank">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://ui.nuxt.com/assets/templates/nuxt/starter-dark.png">
-    <source media="(prefers-color-scheme: light)" srcset="https://ui.nuxt.com/assets/templates/nuxt/starter-light.png">
-    <img alt="Nuxt Starter Template" src="https://ui.nuxt.com/assets/templates/nuxt/starter-light.png">
-  </picture>
-</a>
+## Teknologi
 
-> The starter template for Vue is on https://github.com/nuxt-ui-templates/starter-vue.
-
-## Quick Start
-
-```bash [Terminal]
-npm create nuxt@latest -- -t github:nuxt-ui-templates/starter
-```
-
-## Deploy your own
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-name=starter&repository-url=https%3A%2F%2Fgithub.com%2Fnuxt-ui-templates%2Fstarter&demo-image=https%3A%2F%2Fui.nuxt.com%2Fassets%2Ftemplates%2Fnuxt%2Fstarter-dark.png&demo-url=https%3A%2F%2Fstarter-template.nuxt.dev%2F&demo-title=Nuxt%20Starter%20Template&demo-description=A%20minimal%20template%20to%20get%20started%20with%20Nuxt%20UI.)
+Nuxt 4 (SPA) · Nuxt UI v4 · nuxt-charts · axios · zod · @vite-pwa/nuxt · nuxt-vue3-google-signin · pnpm
 
 ## Setup
-
-Make sure to install the dependencies:
 
 ```bash
 pnpm install
 ```
 
-## Development Server
-
-Start the development server on `http://localhost:3000`:
+Buat file `.env`:
 
 ```bash
-pnpm dev
+API_BASE_URL=http://localhost:4000/api
+GOOGLE_CLIENT_ID=xxx.apps.googleusercontent.com
 ```
 
-## Production
-
-Build the application for production:
+## Menjalankan
 
 ```bash
-pnpm build
+pnpm dev        # http://localhost:3000
+pnpm build      # build produksi
+pnpm preview    # preview build
+pnpm lint       # eslint
+pnpm typecheck  # vue-tsc
 ```
 
-Locally preview production build:
+## Dokumentasi
 
-```bash
-pnpm preview
-```
+- **[DOCUMENTATION.md](DOCUMENTATION.md)** — arsitektur, routing, auth, lapisan service, PWA, konvensi.
+- **[Backend Komisi Sales](../komisi-sales)** — API, aturan komisi, dan alur data.
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+---
+
+PT. Media Antar Nusa (Nusanet)

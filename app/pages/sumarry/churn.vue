@@ -246,7 +246,7 @@ const columns: TableColumn<ChurnSummaryItem>[] = [
                 target: '_blank',
                 class: 'font-medium text-blue-500 hover:underline'
             }, row.original.customerServiceAccount),
-            h('span', { class: 'text-xs text-gray-400 truncate max-w-[200px]' }, row.original.serviceName)
+            h('span', { class: 'text-xs text-gray-400 whitespace-nowrap' }, row.original.serviceName)
         ])
     },
     {

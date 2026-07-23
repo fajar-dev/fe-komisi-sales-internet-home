@@ -63,7 +63,7 @@ export interface CommissionData {
     achievement: {
         status: string;
         motivation: string;
-        activity: number;
+        newAchievement: number;
         type?: string;
     };
     deduction?: {
@@ -96,7 +96,7 @@ export interface CommissionPeriodData {
     achievement: {
         status: string;
         motivation: string;
-        activity: number;
+        newAchievement: number;
         type?: string;
     };
     deduction?: {
@@ -131,6 +131,8 @@ export interface InvoiceSalesData {
     invoiceDate: string;
     dpp: number | string;
     newSubscription: number | string;
+    lineRental?: string;
+    recurringRemainder?: string;
     paidDate: string;
     month: number;
     lateMonth: number;

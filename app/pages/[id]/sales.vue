@@ -44,7 +44,7 @@
                             <div class="space-y-3 md:space-y-4">
                                 <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                                     <UIcon name="i-heroicons-chart-bar" class="w-4 h-4 sm:w-5 sm:h-5 text-primary-500" />
-                                    New Service Activity
+                                    New Achievement
                                 </h4>
                                 <div class="grid grid-cols-1 gap-2 md:gap-3">
                                     <div v-for="(svc, index) in ['Home', 'NusaSelecta', 'Nusafiber']" :key="svc" 
@@ -355,7 +355,7 @@
                     <template #header>
                         <div class="lg:flex items-center justify-between">
                             <div>
-                                <h2>Monthly New Service Count</h2>
+                                <h2>Monthly New Achievement Count</h2>
                                 <p class="text-sm text-gray-500 dark:text-gray-400">
                                     Number of new services per product type
                                 </p>
@@ -805,6 +805,18 @@ const getColumns = (key: string): TableColumn<any>[] => {
             }
         },
         {
+            accessorKey: 'lineRental',
+            header: 'Line Rental',
+            cell: ({ row }) => {
+                const amount = Number(row.original.lineRental ?? 0)
+                if (amount === 0) return h('span', { class: 'text-xs text-gray-400' }, '-')
+                return h('span', { class: 'text-xs text-gray-500' }, new Intl.NumberFormat('id-ID', {
+                    style: 'currency',
+                    currency: 'IDR'
+                }).format(amount))
+            }
+        },
+        {
             header: 'Month Period',
             cell: ({ row }) => {
                 return h('span', { class: 'font-medium text-center' }, row.original.month)
@@ -1077,7 +1089,7 @@ const fetchSalesData = async () => {
                 total: formatCurrency(Number(mData?.totalCommission ?? 0)),
                 commission: formatCurrency(Number(mData?.commission ?? 0)),
                 bonus: formatCurrency(Number(mData?.bonus ?? 0)),
-                count: mData?.achievement?.activity ?? 0,
+                count: mData?.achievement?.newAchievement ?? 0,
                 dpp: formatCurrency(Number(mData?.dpp ?? 0)),
                 mrc: formatCurrency(Number(mData?.mrc ?? 0)),
                 startPeriod: startPeriod,

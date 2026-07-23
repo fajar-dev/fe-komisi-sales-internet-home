@@ -39,16 +39,16 @@
                         :ui="{ avatar: 'h-14 w-14' }"
                     >
                         <div class="min-w-0">
-                        <h1 class="text-md font-medium text-gray-900 dark:text-white truncate">
+                        <h1 class="text-md font-medium text-gray-900 dark:text-white">
                             {{ card.name }}
                         </h1>
 
-                        <p class="text-xs text-gray-500 dark:text-gray-400 truncate mb-1">
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">
                             {{ card.employeeId }} - {{ card.organizationName }}
                         </p>
 
-                        <p class="text-sm text-gray-600 dark:text-gray-300 truncate">
-                            {{ card.position }} 
+                        <p class="text-sm text-gray-600 dark:text-gray-300">
+                            {{ card.position }}
                         </p>
                         </div>
                     </UUser>

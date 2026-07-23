@@ -99,9 +99,9 @@
                                     ></div>
                                 </div>
                             </div>
-                            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 mt-6">New Service</h4>
+                            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 mt-6">New Achievement</h4>
                             <div class="flex flex-col gap-2">
-                                <span class="text-3xl font-bold text-gray-900 dark:text-white">{{ periodData.sales.activity }}</span>
+                                <span class="text-3xl font-bold text-gray-900 dark:text-white">{{ periodData.sales.newAchievement }}</span>
                             </div>
                         </div>
                     </div>
@@ -141,7 +141,7 @@
                 >
                     <template #expanded="{ row }">
                          <div class="p-4 bg-gray-50 dark:bg-gray-800/50">
-                            <h4 class="text-sm font-bold text-gray-700 dark:text-gray-200 mb-3">New Service</h4>
+                            <h4 class="text-sm font-bold text-gray-700 dark:text-gray-200 mb-3">New Achievement per Service</h4>
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                 <div v-for="(service, index) in row.original.newService" :key="index" class="p-3 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
                                     <div class="flex justify-between items-start mb-2">
@@ -166,6 +166,38 @@
             </UCard>
         </div>
 
+        <!-- SM Invoice: invoice langsung SM/CRO/CS — komisi hanya dari recurring (SE-002) -->
+        <div class="py-2">
+            <UCard>
+                <template #header>
+                    <div class="flex items-center justify-between gap-3">
+                        <div>
+                            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+                                SM Invoice
+                            </h3>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                                Invoice langsung SM / CRO / CS — hanya komisi recurring ({{ smInvoiceData?.recurringRate ?? '-' }}%), tidak memengaruhi achievement
+                            </p>
+                        </div>
+                        <div class="text-right" v-if="smInvoiceData">
+                            <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">SM Recurring Commission</p>
+                            <span class="text-xl font-bold text-primary-500 dark:text-primary-400">{{ formatCurrency(Number(smInvoiceData.commission)) }}</span>
+                        </div>
+                    </div>
+                </template>
+                <UTabs :items="smTabItems" class="w-full">
+                    <template #content="{ item }">
+                        <UTable
+                            sticky
+                            :data="getSmTabData(item.key)"
+                            :columns="smInvoiceColumns"
+                            class="flex-1 max-h-[600px]"
+                        />
+                    </template>
+                </UTabs>
+            </UCard>
+        </div>
+
         <div class="py-2 grid grid-cols-1 lg:grid-cols-2 gap-4" v-if="yearlyData">
             <!-- Financial and Performance Trends -->
             <div class="lg:col-span-2 grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -173,7 +205,7 @@
                     <template #header>
                         <div>
                             <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
-                                Target vs New Service
+                                Target vs New Achievement
                             </h3>
                             <p class="text-xs text-gray-500">Monthly comparison of team targets vs actual achievement</p>
                         </div>
@@ -334,7 +366,7 @@ import { EmployeeService } from '~/services/employee-service'
 import { AdditionalService } from '~/services/additional-service'
 import type { Employee } from '~/types/employee'
 import type { TableColumn } from '@nuxt/ui'
-import type { ManagerPeriodData, ManagerEmployeePerformance, ManagerMouthlyResponseData } from '~/types/manager'
+import type { ManagerPeriodData, ManagerEmployeePerformance, ManagerMouthlyResponseData, ManagerInvoiceData, ManagerInvoiceItem } from '~/types/manager'
 const { setLoading } = useLoading()
 import { resolveComponent, computed, ref, watch, h } from 'vue'
 import { DateFormatter, getLocalTimeZone, parseDate } from '@internationalized/date'
@@ -466,11 +498,11 @@ const columns = computed<TableColumn<ManagerEmployeePerformance>[]>(() => [
             }
         },
     {
-        accessorKey: 'activity',
-        header: 'New Service',
-        cell: ({ row }) => h('div', { class: 'text-center font-medium' }, row.original.achievement.activity),
+        accessorKey: 'newAchievement',
+        header: 'New Achievement',
+        cell: ({ row }) => h('div', { class: 'text-center font-medium' }, row.original.achievement.newAchievement),
         footer: () => {
-            const total = formattedRows.value.reduce((sum, row) => sum + (Number(row.achievement.activity) || 0), 0)
+            const total = formattedRows.value.reduce((sum, row) => sum + (Number(row.achievement.newAchievement) || 0), 0)
             return h('div', { class: 'text-center font-bold py-3' }, total)
         }
     },
@@ -594,6 +626,95 @@ const updatePeriodData = () => {
     }
 }
 
+// SM Invoice: invoice langsung SM/CRO/CS (SE-002) — komisi hanya recurring
+const smInvoiceData = ref<ManagerInvoiceData | null>(null)
+
+const smTabItems = computed(() => [
+    { label: `Recurring (${smInvoiceData.value?.recurring?.data?.length || 0})`, key: 'recurring' },
+    { label: `New (${smInvoiceData.value?.new?.data?.length || 0})`, key: 'new' },
+    { label: `Prorate (${smInvoiceData.value?.prorate?.data?.length || 0})`, key: 'prorate' },
+    { label: `Upgrade (${smInvoiceData.value?.upgrade?.data?.length || 0})`, key: 'upgrade' },
+    { label: `Alat (${smInvoiceData.value?.alat?.data?.length || 0})`, key: 'alat' },
+    { label: `Setup (${smInvoiceData.value?.setup?.data?.length || 0})`, key: 'setup' }
+])
+
+const getSmTabData = (key: string): ManagerInvoiceItem[] => {
+    return (smInvoiceData.value as any)?.[key]?.data || []
+}
+
+const smInvoiceColumns: TableColumn<ManagerInvoiceItem>[] = [
+    {
+        accessorKey: 'paidDate',
+        header: 'Paid Date',
+        cell: ({ row }) => {
+            if (!row.original.paidDate) return '-'
+            return new Date(row.original.paidDate).toLocaleString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })
+        }
+    },
+    {
+        header: 'Service',
+        cell: ({ row }) => h('div', { class: 'flex flex-col min-w-[120px]' }, [
+            h('a', {
+                href: `https://isx.nusa.net.id/v2/customer/service/${row.original.customerServiceId}/detail`,
+                target: '_blank',
+                class: 'text-blue-500 hover:underline font-semibold text-sm break-all'
+            }, row.original.customerServiceAccount),
+            h('span', { class: 'text-xs text-gray-500 dark:text-gray-400 whitespace-normal break-words line-clamp-2' }, row.original.serviceName)
+        ])
+    },
+    {
+        header: 'Customer',
+        cell: ({ row }) => h('div', { class: 'flex flex-col min-w-[120px]' }, [
+            h('a', {
+                href: `https://isx.nusa.net.id/customer.php?custId=${row.original.customerId}&pid=profile`,
+                target: '_blank',
+                class: 'text-blue-500 hover:underline font-semibold text-sm'
+            }, row.original.customerId),
+            h('span', { class: 'text-xs text-gray-500 dark:text-gray-400 whitespace-normal break-words line-clamp-2' }, row.original.customerName)
+        ])
+    },
+    {
+        header: 'Sales ID',
+        cell: ({ row }) => h('span', { class: 'text-xs font-medium' }, row.original.salesId || '-')
+    },
+    {
+        accessorKey: 'dpp',
+        header: () => h('div', { class: 'text-right' }, 'DPP'),
+        cell: ({ row }) => h('div', { class: 'text-right font-medium' }, formatCurrency(Number(row.original.dpp)))
+    },
+    {
+        accessorKey: 'lineRental',
+        header: () => h('div', { class: 'text-right' }, 'Line Rental'),
+        cell: ({ row }) => h('div', { class: 'text-right text-xs text-gray-500' }, formatCurrency(Number(row.original.lineRental)))
+    },
+    {
+        header: 'Month Period',
+        cell: ({ row }) => h('div', { class: 'text-center font-medium' }, row.original.month)
+    },
+    {
+        id: 'smCommission',
+        header: () => h('div', { class: 'text-right' }, 'SM Commission'),
+        cell: ({ row }) => h('div', { class: 'flex flex-col items-end' }, [
+            h('span', { class: 'text-xs font-medium bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-gray-600 dark:text-gray-300 mb-1' },
+                Intl.NumberFormat('id-ID', { style: 'decimal' }).format(row.original.smCommissionPercentage) + '%'),
+            h('span', { class: 'text-sm font-bold text-gray-900 dark:text-white' }, formatCurrency(Number(row.original.smCommission)))
+        ])
+    }
+]
+
+const fetchSmInvoice = async () => {
+    try {
+        const commissionService = new CommissionService()
+        const response = await commissionService.managerInvoice(route.params.id as string, {
+            month: selectedMonth.value?.id ?? (new Date().getMonth() + 1),
+            year: year.value
+        })
+        smInvoiceData.value = response.data
+    } catch (error) {
+        smInvoiceData.value = null
+    }
+}
+
 const fetchData = async () => {
     try {
         const employeeService = new EmployeeService()
@@ -633,7 +754,10 @@ const initData = async () => {
             }
         }
         
-        await fetchData()
+        await Promise.all([
+            fetchData(),
+            fetchSmInvoice()
+        ])
     } finally {
         setLoading(false)
     }
@@ -641,10 +765,12 @@ const initData = async () => {
 
 watch([year], () => {
     fetchData()
+    fetchSmInvoice()
 })
 
 watch([selectedMonth], () => {
     updatePeriodData()
+    fetchSmInvoice()
 })
 
 const allTeamMembers = computed<string[]>(() => {
@@ -717,14 +843,14 @@ const salesTrendData = computed(() => {
         return {
             date: m,
             'Target': data?.sales?.target || 0,
-            'New Service': data?.sales?.activity || 0
+            'New Achievement': data?.sales?.newAchievement || 0
         }
     })
 })
 
 const salesCategories = {
     'Target': { name: 'Target', color: '#f59e0b' },
-    'New Service': { name: 'New Service', color: '#ec4899' }
+    'New Achievement': { name: 'New Achievement', color: '#ec4899' }
 }
 
 const salesSourceTrendData = computed(() => {
