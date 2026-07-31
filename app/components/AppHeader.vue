@@ -16,7 +16,16 @@
             role="group"
             class="flex items-center gap-1"
         >
-        
+            <UButton
+                :icon="isCapturing ? 'i-lucide-loader-2' : 'i-lucide-message-square-warning'"
+                size="sm"
+                color="neutral"
+                variant="ghost"
+                :loading="isCapturing"
+                :disabled="isCapturing"
+                @click="triggerFeedback()"
+            />
+
             <NotificationsSlideover />
 
             <UColorModeButton size="sm" />
@@ -47,10 +56,13 @@
                         }"
                     />
                 </UDropdownMenu>
-                </ClientOnly>
+            </ClientOnly>
         </div>
         </template>
     </UHeader>
+
+    <FeedbackModal v-model:open="isOpen" />
+
     <UDashboardToolbar 
         v-show="toolbar"
         class="mx-auto px-4 sm:px-6 lg:px-8 max-w-full px-4 sm:px-6 lg:px-25"
@@ -69,8 +81,12 @@
 
 <script setup lang="ts">
     import type { DropdownMenuItem } from '@nuxt/ui'
+    import { useFeedback } from '~/composables/useFeedback'
+
     const { state: authState, service: authService } = useAuth()
     const toast = useToast()
+
+    const { triggerFeedback, isCapturing, isOpen } = useFeedback()
 
     const handleLogout = async () => {
         await authService.logout()
@@ -95,5 +111,4 @@
         type: Boolean,
         default: false
     })
-    
 </script>
