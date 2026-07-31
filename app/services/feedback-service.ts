@@ -23,7 +23,9 @@ export class FeedbackService {
     const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null
     const response = await apiService.client.post('/feedback', formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        // Jangan set Content-Type manual untuk FormData — browser perlu
+        // menyisipkan boundary otomatis, kalau di-override manual body multipart jadi rusak.
+        'Content-Type': undefined,
         ...(token ? { Authorization: `Bearer ${token}` } : {})
       }
     })
