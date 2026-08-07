@@ -4,7 +4,7 @@
         <CommissionHeader
             :employee="employee"
             v-model:year="year"
-            :year-items="items"
+            :year-items="yearItems"
             subtitle="Monthly sales commission heatmap 🔥"
         />
 
@@ -20,20 +20,17 @@
                             <span class="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400">Period:</span>
                             <div class="flex items-center gap-2 text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
                                 <span class="text-sm sm:text-base md:text-md">
-                                    {{ df.format(parseDate(periodData.startPeriod).toDate(getLocalTimeZone())) }} - 
-                                    {{ df.format(parseDate(periodData.endPeriod).toDate(getLocalTimeZone())) }}
+                                    {{ formatDate(periodData.startDate) }} - {{ formatDate(periodData.endDate) }}
                                 </span>
                             </div>
                         </div>
                         <div class="text-left md:text-right flex flex-col w-full md:w-auto">
-                            <div>
-                                <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1 md:mb-2 text-left md:text-right">
-                                    Grand Total Commission
-                                </p>
-                                <span class="text-2xl sm:text-3xl md:text-4xl font-bold text-primary-500 dark:text-primary-400">
-                                    {{ formatCurrency(Number(periodData.totalCommission)) }}
-                                </span>
-                            </div>
+                            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1 md:mb-2 text-left md:text-right">
+                                Grand Total Commission
+                            </p>
+                            <span class="text-2xl sm:text-3xl md:text-4xl font-bold text-primary-500 dark:text-primary-400">
+                                {{ formatCurrency(periodData.total.commission + periodData.bonus) }}
+                            </span>
                         </div>
                     </div>
 
@@ -47,28 +44,14 @@
                                     New Service Activity
                                 </h4>
                                 <div class="grid grid-cols-1 gap-2 md:gap-3">
-                                    <div v-for="(svc, index) in ['Home', 'NusaSelecta', 'Nusafiber']" :key="svc" 
-                                        :class="[
-                                            'p-3 md:p-4 rounded-lg md:rounded-xl border flex justify-between items-center transition-all',
-                                            svc === 'Home' ? 'bg-sky-50 dark:bg-sky-900/10 border-sky-100 dark:border-sky-800' : 
-                                            svc === 'NusaSelecta' ? 'bg-orange-50 dark:bg-orange-900/10 border-orange-100 dark:border-orange-800' : 
-                                            'bg-purple-50 dark:bg-purple-900/10 border-purple-100 dark:border-purple-800'
-                                        ]">
-                                        <div class="flex items-center gap-2 md:gap-3">
-                                            <span :class="[
-                                                'text-sm font-semibold',
-                                                svc === 'Home' ? 'text-sky-700 dark:text-sky-300' : 
-                                                svc === 'NusaSelecta' ? 'text-orange-700 dark:text-orange-300' : 
-                                                'text-purple-700 dark:text-purple-300'
-                                            ]">{{ svc }}</span>
-                                        </div>
-                                        <span :class="[
-                                            'text-lg sm:text-xl font-bold',
-                                            svc === 'Home' ? 'text-sky-900 dark:text-sky-100' : 
-                                            svc === 'NusaSelecta' ? 'text-orange-900 dark:text-orange-100' : 
-                                            'text-purple-900 dark:text-purple-100'
-                                        ]">
-                                            {{ periodData.service.find(s => s.name === svc)?.detail.new.count ?? 0 }}
+                                    <div
+                                        v-for="group in serviceGroupOrder"
+                                        :key="group"
+                                        :class="['p-3 md:p-4 rounded-lg md:rounded-xl border flex justify-between items-center transition-all', groupColor[group]!.bg]"
+                                    >
+                                        <span :class="['text-sm font-semibold', groupColor[group]!.text]">{{ group }}</span>
+                                        <span :class="['text-lg sm:text-xl font-bold', groupColor[group]!.textStrong]">
+                                            {{ periodData.byServiceGroup[group]?.new.count ?? 0 }}
                                         </span>
                                     </div>
                                 </div>
@@ -81,73 +64,45 @@
                                     Category Summary
                                 </h4>
                                 <div class="grid grid-cols-2 gap-2 md:gap-3 h-full content-start">
-                                    <div v-for="cat in [
-                                        { label: 'New', count: periodData.detail.new.count, color: 'primary' },
-                                        { label: 'Recurring', count: periodData.detail.recurring.count, color: 'orange' },
-                                        { label: 'Prorate', count: periodData.detail.prorate.count, color: 'purple' },
-                                        { label: 'Upgrade', count: periodData.detail.upgrade.count, color: 'indigo' },
-                                        { label: 'Alat', count: periodData.detail.alat.count, color: 'pink' },
-                                        { label: 'Setup', count: periodData.detail.setup.count, color: 'teal' }
-                                    ]" :key="cat.label" 
-                                    :class="[
-                                        'flex justify-between items-center p-2 md:p-3 rounded-lg md:rounded-xl border transition-colors',
-                                        cat.color === 'primary' ? 'bg-primary-50 dark:bg-primary-900/10 border-primary-100 dark:border-primary-800' :
-                                        cat.color === 'orange' ? 'bg-orange-50 dark:bg-orange-900/10 border-orange-100 dark:border-orange-800' :
-                                        cat.color === 'purple' ? 'bg-purple-50 dark:bg-purple-900/10 border-purple-100 dark:border-purple-800' :
-                                        cat.color === 'indigo' ? 'bg-indigo-50 dark:bg-indigo-900/10 border-indigo-100 dark:border-indigo-800' :
-                                        cat.color === 'pink' ? 'bg-pink-50 dark:bg-pink-900/10 border-pink-100 dark:border-pink-800' :
-                                        'bg-teal-50 dark:bg-teal-900/10 border-teal-100 dark:border-teal-800'
-                                    ]">
-                                        <span :class="[
-                                            'text-xs font-medium uppercase',
-                                            cat.color === 'primary' ? 'text-primary-600 dark:text-primary-400' :
-                                            cat.color === 'orange' ? 'text-orange-600 dark:text-orange-400' :
-                                            cat.color === 'purple' ? 'text-purple-600 dark:text-purple-400' :
-                                            cat.color === 'indigo' ? 'text-indigo-600 dark:text-indigo-400' :
-                                            cat.color === 'pink' ? 'text-pink-600 dark:text-pink-400' :
-                                            'text-teal-600 dark:text-teal-400'
-                                        ]">{{ cat.label }}</span>
-                                        <span :class="[
-                                            'text-sm font-bold px-2 py-0.5 rounded bg-white/50 dark:bg-black/20',
-                                            cat.color === 'primary' ? 'text-primary-700 dark:text-primary-300' :
-                                            cat.color === 'orange' ? 'text-orange-700 dark:text-orange-300' :
-                                            cat.color === 'purple' ? 'text-purple-700 dark:text-purple-300' :
-                                            cat.color === 'indigo' ? 'text-indigo-700 dark:text-indigo-300' :
-                                            cat.color === 'pink' ? 'text-pink-700 dark:text-pink-300' :
-                                            'text-teal-700 dark:text-teal-300'
-                                        ]">{{ cat.count }}</span>
+                                    <div
+                                        v-for="cat in categoryCards"
+                                        :key="cat.label"
+                                        :class="['flex justify-between items-center p-2 md:p-3 rounded-lg md:rounded-xl border transition-colors', cat.color.bg]"
+                                    >
+                                        <span :class="['text-xs font-medium uppercase', cat.color.text]">{{ cat.label }}</span>
+                                        <span :class="['text-sm font-bold px-2 py-0.5 rounded bg-white/50 dark:bg-black/20', cat.color.textStrong]">{{ cat.count }}</span>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Col 3: Achievement -->
-                            <div class="space-y-3 md:space-y-4 flex flex-col" v-if="periodData.achievement">
+                            <div class="space-y-3 md:space-y-4 flex flex-col">
                                 <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                                     <UIcon name="i-heroicons-trophy" class="w-4 h-4 sm:w-5 sm:h-5 text-primary-500" />
                                     Achievement
                                 </h4>
-                                <div class="p-4 md:p-5 rounded-xl md:rounded-2xl border border-gray-200 dark:border-gray-800"
-                                    :class="getAchievementColor(periodData.achievement.status).replace('text-', 'border-').replace('dark:text-', 'dark:border-').replace('500', '200').replace('400', '800')">
+                                <div class="p-4 md:p-5 rounded-xl md:rounded-2xl border border-gray-200 dark:border-gray-800">
                                     <div class="flex justify-between items-start mb-4 md:mb-6">
                                         <div class="flex flex-col gap-2 md:gap-3">
                                             <div>
                                                 <p class="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400 mb-1 md:mb-1.5 tracking-wide">Status</p>
-                                                <span :class="['text-xs sm:text-sm font-bold uppercase px-2 md:px-2.5 py-0.5 md:py-1 rounded-md border bg-gray-50 dark:bg-gray-800', getAchievementColor(periodData.achievement.status).replace('text-', 'border-').replace('dark:text-', 'dark:border-') + ' ' + getAchievementColor(periodData.achievement.status)]">
-                                                    {{ periodData.achievement.status }}
+                                                <span :class="['text-xs sm:text-sm font-bold uppercase px-2 md:px-2.5 py-0.5 md:py-1 rounded-md border bg-gray-50 dark:bg-gray-800', getAchievementColor(periodData.achievementStatus)]">
+                                                    {{ periodData.achievementStatus }}
                                                 </span>
                                             </div>
                                             <div>
-                                                <p class="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400 mb-1 tracking-wide">Type</p>
-                                                <span class="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white">
-                                                    {{ periodData.achievement.type ?? '-' }}
-                                                </span>
+                                                <p class="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400 mb-1 tracking-wide">Employment Status</p>
+                                                <span class="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white">{{ periodData.status ?? '-' }}</span>
+                                            </div>
+                                            <div>
+                                                <p class="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400 mb-1 tracking-wide">Activity</p>
+                                                <span class="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white">{{ periodData.activityCount }}</span>
                                             </div>
                                         </div>
                                     </div>
-                                    
                                     <div class="pt-3 md:pt-4 border-t border-gray-100 dark:border-gray-800">
                                         <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-300 italic font-medium leading-relaxed">
-                                            "{{ periodData.achievement.motivation }}"
+                                            "{{ periodData.motivation }}"
                                         </p>
                                     </div>
                                 </div>
@@ -161,175 +116,24 @@
                                 Financial Breakdown
                             </h4>
                             <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-6 gap-4 md:gap-6 p-4 md:p-5 rounded-xl md:rounded-2xl border border-gray-200 dark:border-gray-800">
-                                <!-- Earnings -->
-                                <div>
-                                    <h5 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 md:mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">Commission</h5>
+                                <div v-for="box in financialBoxes" :key="box.title">
+                                    <h5 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 md:mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">{{ box.title }}</h5>
                                     <ul class="space-y-2 md:space-y-3">
-                                        <li class="flex justify-between items-center text-xs sm:text-sm">
-                                            <span class="text-gray-600 dark:text-gray-400">New</span>
-                                            <span class="font-semibold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.detail.new.commission)) }}</span>
+                                        <li v-for="row in box.rows" :key="row.label" class="flex justify-between items-center text-xs sm:text-sm">
+                                            <span class="text-gray-600 dark:text-gray-400">{{ row.label }}</span>
+                                            <span :class="['font-semibold', box.negative ? 'text-red-500 dark:text-red-400' : 'text-gray-900 dark:text-white']">
+                                                {{ box.negative ? '-' : '' }}{{ box.isCount ? row.value : formatCurrency(row.value) }}
+                                            </span>
                                         </li>
-                                        <li class="flex justify-between items-center text-xs sm:text-sm">
-                                            <span class="text-gray-600 dark:text-gray-400">Prorate</span>
-                                            <span class="font-semibold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.detail.prorate.commission)) }}</span>
-                                        </li>
-                                        <li class="flex justify-between items-center text-xs sm:text-sm">
-                                            <span class="text-gray-600 dark:text-gray-400">Recurring</span>
-                                            <span class="font-semibold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.detail.recurring.commission)) }}</span>
-                                        </li>
-                                        <li class="flex justify-between items-center text-xs sm:text-sm">
-                                            <span class="text-gray-600 dark:text-gray-400">Upgrade</span>
-                                            <span class="font-semibold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.detail.upgrade.commission)) }}</span>
-                                        </li>
-                                        <li class="flex justify-between items-center text-xs sm:text-sm">
-                                            <span class="text-gray-600 dark:text-gray-400">Alat</span>
-                                            <span class="font-semibold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.detail.alat.commission)) }}</span>
-                                        </li>
-                                        <li class="flex justify-between items-center text-xs sm:text-sm">
-                                            <span class="text-gray-600 dark:text-gray-400">Setup</span>
-                                            <span class="font-semibold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.detail.setup.commission)) }}</span>
-                                        </li>
-                                        <li class="flex justify-between items-center text-xs sm:text-sm">
-                                            <span class="text-gray-600 dark:text-gray-400">Bonus</span>
-                                            <span class="font-semibold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.bonus)) }}</span>
-                                        </li>
-                                        <li class="flex justify-between items-center text-xs sm:text-sm pt-2 md:pt-3 border-t border-gray-200 dark:border-gray-700 mt-2">
+                                        <li v-if="box.total !== undefined" class="flex justify-between items-center text-xs sm:text-sm pt-2 md:pt-3 border-t border-gray-200 dark:border-gray-700 mt-2">
                                             <span class="font-bold text-gray-900 dark:text-white">Total</span>
-                                            <span class="font-bold text-primary-600 dark:text-primary-400">{{ formatCurrency(Number(periodData.totalCommission)) }}</span>
+                                            <span class="font-bold text-primary-600 dark:text-primary-400">{{ formatCurrency(box.total) }}</span>
                                         </li>
                                     </ul>
-                                </div>
-
-                                <!-- MRC -->
-                                <div>
-                                    <h5 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 md:mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">MRC (New)</h5>
-                                    <ul class="space-y-2 md:space-y-3">
-                                        <li class="flex justify-between items-center text-xs sm:text-sm">
-                                            <span class="text-gray-600 dark:text-gray-400">Home</span>
-                                            <span class="font-semibold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.service.find(s => s.name === 'Home')?.detail.new.mrc ?? 0)) }}</span>
-                                        </li>
-                                        <li class="flex justify-between items-center text-xs sm:text-sm">
-                                            <span class="text-gray-600 dark:text-gray-400">NusaSelecta</span>
-                                            <span class="font-semibold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.service.find(s => s.name === 'NusaSelecta')?.detail.new.mrc ?? 0)) }}</span>
-                                        </li>
-                                        <li class="flex justify-between items-center text-xs sm:text-sm">
-                                            <span class="text-gray-600 dark:text-gray-400">Nusafiber</span>
-                                            <span class="font-semibold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.service.find(s => s.name === 'Nusafiber')?.detail.new.mrc ?? 0)) }}</span>
-                                        </li>
-                                        <li class="flex justify-between items-center text-xs sm:text-sm pt-2 md:pt-3 border-t border-gray-200 dark:border-gray-700 mt-2">
-                                            <span class="font-bold text-gray-900 dark:text-white">Total</span>
-                                            <span class="font-bold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.detail.new.mrc)) }}</span>
-                                        </li>
-                                    </ul>
-                                </div>
-
-                                <!-- DPP New -->
-                                <div>
-                                    <h5 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 md:mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">Subscription (New)</h5>
-                                    <ul class="space-y-2 md:space-y-3">
-                                        <li class="flex justify-between items-center text-xs sm:text-sm">
-                                            <span class="text-gray-600 dark:text-gray-400">Home</span>
-                                            <span class="font-semibold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.service.find(s => s.name === 'Home')?.detail.new.dpp ?? 0)) }}</span>
-                                        </li>
-                                        <li class="flex justify-between items-center text-xs sm:text-sm">
-                                            <span class="text-gray-600 dark:text-gray-400">NusaSelecta</span>
-                                            <span class="font-semibold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.service.find(s => s.name === 'NusaSelecta')?.detail.new.dpp ?? 0)) }}</span>
-                                        </li>
-                                        <li class="flex justify-between items-center text-xs sm:text-sm">
-                                            <span class="text-gray-600 dark:text-gray-400">Nusafiber</span>
-                                            <span class="font-semibold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.service.find(s => s.name === 'Nusafiber')?.detail.new.dpp ?? 0)) }}</span>
-                                        </li>
-                                        <li class="flex justify-between items-center text-xs sm:text-sm">
-                                            <span class="text-gray-600 dark:text-gray-400">Prorate</span>
-                                            <span class="font-semibold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.detail.prorate.dpp)) }}</span>
-                                        </li>
-                                        <li class="flex justify-between items-center text-xs sm:text-sm">
-                                            <span class="text-gray-600 dark:text-gray-400">Upgrade</span>
-                                            <span class="font-semibold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.detail.upgrade.dpp)) }}</span>
-                                        </li>
-                                        <li class="flex justify-between items-center text-xs sm:text-sm pt-2 md:pt-3 border-t border-gray-200 dark:border-gray-700 mt-2">
-                                            <span class="font-bold text-gray-900 dark:text-white">Total</span>
-                                            <span class="font-bold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.summary.new.dpp)) }}</span>
-                                        </li>
-                                    </ul>
-                                </div>
-
-                                <!-- DPP Recurring -->
-                                <div>
-                                    <h5 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 md:mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">Subscription (Recurring)</h5>
-                                    <ul class="space-y-2 md:space-y-3">
-                                        <li class="flex justify-between items-center text-xs sm:text-sm">
-                                            <span class="text-gray-600 dark:text-gray-400">Home</span>
-                                            <span class="font-semibold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.service.find(s => s.name === 'Home')?.detail.recurring.dpp ?? 0)) }}</span>
-                                        </li>
-                                        <li class="flex justify-between items-center text-xs sm:text-sm">
-                                            <span class="text-gray-600 dark:text-gray-400">NusaSelecta</span>
-                                            <span class="font-semibold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.service.find(s => s.name === 'NusaSelecta')?.detail.recurring.dpp ?? 0)) }}</span>
-                                        </li>
-                                        <li class="flex justify-between items-center text-xs sm:text-sm">
-                                            <span class="text-gray-600 dark:text-gray-400">Nusafiber</span>
-                                            <span class="font-semibold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.service.find(s => s.name === 'Nusafiber')?.detail.recurring.dpp ?? 0)) }}</span>
-                                        </li>
-                                        <li class="flex justify-between items-center text-xs sm:text-sm pt-2 md:pt-3 border-t border-gray-200 dark:border-gray-700 mt-2">
-                                            <span class="font-bold text-gray-900 dark:text-white">Total</span>
-                                            <span class="font-bold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.summary.recurring.dpp)) }}</span>
-                                        </li>
-                                    </ul>
-                                </div>
-
-                                <!-- DPP  Other -->
-                                <div>
-                                    <h5 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 md:mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">Subscription (Other)</h5>
-                                    <ul class="space-y-2 md:space-y-3">
-                                        <li class="flex justify-between items-center text-xs sm:text-sm">
-                                            <span class="text-gray-600 dark:text-gray-400">Alat</span>
-                                            <span class="font-semibold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.detail.alat.dpp)) }}</span>
-                                        </li>
-                                        <li class="flex justify-between items-center text-xs sm:text-sm">
-                                            <span class="text-gray-600 dark:text-gray-400">Setup</span>
-                                            <span class="font-semibold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.detail.setup.dpp)) }}</span>
-                                        </li>
-                                        <li class="flex justify-between items-center text-xs sm:text-sm pt-2 md:pt-3 border-t border-gray-200 dark:border-gray-700 mt-2">
-                                            <span class="font-bold text-gray-900 dark:text-white">Total</span>
-                                            <span class="font-bold text-gray-900 dark:text-white">{{ formatCurrency(Number(periodData.summary.other.dpp)) }}</span>
-                                        </li>
-                                    </ul>
-                                </div>
-
-                                <!-- Deduction -->
-                                <div class="flex flex-col md:flex-col gap-4">
-                                    <div>
-                                        <h5 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 md:mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">Deduction (churn)</h5>
-                                        <ul class="space-y-2 md:space-y-3">
-                                            <li class="flex justify-between items-center text-xs sm:text-sm">
-                                                <span class="text-gray-600 dark:text-gray-400">MRC</span>
-                                                <span class="font-semibold text-red-500 dark:text-red-400">-{{ formatCurrency(Number(periodData.deduction?.mrc ?? 0)) }}</span>
-                                            </li>
-                                            <li class="flex justify-between items-center text-xs sm:text-sm">
-                                                <span class="text-gray-600 dark:text-gray-400">Commission</span>
-                                                <span class="font-semibold text-red-500 dark:text-red-400">-{{ formatCurrency(Number(periodData.deduction?.commission ?? 0)) }}</span>
-                                            </li>
-                                            <li class="flex justify-between items-center text-xs sm:text-sm">
-                                                <span class="text-gray-600 dark:text-gray-400">Subscription</span>
-                                                <span class="font-semibold text-red-500 dark:text-red-400">-{{ formatCurrency(Number(periodData.deduction?.subscription ?? 0)) }}</span>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                    <div>
-                                        <h5 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 md:mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">Service (churn)</h5>
-                                        <ul class="space-y-2 md:space-y-3">
-                                            <li v-for="d in periodData.deduction?.new" :key="d.name" class="flex justify-between items-center text-xs sm:text-sm">
-                                                <span class="text-gray-600 dark:text-gray-400">{{ d.name }}</span>
-                                                <span class="font-semibold text-red-500 dark:text-red-400">-{{ d.count }}</span>
-                                            </li>
-                                        </ul>
-                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    
                 </template>
             </UPageCard>
         </div>
@@ -338,142 +142,123 @@
             <UCard>
                 <UTabs :items="tabItems" class="w-full">
                     <template #content="{ item }">
-                        <UTable 
-                            sticky 
-                            :data="getTabData(item.key)" 
-                            :columns="getColumns(item.key)" 
-                            class="flex-1 max-h-[800px] [&_tr:has(.commission-zero)]:bg-yellow-50 dark:[&_tr:has(.commission-zero)]:bg-yellow-950/20 [&_tr:has(.row-deleted)]:bg-red-50 dark:[&_tr:has(.row-deleted)]:bg-red-950/20" 
+                        <UTable
+                            sticky
+                            :data="getTabData(item.key)"
+                            :columns="getColumns(item.key)"
+                            class="flex-1 max-h-[800px] [&_tr:has(.commission-zero)]:bg-yellow-50 dark:[&_tr:has(.commission-zero)]:bg-yellow-950/20"
                         />
                     </template>
                 </UTabs>
             </UCard>
         </div>
-        
+
         <div class="py-2">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
                 <UCard class="lg:col-span-12">
                     <template #header>
-                        <div class="lg:flex items-center justify-between">
-                            <div>
-                                <h2>Monthly New Service Count</h2>
-                                <p class="text-sm text-gray-500 dark:text-gray-400">
-                                    Number of new services per product type
-                                </p>
-                            </div>
-                        </div>
+                        <h2>Monthly New Service Count</h2>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Number of new services per product type</p>
                     </template>
-
                     <BarChart
-                    v-if="monthlyServiceData.length > 0"
-                    :data="monthlyServiceData"
-                    index="date"
-                    :categories="serviceChart"
-                    :y-axis="serviceKeys"
-                    y-label="Count"
-                    :x-num-ticks="4"
-                    :y-num-ticks="4"
-                    :x-formatter="xFormatterTotalCommission"
-                    :y-grid-line="true"
-                    :height="320"
-                    :legend-position="LegendPosition.TopRight"
-                    :rounded-corners="4"
+                        v-if="monthlyServiceData.length > 0"
+                        :data="monthlyServiceData"
+                        index="date"
+                        :categories="serviceChart"
+                        :y-axis="serviceKeys"
+                        y-label="Count"
+                        :x-num-ticks="4"
+                        :y-num-ticks="4"
+                        :x-formatter="xFormatterMonth"
+                        :y-grid-line="true"
+                        :height="320"
+                        :legend-position="LegendPosition.TopRight"
+                        :rounded-corners="4"
                     />
                 </UCard>
 
                 <UCard class="lg:col-span-6">
-                     <template #header>
+                    <template #header>
                         <h2>Monthly MRC</h2>
-                         <p class="text-sm text-gray-500 dark:text-gray-400">Total MRC generated per month</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Total MRC generated per month</p>
                     </template>
-                     <LineChart
+                    <LineChart
                         v-if="monthlyMrcData.length > 0"
                         :data="monthlyMrcData"
                         index="date"
                         :categories="serviceChart"
                         :y-axis="serviceKeys"
                         y-label="MRC"
-                         :x-num-ticks="4"
+                        :x-num-ticks="4"
                         :y-num-ticks="4"
-                         :y-grid-line="true"
-                         :y-formatter="yFormatterCommission"
-                         :x-formatter="xFormatterTotalCommission"
-                         :curve-type="CurveType.MonotoneX"
-                         :height="320"
+                        :y-grid-line="true"
+                        :y-formatter="formatCurrency"
+                        :x-formatter="xFormatterMonth"
+                        :curve-type="CurveType.MonotoneX"
+                        :height="320"
                         :legend-position="LegendPosition.TopRight"
-                     />
+                    />
                 </UCard>
 
                 <UCard class="lg:col-span-6">
-                     <template #header>
+                    <template #header>
                         <h2>Monthly New Subscription</h2>
-                         <p class="text-sm text-gray-500 dark:text-gray-400">Total New Subscription (DPP) generated per month</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Total new subscription generated per month</p>
                     </template>
-                     <LineChart
-                        v-if="monthlyDppData.length > 0"
-                        :data="monthlyDppData"
+                    <LineChart
+                        v-if="monthlySubscriptionData.length > 0"
+                        :data="monthlySubscriptionData"
                         index="date"
                         :categories="serviceChart"
                         :y-axis="serviceKeys"
                         y-label="Subscription"
-                         :x-num-ticks="4"
+                        :x-num-ticks="4"
                         :y-num-ticks="4"
-                         :y-grid-line="true"
-                         :y-formatter="yFormatterCommission"
-                         :x-formatter="xFormatterTotalCommission"
-                         :curve-type="CurveType.MonotoneX"
-                         :height="320"
+                        :y-grid-line="true"
+                        :y-formatter="formatCurrency"
+                        :x-formatter="xFormatterMonth"
+                        :curve-type="CurveType.MonotoneX"
+                        :height="320"
                         :legend-position="LegendPosition.TopRight"
-                     />
+                    />
                 </UCard>
 
                 <UCard class="lg:col-span-8">
                     <template #header>
-                    <div class="lg:flex items-center justify-between">
-                        <div>
-                        <h2>Monthly Commission Trend</h2>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">
-                            Stacked view of commission by type
-                        </p>
+                        <div class="lg:flex items-center justify-between">
+                            <div>
+                                <h2>Monthly Commission Trend</h2>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Stacked view of commission by type</p>
+                            </div>
+                            <h1 class="font-bold text-2xl">
+                                Total: {{ formatCurrency(totalCommissionData.reduce((total, item) => total + item.total, 0)) }}
+                            </h1>
                         </div>
-                        <div>
-                        <h1 class="font-bold text-2xl">
-                            Total:
-                            {{
-                            new Intl.NumberFormat('id-ID', {
-                                style: 'currency',
-                                currency: 'IDR',
-                                minimumFractionDigits: 0
-                            }).format(totalCommissionData.reduce((total, item) => total + item.total, 0))
-                            }}
-                        </h1>
-                        </div>
-                    </div>
                     </template>
-
                     <AreaChart
-                    v-if="totalCommissionData.length > 0"
-                    :data="totalCommissionData"
-                    index="date"
-                    :categories="totalCommissionChart"
-                    y-label="Total Commission"
-                    :x-num-ticks="4"
-                    :y-num-ticks="4"
-                    :y-formatter="yFormatterCommission"
-                    :x-formatter="xFormatterTotalCommission "
-                    :y-grid-line="true"
-                    :curve-type="CurveType.MonotoneX"
-                    :height="320"
-                    :legend-position="LegendPosition.TopRight"
-                    :stacked="true"
+                        v-if="totalCommissionData.length > 0"
+                        :data="totalCommissionData"
+                        index="date"
+                        :categories="totalCommissionChart"
+                        y-label="Total Commission"
+                        :x-num-ticks="4"
+                        :y-num-ticks="4"
+                        :y-formatter="formatCurrency"
+                        :x-formatter="xFormatterMonth"
+                        :y-grid-line="true"
+                        :curve-type="CurveType.MonotoneX"
+                        :height="320"
+                        :legend-position="LegendPosition.TopRight"
+                        :stacked="true"
                     />
                 </UCard>
 
                 <UCard class="lg:col-span-4">
-                     <template #header>
+                    <template #header>
                         <h2>Commission Composition</h2>
-                         <p class="text-sm text-gray-500 dark:text-gray-400">Monthly Comparison of Subscription (New & Recurring), MRC, and Commission</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Monthly comparison of subscription, MRC, and commission</p>
                     </template>
-                     <BarChart
+                    <BarChart
                         v-if="commissionCompositionData.length > 0"
                         :data="commissionCompositionData"
                         :stacked="true"
@@ -485,91 +270,36 @@
                         :x-num-ticks="6"
                         :radius="4"
                         :orientation="Orientation.Horizontal"
-                        :x-formatter="xFormatterComposition"
-                        :y-formatter="yFormatterComposition"
+                        :x-formatter="formatCurrency"
+                        :y-formatter="(i: number) => commissionCompositionData[i]?.date ?? ''"
                         :legend-position="LegendPosition.TopRight"
                         :hide-legend="false"
                         :x-grid-line="true"
-                     />
+                    />
                 </UCard>
 
                 <UCard class="lg:col-span-4">
                     <template #header>
-                    <h2>Yearly New MRC</h2>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">
-                        New MRC by Service Product
-                    </p>
+                        <h2>Yearly New MRC</h2>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">New MRC by service product</p>
                     </template>
-                    <DonutChart
-                        :data="yearlyNewMrcDonutData"
-                        :height="280"
-                        :categories="yearlyNewMrcDonutChart"
-                        :radius="80"
-                        :pad-angle="0.1"
-                        :arc-width="20"
-                        :value-formatter="donutValueFormatter"
-                    >
+                    <DonutChart :data="yearlyNewMrcDonut.data" :height="280" :categories="yearlyNewMrcDonut.categories" :radius="80" :pad-angle="0.1" :arc-width="20" :value-formatter="formatCurrency">
                         <div class="text-center">
-                            <div class="text-sm text-gray-500 dark:text-gray-400">
-                                Total
-                            </div>
-                            <div class="text-xl font-bold text-gray-900 dark:text-white">
-                                {{ formatCurrency(yearlyNewMrcDonutData.reduce((a, b) => a + b, 0)) }}
-                            </div>
+                            <div class="text-sm text-gray-500 dark:text-gray-400">Total</div>
+                            <div class="text-xl font-bold text-gray-900 dark:text-white">{{ formatCurrency(yearlyNewMrcDonut.data.reduce((a, b) => a + b, 0)) }}</div>
                         </div>
                     </DonutChart>
                 </UCard>
 
                 <UCard class="lg:col-span-4">
                     <template #header>
-                    <h2>Yearly New Subscription</h2>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">
-                        New Subscription (DPP) by Service Product
-                    </p>
+                        <h2>Total Commission</h2>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Total yearly commission by type</p>
                     </template>
-                    <DonutChart
-                        :data="yearlyNewDppDonutData"
-                        :height="280"
-                        :categories="yearlyNewDppDonutChart"
-                        :radius="80"
-                        :pad-angle="0.1"
-                        :arc-width="20"
-                        :value-formatter="donutValueFormatter"
-                    >
+                    <DonutChart :data="totalCommissionDonut.data" :height="280" :categories="totalCommissionDonut.categories" :radius="80" :pad-angle="0.1" :arc-width="20" :value-formatter="formatCurrency">
                         <div class="text-center">
-                            <div class="text-sm text-gray-500 dark:text-gray-400">
-                                Total
-                            </div>
-                            <div class="text-xl font-bold text-gray-900 dark:text-white">
-                                {{ formatCurrency(yearlyNewDppDonutData.reduce((a, b) => a + b, 0)) }}
-                            </div>
-                        </div>
-                    </DonutChart>
-                </UCard>
-
-                <UCard class="lg:col-span-4">
-                    <template #header>
-                    <h2>Total Commission</h2>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">
-                        Total Yearly Commission by Type
-                    </p>
-                    </template>
-                    <DonutChart
-                        :data="totalCommissionDonutData"
-                        :height="280"
-                        :categories="totalCommissionDonutChart"
-                        :radius="80"
-                        :pad-angle="0.1"
-                        :arc-width="20"
-                        :value-formatter="donutValueFormatter"
-                    >
-                        <div class="text-center">
-                            <div class="text-sm text-gray-500 dark:text-gray-400">
-                                Total
-                            </div>
-                            <div class="text-xl font-bold text-gray-900 dark:text-white">
-                                {{ formatCurrency(totalCommissionDonutData.reduce((a, b) => a + b, 0)) }}
-                            </div>
+                            <div class="text-sm text-gray-500 dark:text-gray-400">Total</div>
+                            <div class="text-xl font-bold text-gray-900 dark:text-white">{{ formatCurrency(totalCommissionDonut.data.reduce((a, b) => a + b, 0)) }}</div>
                         </div>
                     </DonutChart>
                 </UCard>
@@ -579,692 +309,407 @@
 </template>
 
 <script setup lang="ts">
+import { h, resolveComponent } from 'vue'
 import { CommissionService } from '~/services/commission-service'
 import { EmployeeService } from '~/services/employee-service'
 import { InvoiceService } from '~/services/invoice-service'
 import type { Employee } from '~/types/employee'
-const { setLoading } = useLoading()
-import { DateFormatter, getLocalTimeZone, parseDate } from '@internationalized/date'
 import type { SelectMenuItem, TableColumn } from '@nuxt/ui'
-import { AdditionalService } from '~/services/additional-service'
-import type { InvoiceSalesData, CommissionDetailItem, CommissionPeriodData, ChurnData } from '~/types/sales'
+import type { ChurnRow, CommissionLineItem, SalesCommissionData, SalesCommissionYearData } from '~/types/sales'
 
-const df = new DateFormatter('en-US', {
-    dateStyle: 'medium'
-})
-
-const monthSelect = ref<SelectMenuItem[]>([
-    { label: 'January', id: 1 },
-    { label: 'February', id: 2 },
-    { label: 'March', id: 3 },
-    { label: 'April', id: 4 },
-    { label: 'May', id: 5 },
-    { label: 'June', id: 6 },
-    { label: 'July', id: 7 },
-    { label: 'August', id: 8 },
-    { label: 'September', id: 9 },
-    { label: 'October', id: 10 },
-    { label: 'November', id: 11 },
-    { label: 'December', id: 12 }
-])
-
-const selectedMonth = ref(new Date().getMonth() + 1)
+const { setLoading } = useLoading()
+const route = useRoute()
+const commissionService = new CommissionService()
+const employeeService = new EmployeeService()
+const invoiceService = new InvoiceService()
 const UBadge = resolveComponent('UBadge')
 
-const route = useRoute()
-const responseData = ref<any>({
-    startPeriod: '',
-    endPeriod: '',
-    count: 0,
-    commission: '0',
-    dpp: '0',
-    mrc: '0',
-    new: { data: [] },
-    upgrade: { data: [] },
-    prorate: { data: [] },
-    recurring: { data: [] },
-    alat: { data: [] },
-    setup: { data: [] }
+const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+const monthSelect: SelectMenuItem[] = monthNames.map((label, i) => ({ label, id: i + 1 }))
+
+const employee = ref<Employee>()
+const yearItems = [2026, 2027, 2028, 2029, 2030]
+const year = ref(new Date().getFullYear())
+const selectedMonth = ref(new Date().getMonth() + 1)
+
+const periodData = ref<SalesCommissionData | null>(null)
+const yearData = ref<SalesCommissionYearData | null>(null)
+const invoiceItems = ref<CommissionLineItem[]>([])
+const churnData = ref<ChurnRow[]>([])
+
+const formatCurrency = (value: number): string => {
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value)
+}
+
+const formatDate = (isoDate: string): string => {
+    const [y, m, d] = isoDate.split('-').map(Number)
+    if (y === undefined || m === undefined || d === undefined) return isoDate
+    return new Date(y, m - 1, d).toLocaleDateString('en-US', { dateStyle: 'medium' })
+}
+
+const getAchievementColor = (status: string) => {
+    const s = status.toLowerCase()
+    if (s.includes('tidak capai') || s.includes('sp1')) return 'text-red-500 dark:text-red-400 border-red-200 dark:border-red-800'
+    if (s.includes('average')) return 'text-orange-500 dark:text-orange-400 border-orange-200 dark:border-orange-800'
+    if (s.includes('bonus')) return 'text-violet-500 dark:text-violet-400 border-violet-200 dark:border-violet-800'
+    if (s.includes('excelent') || s.includes('excellent')) return 'text-emerald-500 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800'
+    if (s.includes('very good')) return 'text-teal-500 dark:text-teal-400 border-teal-200 dark:border-teal-800'
+    if (s.includes('capai target')) return 'text-green-500 dark:text-green-400 border-green-200 dark:border-green-800'
+    return 'text-primary-500 dark:text-primary-400 border-primary-200 dark:border-primary-800'
+}
+
+const serviceGroupOrder = ['Home', 'NusaSelecta', 'Nusafiber'] as const
+const groupColor: Record<string, { bg: string; text: string; textStrong: string }> = {
+    Home: { bg: 'bg-sky-50 dark:bg-sky-900/10 border-sky-100 dark:border-sky-800', text: 'text-sky-700 dark:text-sky-300', textStrong: 'text-sky-900 dark:text-sky-100' },
+    NusaSelecta: { bg: 'bg-orange-50 dark:bg-orange-900/10 border-orange-100 dark:border-orange-800', text: 'text-orange-700 dark:text-orange-300', textStrong: 'text-orange-900 dark:text-orange-100' },
+    Nusafiber: { bg: 'bg-purple-50 dark:bg-purple-900/10 border-purple-100 dark:border-purple-800', text: 'text-purple-700 dark:text-purple-300', textStrong: 'text-purple-900 dark:text-purple-100' }
+}
+
+const categoryColor: Record<string, { bg: string; text: string; textStrong: string }> = {
+    primary: { bg: 'bg-primary-50 dark:bg-primary-900/10 border-primary-100 dark:border-primary-800', text: 'text-primary-600 dark:text-primary-400', textStrong: 'text-primary-700 dark:text-primary-300' },
+    orange: { bg: 'bg-orange-50 dark:bg-orange-900/10 border-orange-100 dark:border-orange-800', text: 'text-orange-600 dark:text-orange-400', textStrong: 'text-orange-700 dark:text-orange-300' },
+    purple: { bg: 'bg-purple-50 dark:bg-purple-900/10 border-purple-100 dark:border-purple-800', text: 'text-purple-600 dark:text-purple-400', textStrong: 'text-purple-700 dark:text-purple-300' },
+    indigo: { bg: 'bg-indigo-50 dark:bg-indigo-900/10 border-indigo-100 dark:border-indigo-800', text: 'text-indigo-600 dark:text-indigo-400', textStrong: 'text-indigo-700 dark:text-indigo-300' },
+    pink: { bg: 'bg-pink-50 dark:bg-pink-900/10 border-pink-100 dark:border-pink-800', text: 'text-pink-600 dark:text-pink-400', textStrong: 'text-pink-700 dark:text-pink-300' },
+    teal: { bg: 'bg-teal-50 dark:bg-teal-900/10 border-teal-100 dark:border-teal-800', text: 'text-teal-600 dark:text-teal-400', textStrong: 'text-teal-700 dark:text-teal-300' }
+}
+
+const categoryCards = computed(() => {
+    if (!periodData.value) return []
+    const b = periodData.value.breakdown
+    return [
+        { label: 'New', count: b.new.count, color: categoryColor.primary! },
+        { label: 'Recurring', count: b.recurring.count, color: categoryColor.orange! },
+        { label: 'Prorate', count: b.prorate.count, color: categoryColor.purple! },
+        { label: 'Upgrade', count: b.upgrade.count, color: categoryColor.indigo! },
+        { label: 'Alat', count: b.alat.count, color: categoryColor.pink! },
+        { label: 'Setup', count: b.setup.count, color: categoryColor.teal! }
+    ]
 })
 
-const tabItems = computed(() => [
-    { label: `New (${responseData.value.new?.data?.length || 0})`, key: 'new'},
-    { label: `Recurring (${responseData.value.recurring?.data?.length || 0})`, key: 'recurring'},
-    { label: `Prorate (${responseData.value.prorate?.data?.length || 0})`, key: 'prorate'},
-    { label: `Upgrade (${responseData.value.upgrade?.data?.length || 0})`, key: 'upgrade'},
-    { label: `Alat (${responseData.value.alat?.data?.length || 0})`, key: 'alat'},
-    { label: `Setup (${responseData.value.setup?.data?.length || 0})`, key: 'setup'},
-    { label: `Churn (${churnData.value.length})`, key: 'churn'}
-])
+const churnByService = computed(() => {
+    const counts = new Map<string, number>()
+    for (const c of churnData.value) {
+        if (c.is_approved) continue
+        const name = c.service_name ?? c.service_id ?? 'Unknown'
+        counts.set(name, (counts.get(name) ?? 0) + 1)
+    }
+    return Array.from(counts.entries()).map(([label, value]) => ({ label, value }))
+})
 
-const churnData = ref<ChurnData[]>([])
+interface FinancialBox {
+    title: string
+    rows: { label: string; value: number }[]
+    total?: number
+    negative?: boolean
+    isCount?: boolean
+}
+
+const financialBoxes = computed<FinancialBox[]>(() => {
+    if (!periodData.value) return []
+    const b = periodData.value.breakdown
+    const g = periodData.value.byServiceGroup
+    return [
+        {
+            title: 'Commission',
+            rows: [
+                { label: 'New', value: b.new.commission },
+                { label: 'Prorate', value: b.prorate.commission },
+                { label: 'Recurring', value: b.recurring.commission },
+                { label: 'Upgrade', value: b.upgrade.commission },
+                { label: 'Alat', value: b.alat.commission },
+                { label: 'Setup', value: b.setup.commission },
+                { label: 'Bonus', value: periodData.value.bonus }
+            ],
+            total: periodData.value.total.commission + periodData.value.bonus
+        },
+        {
+            title: 'MRC (New)',
+            rows: serviceGroupOrder.map(name => ({ label: name, value: g[name]?.new.mrc ?? 0 })),
+            total: b.new.mrc
+        },
+        {
+            title: 'Subscription (New)',
+            rows: [
+                ...serviceGroupOrder.map(name => ({ label: name, value: g[name]?.new.subscription ?? 0 })),
+                { label: 'Prorate', value: b.prorate.subscription },
+                { label: 'Upgrade', value: b.upgrade.subscription }
+            ],
+            total: b.new.subscription + b.prorate.subscription + b.upgrade.subscription
+        },
+        {
+            title: 'Subscription (Recurring)',
+            rows: serviceGroupOrder.map(name => ({ label: name, value: g[name]?.recurring.subscription ?? 0 })),
+            total: b.recurring.subscription
+        },
+        {
+            title: 'Subscription (Other)',
+            rows: [
+                { label: 'Alat', value: b.alat.subscription },
+                { label: 'Setup', value: b.setup.subscription }
+            ],
+            total: b.alat.subscription + b.setup.subscription
+        },
+        { title: 'Deduction (churn)', rows: [
+            { label: 'MRC', value: periodData.value.deduction.mrc },
+            { label: 'Commission', value: periodData.value.deduction.commission },
+            { label: 'Subscription', value: periodData.value.deduction.subscription }
+        ], negative: true },
+        { title: 'Service (churn)', rows: churnByService.value, negative: true, isCount: true }
+    ]
+})
+
+const tabItems = computed(() => {
+    const byType = (key: string) => invoiceItems.value.filter(i => i.type === key)
+    return [
+        { label: `New (${byType('new').length})`, key: 'new' },
+        { label: `Recurring (${byType('recurring').length})`, key: 'recurring' },
+        { label: `Prorate (${byType('prorate').length})`, key: 'prorate' },
+        { label: `Upgrade (${byType('upgrade').length})`, key: 'upgrade' },
+        { label: `Alat (${byType('alat').length})`, key: 'alat' },
+        { label: `Setup (${byType('setup').length})`, key: 'setup' },
+        { label: `Churn (${churnData.value.length})`, key: 'churn' }
+    ]
+})
 
 const getTabData = (key: string) => {
     if (key === 'churn') return churnData.value
-    return responseData.value[key]?.data || []
+    return invoiceItems.value.filter(i => i.type === key)
 }
 
+const boxTotal = (key: string, field: 'subscription' | 'mrc' | 'commission') => periodData.value?.breakdown[key as keyof typeof periodData.value.breakdown]?.[field] ?? 0
 
 const getColumns = (key: string): TableColumn<any>[] => {
     if (key === 'churn') {
         return [
             {
                 header: 'Service',
-                cell: ({ row }) => {
-                    return h('div', { class: 'flex flex-col min-w-[120px]' }, [
-                        h('a', { 
-                            href: `https://isx.nusa.net.id/v2/customer/service/${row.original.customerServiceId}/detail`,
-                            target: '_blank',
-                            class: 'text-blue-500 hover:underline font-semibold text-sm break-all'
-                        }, row.original.customerServiceAccount),
-                        h('span', { class: 'text-xs text-gray-500 dark:text-gray-400 whitespace-normal break-words line-clamp-2' }, row.original.serviceName)
-                    ])
-                }
+                cell: ({ row }) => h('div', { class: 'flex flex-col min-w-[120px]' }, [
+                    h('a', { href: `https://isx.nusa.net.id/v2/customer/service/${row.original.customer_service_id}/detail`, target: '_blank', class: 'text-blue-500 hover:underline font-semibold text-sm break-all' }, row.original.customer_service_account),
+                    h('span', { class: 'text-xs text-gray-500 dark:text-gray-400 whitespace-normal break-words line-clamp-2' }, row.original.service_name ?? '')
+                ])
             },
             {
                 header: 'Customer',
-                cell: ({ row }) => {
-                    return h('div', { class: 'flex flex-col min-w-[120px]' }, [
-                        h('a', { 
-                            href: `https://isx.nusa.net.id/customer.php?custId=${row.original.customerId}&pid=profile`,
-                            target: '_blank',
-                            class: 'text-blue-500 hover:underline font-semibold text-sm'
-                        }, row.original.customerId),
-                        h('span', { class: 'text-xs text-gray-500 dark:text-gray-400 whitespace-normal break-words line-clamp-2' }, row.original.customerName)
-                    ])
-                }
+                cell: ({ row }) => h('div', { class: 'flex flex-col min-w-[120px]' }, [
+                    h('a', { href: `https://isx.nusa.net.id/customer.php?custId=${row.original.customer_id}&pid=profile`, target: '_blank', class: 'text-blue-500 hover:underline font-semibold text-sm' }, row.original.customer_id),
+                    h('span', { class: 'text-xs text-gray-500 dark:text-gray-400 whitespace-normal break-words line-clamp-2' }, row.original.customer_name ?? '')
+                ])
             },
-            {
-                accessorKey: 'reason',
-                header: 'Reason',
-                cell: ({ row }) => h('span', { class: 'text-xs italic text-gray-500 dark:text-gray-400 whitespace-normal line-clamp-2 min-w-[150px]' }, row.original.reason)
-            },
+            { accessorKey: 'reason', header: 'Reason', cell: ({ row }) => h('span', { class: 'text-xs italic text-gray-500 dark:text-gray-400 whitespace-normal line-clamp-2 min-w-[150px]' }, row.original.reason ?? '') },
             {
                 header: 'Duration',
-                cell: ({ row }) => {
-                    return h('div', { class: 'flex flex-col' }, [
-                        h('span', { class: 'text-sm font-medium' }, row.original.subscriptionPeriod),
-                        h('span', { class: 'text-[10px] text-gray-400 dark:text-gray-500' }, `${df.format(parseDate(row.original.registrationDate.split('T')[0]).toDate(getLocalTimeZone()))} - ${df.format(parseDate(row.original.unregistrationDate.split('T')[0]).toDate(getLocalTimeZone()))}`)
-                    ])
-                }
+                cell: ({ row }) => h('div', { class: 'flex flex-col' }, [
+                    h('span', { class: 'text-sm font-medium' }, `${row.original.period} bulan`),
+                    h('span', { class: 'text-[10px] text-gray-400 dark:text-gray-500' }, `${formatDate(String(row.original.registration_date).slice(0, 10))} - ${formatDate(String(row.original.unregistration_date).slice(0, 10))}`)
+                ])
             },
-            {
-                header: 'Subscription',
-                cell: ({ row }) => h('span', { class: 'font-medium' }, formatCurrency(row.original.price))
-            },
-            {
-                header: 'MRC',
-                cell: ({ row }) => h('span', { class: 'font-medium' }, formatCurrency(row.original.mrc))
-            },
+            { header: 'Subscription', cell: ({ row }) => h('span', { class: 'font-medium' }, formatCurrency(row.original.price)) },
+            { header: 'MRC', cell: ({ row }) => h('span', { class: 'font-medium' }, formatCurrency(row.original.mrc)) },
             {
                 header: 'Commission',
-                cell: ({ row }) => {
-                    return h('div', { class: 'flex flex-col items-end' }, [
-                         h('span', { class: 'text-xs font-medium bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-gray-600 dark:text-gray-300 mb-1' }, 
-                            Intl.NumberFormat('id-ID', { style: 'decimal' }).format(row.original.commissionPercentage) + '%'),
-                        h('span', { class: 'text-sm font-bold text-gray-900 dark:text-white' }, formatCurrency(row.original.commission))
-                    ])
-                }
+                cell: ({ row }) => h('div', { class: 'flex flex-col items-end' }, [
+                    h('span', { class: 'text-xs font-medium bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-gray-600 dark:text-gray-300 mb-1' }, `${row.original.commissionPercentage}%`),
+                    h('span', { class: 'text-sm font-bold text-gray-900 dark:text-white' }, formatCurrency(row.original.commission))
+                ])
             }
         ]
     }
 
-    const cols: TableColumn<InvoiceSalesData>[] = [
+    const cols: TableColumn<CommissionLineItem>[] = [
         {
             accessorKey: 'paidDate',
             header: 'Paid Date',
-            cell: ({ row }) => {
-            return new Date(row.getValue('paidDate')).toLocaleString('en-US', {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric'
-            })
-            }
+            cell: ({ row }) => row.original.paidDate ? new Date(row.original.paidDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'
         },
         {
             id: 'label',
             header: 'Label',
             cell: ({ row }) => {
-                const serviceId: string = row.original.serviceId ?? ''
-
-                const nusafiberCodes = ['BFLITE']
-                const nusaSelectaCodes = ['NFSP030', 'NFSP100', 'NFSP200']
-                const homeCodes = ['HOME100', 'HOMEADV200', 'HOMEADV', 'HOMEPREM300' , 'HOMESTD100']
-
-                if (nusafiberCodes.some(code => serviceId.startsWith(code))) {
-                    return h(UBadge, { label: 'Nusafiber', color: 'info', variant: 'subtle' })
-                }
-                if (nusaSelectaCodes.some(code => serviceId.startsWith(code))) {
-                    return h(UBadge, { label: 'NusaSelecta', color: 'warning', variant: 'subtle' })
-                }
-                if (homeCodes.some(code => serviceId.startsWith(code))) {
-                    return h(UBadge, { label: 'Home', color: 'primary', variant: 'subtle' })
-                }
-
+                const serviceId = row.original.serviceId ?? ''
+                if (['BFLITE'].some(c => serviceId.startsWith(c))) return h(UBadge, { label: 'Nusafiber', color: 'info', variant: 'subtle' })
+                if (['NFSP030', 'NFSP100', 'NFSP200'].some(c => serviceId.startsWith(c))) return h(UBadge, { label: 'NusaSelecta', color: 'warning', variant: 'subtle' })
+                if (['HOME100', 'HOMESTD100', 'HOMEADV', 'HOMEADV200', 'HOMEPREM300', 'HOME300', 'LITE100', 'LITE200'].some(c => serviceId.startsWith(c))) return h(UBadge, { label: 'Home', color: 'primary', variant: 'subtle' })
                 return null
             }
         },
         {
             header: 'Service',
-            cell: ({ row }) => {
-            return h('div', { class: 'flex flex-col min-w-[120px]' }, [
-                h('a', { 
-                    href: `https://isx.nusa.net.id/v2/customer/service/${row.original.customerServiceId}/detail`,
-                    target: '_blank',
-                    class: ['text-blue-500 hover:underline font-semibold text-sm break-all', row.original.isDeleted ? 'row-deleted' : '']
-                }, row.original.customerServiceAccount),
-                h('span', { class: 'text-xs text-gray-500 dark:text-gray-400 whitespace-normal break-words line-clamp-2' }, row.original.serviceName)
+            cell: ({ row }) => h('div', { class: 'flex flex-col min-w-[120px]' }, [
+                h('a', { href: `https://isx.nusa.net.id/v2/customer/service/${row.original.customerServiceId}/detail`, target: '_blank', class: 'text-blue-500 hover:underline font-semibold text-sm break-all' }, row.original.customerServiceAccount ?? ''),
+                h('span', { class: 'text-xs text-gray-500 dark:text-gray-400 whitespace-normal break-words line-clamp-2' }, row.original.serviceName ?? '')
             ])
-            }
         },
         {
             header: 'Customer',
-            cell: ({ row }) => {
-            return h('div', { class: 'flex flex-col min-w-[120px]' }, [
-                h('a', { 
-                    href: `https://isx.nusa.net.id/customer.php?custId=${row.original.customerId}&pid=profile`,
-                    target: '_blank',
-                    class: ['text-blue-500 hover:underline font-semibold text-sm', row.original.isDeleted ? 'row-deleted' : '']
-                }, row.original.customerId),
-                h('span', { class: 'text-xs text-gray-500 dark:text-gray-400 whitespace-normal break-words line-clamp-2' }, row.original.customerName)
+            cell: ({ row }) => h('div', { class: 'flex flex-col min-w-[120px]' }, [
+                h('a', { href: `https://isx.nusa.net.id/customer.php?custId=${row.original.customerId}&pid=profile`, target: '_blank', class: 'text-blue-500 hover:underline font-semibold text-sm' }, row.original.customerId),
+                h('span', { class: 'text-xs text-gray-500 dark:text-gray-400 whitespace-normal break-words line-clamp-2' }, row.original.customerName ?? '')
             ])
-            }
         },
         {
-            accessorKey: 'dpp',
-            header: 'DPP',
-            cell: ({ row }) => {
-                const amount = Number.parseFloat(row.getValue('dpp'))
-                return h('span', { class: 'font-medium' }, new Intl.NumberFormat('id-ID', {
-                    style: 'currency',
-                    currency: 'IDR'
-                }).format(amount))
-            },
-            footer: () => {
-                return h('div', { class: 'hidden lg:block text-right font-bold' }, new Intl.NumberFormat('id-ID', {
-                    style: 'currency',
-                    currency: 'IDR'
-                }).format(Number(responseData.value[key]?.dpp ?? 0)))
-            }
+            accessorKey: 'subscription',
+            header: 'Subscription',
+            cell: ({ row }) => h('span', { class: 'font-medium' }, formatCurrency(row.original.subscription)),
+            footer: () => h('div', { class: 'hidden lg:block text-right font-bold' }, formatCurrency(boxTotal(key, 'subscription')))
         },
         {
             accessorKey: 'mrc',
             header: 'MRC',
-            cell: ({ row }) => {
-                const amount = Number.parseFloat(row.getValue('mrc'))
-                return h('span', { class: 'font-medium' }, new Intl.NumberFormat('id-ID', {
-                    style: 'currency',
-                    currency: 'IDR'
-                }).format(amount))
-            },
-            footer: () => {
-                return h('div', { class: 'hidden lg:block text-right font-bold' }, new Intl.NumberFormat('id-ID', {
-                    style: 'currency',
-                    currency: 'IDR'
-                }).format(Number(responseData.value[key]?.mrc ?? 0)))
-            }
+            cell: ({ row }) => h('span', { class: 'font-medium' }, formatCurrency(row.original.mrc)),
+            footer: () => h('div', { class: 'hidden lg:block text-right font-bold' }, formatCurrency(boxTotal(key, 'mrc')))
         },
-        {
-            header: 'Month Period',
-            cell: ({ row }) => {
-                return h('span', { class: 'font-medium text-center' }, row.original.month)
-            }
-        },
-        {
-            header: 'Month Late',
-            cell: ({ row }) => {
-                return h('span', { class: 'font-medium text-center' }, row.original.lateMonth)
-            }
-        },
+        { header: 'Month Period', cell: ({ row }) => h('span', { class: 'font-medium text-center' }, row.original.month) },
+        { header: 'Month Late', cell: ({ row }) => h('span', { class: 'font-medium text-center' }, row.original.lateMonth) },
         {
             header: 'Commission',
             cell: ({ row }) => {
-            const isZero = Number(row.original.salesCommission) === 0
-            return h('div', { class: ['flex flex-col items-end', isZero ? 'commission-zero' : ''] }, [
-                h('span', { class: 'text-xs text-gray-600 dark:text-white' }, new Intl.NumberFormat('id-ID', {
-                    style: 'currency',
-                    currency: 'IDR'
-                }).format(Number(row.original.baseCommission))),               
-                h('span', { class: 'text-xs font-medium bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-gray-600 dark:text-gray-300 mb-1' }, Intl.NumberFormat('id-ID', { style: 'decimal' }).format(row.original.salesCommissionPercentage) + '%'),
-                h('span', { class: 'text-sm font-bold text-gray-900 dark:text-white' }, new Intl.NumberFormat('id-ID', {
-                    style: 'currency',
-                    currency: 'IDR'
-                }).format(row.original.salesCommission))
-            ])
+                const isZero = row.original.commission === 0
+                return h('div', { class: ['flex flex-col items-end', isZero ? 'commission-zero' : ''] }, [
+                    h('span', { class: 'text-xs text-gray-600 dark:text-white' }, formatCurrency(row.original.baseCommission)),
+                    h('span', { class: 'text-xs font-medium bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-gray-600 dark:text-gray-300 mb-1' }, `${row.original.commissionPercentage}%`),
+                    h('span', { class: 'text-sm font-bold text-gray-900 dark:text-white' }, formatCurrency(row.original.commission))
+                ])
             },
-            footer: () => {
-                return h('div', { class: 'text-right font-bold text-gray-900 dark:text-white' }, new Intl.NumberFormat('id-ID', {
-                    style: 'currency',
-                    currency: 'IDR'
-                }).format(Number(responseData.value[key]?.commission ?? 0)))
-            }
+            footer: () => h('div', { class: 'text-right font-bold text-gray-900 dark:text-white' }, formatCurrency(boxTotal(key, 'commission')))
         }
     ]
     return cols
 }
 
-const employee = ref<Employee>()  
-
-// Year Select
-const items = ref([2026, 2027, 2028, 2029, 2030])
-const year = ref(new Date().getFullYear())
-
-
-
-const getAchievementColor = (status: string) => {
-    const s = status.toLowerCase()
-    if (s.includes('tidak capai') || s.includes('sp1')) return 'font-bold text-red-500 dark:text-red-400'
-    if (s.includes('average')) return 'font-bold text-orange-500 dark:text-orange-400'
-    if (s.includes('bonus')) return 'font-bold text-violet-500 dark:text-violet-400'
-    if (s.includes('excelent') || s.includes('excellent')) return 'font-bold text-emerald-500 dark:text-emerald-400'
-    if (s.includes('very good')) return 'font-bold text-teal-500 dark:text-teal-400'
-    if (s.includes('capai target')) return 'font-bold text-green-500 dark:text-green-400'
-    return 'text-primary-500 dark:text-primary-400'
+// --- Yearly charts, derived from yearData.months (Jan..Dec) ---
+const serviceChart: Record<string, { name: string; color: string }> = {
+    Home: { name: 'Home', color: '#0ea5e9' },
+    Nusafiber: { name: 'Nusafiber', color: '#a855f7' },
+    NusaSelecta: { name: 'NusaSelecta', color: '#f97316' }
 }
+const serviceKeys = Object.keys(serviceChart) as any
 
-// Helper function untuk format currency
-const formatCurrency = (value: number): string => {
-    return new Intl.NumberFormat('id-ID', { 
-        style: 'currency', 
-        currency: 'IDR', 
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0 
-    }).format(value)
-}
-
-// Total Commission Donut Chart Data
-const totalCommissionDonutData = ref<number[]>([])
-const donutLabels = ref<{ name: string; color: string }[]>([])
-const totalCommissionDonutChart = computed<Record<string, BulletLegendItemInterface>>(() => 
-    Object.fromEntries(donutLabels.value.map(i => [i.name, { name: i.name, color: i.color }]))
-)
-
-// Yearly New MRC Donut Chart Data
-const yearlyNewMrcDonutData = ref<number[]>([])
-const yearlyNewMrcDonutLabels = ref<{ name: string; color: string }[]>([])
-const yearlyNewMrcDonutChart = computed<Record<string, BulletLegendItemInterface>>(() => 
-    Object.fromEntries(yearlyNewMrcDonutLabels.value.map(i => [i.name, { name: i.name, color: i.color }]))
-)
-
-// Yearly New Subscription (DPP) Donut Chart Data
-const yearlyNewDppDonutData = ref<number[]>([])
-const yearlyNewDppDonutLabels = ref<{ name: string; color: string }[]>([])
-const yearlyNewDppDonutChart = computed<Record<string, BulletLegendItemInterface>>(() => 
-    Object.fromEntries(yearlyNewDppDonutLabels.value.map(i => [i.name, { name: i.name, color: i.color }]))
-)
-
-
-
-const commissionCompositionData = ref<{ date: string; newSubscription: number; recurringSubscription: number; mrc: number; commission: number }[]>([])
-const commissionCompositionChart = {
-    newSubscription: { name: 'DPP (New)', color: '#3b82f6' },
-    recurringSubscription: { name: 'DPP (Recurring)', color: '#6366f1' },
-    mrc: { name: 'MRC', color: '#f97316' },
-    commission: { name: 'Commission', color: '#10b981' }
-}
-
-const donutValueFormatter = (value: number): string => {
-    return formatCurrency(value)
-}
-
-// Total Commission Chart (Line Chart)
-const totalCommissionData = ref<{
-    date: string;
-    total: number;
-    new: number;
-    recurring: number;
-    prorate: number;
-    upgrade: number;
-    alat: number;
-    setup: number;
-    bonus: number;
-}[]>([])
-
-const totalCommissionChart: Record<string, BulletLegendItemInterface> = {
+const totalCommissionChart: Record<string, { name: string; color: string }> = {
     new: { name: 'New', color: '#3b82f6' },
     recurring: { name: 'Recurring', color: '#f97316' },
     prorate: { name: 'Prorate', color: '#8b5cf6' },
     upgrade: { name: 'Upgrade', color: '#6366f1' },
     alat: { name: 'Alat', color: '#ec4899' },
     setup: { name: 'Setup', color: '#14b8a6' },
-    bonus: { name: 'Bonus', color: '#eab308' },
+    bonus: { name: 'Bonus', color: '#eab308' }
 }
 
-const monthlyServiceData = ref<{
-    date: string;
-    Home: number;
-    Nusafiber: number;
-    NusaSelecta: number;
-}[]>([])
-
-const serviceChart: Record<string, BulletLegendItemInterface> = {
-    Home: { name: 'Home', color: '#0ea5e9' },
-    Nusafiber: { name: 'Nusafiber', color: '#a855f7' },
-    NusaSelecta: { name: 'NusaSelecta', color: '#f97316' }
+const commissionCompositionChart = {
+    newSubscription: { name: 'Subscription (New)', color: '#3b82f6' },
+    recurringSubscription: { name: 'Subscription (Recurring)', color: '#6366f1' },
+    mrc: { name: 'MRC', color: '#f97316' },
+    commission: { name: 'Commission', color: '#10b981' }
 }
 
-const serviceKeys = Object.keys(serviceChart) as any
+const months = computed(() => yearData.value?.months ?? [])
 
-const monthlyMrcData = ref<{
-    date: string;
-    Home: number;
-    Nusafiber: number;
-    NusaSelecta: number;
-}[]>([])
-const monthlyDppData = ref<{
-    date: string;
-    Home: number;
-    Nusafiber: number;
-    NusaSelecta: number;
-}[]>([])
+const xFormatterMonth = (tick: number) => totalCommissionData.value[tick]?.date ?? ''
 
+const totalCommissionData = computed(() => months.value.map((m, i) => ({
+    date: monthNames[i]!.substring(0, 3),
+    total: m.total.commission + m.bonus,
+    new: m.breakdown.new.commission,
+    recurring: m.breakdown.recurring.commission,
+    prorate: m.breakdown.prorate.commission,
+    upgrade: m.breakdown.upgrade.commission,
+    alat: m.breakdown.alat.commission,
+    setup: m.breakdown.setup.commission,
+    bonus: m.bonus
+})))
 
-const xFormatterTotalCommission = (tick: number, _i?: number, _ticks?: number[]): string => {
-    return String(totalCommissionData.value[tick]?.date ?? '')
-}
+const monthlyServiceData = computed(() => months.value.map((m, i) => ({
+    date: monthNames[i]!.substring(0, 3),
+    Home: m.byServiceGroup.Home?.new.count ?? 0,
+    Nusafiber: m.byServiceGroup.Nusafiber?.new.count ?? 0,
+    NusaSelecta: m.byServiceGroup.NusaSelecta?.new.count ?? 0
+})))
 
-const yFormatterCommission = (value: number): string => {
-    return formatCurrency(value)
-}
+const monthlyMrcData = computed(() => months.value.map((m, i) => ({
+    date: monthNames[i]!.substring(0, 3),
+    Home: m.byServiceGroup.Home?.new.mrc ?? 0,
+    Nusafiber: m.byServiceGroup.Nusafiber?.new.mrc ?? 0,
+    NusaSelecta: m.byServiceGroup.NusaSelecta?.new.mrc ?? 0
+})))
 
-// Month Card
-const defaultDetailItem: CommissionDetailItem = { count: 0, commission: '0', mrc: '0', dpp: '0' }
-const monthcard = ref<{ mounth: string; total: string; commission: string; bonus: string; count: number; dpp: string; mrc: string; startPeriod: string; endPeriod: string; status: string; detail: { new: CommissionDetailItem; recurring: CommissionDetailItem; prorate: CommissionDetailItem; upgrade: CommissionDetailItem; alat: CommissionDetailItem; setup: CommissionDetailItem; } }[]>([])
-const periodData = ref<CommissionPeriodData | null>(null)
+const monthlySubscriptionData = computed(() => months.value.map((m, i) => ({
+    date: monthNames[i]!.substring(0, 3),
+    Home: m.byServiceGroup.Home?.new.subscription ?? 0,
+    Nusafiber: m.byServiceGroup.Nusafiber?.new.subscription ?? 0,
+    NusaSelecta: m.byServiceGroup.NusaSelecta?.new.subscription ?? 0
+})))
 
-const fetchSalesData = async () => {
-    try {
-        const commissionService = new CommissionService()
-        const response = await commissionService.salesCommission(route.params.id as string, { year: year.value })
-        const data = response.data
-        
-        // Donut Chart Data - By Category
-        const donutItems = [
-            { label: 'New', value: Number(data.detail.new?.commission ?? 0), color: '#3b82f6' },
-            { label: 'Recurring', value: Number(data.detail.recurring?.commission ?? 0), color: '#f97316' },
-            { label: 'Prorate', value: Number(data.detail.prorate?.commission ?? 0), color: '#8b5cf6' },
-            { label: 'Upgrade', value: Number(data.detail.upgrade?.commission ?? 0), color: '#6366f1' },
-            { label: 'Alat', value: Number(data.detail.alat?.commission ?? 0), color: '#ec4899' },
-            { label: 'Setup', value: Number(data.detail.setup?.commission ?? 0), color: '#14b8a6' },
-            { label: 'Bonus', value: Number(data.bonus ?? 0), color: '#eab308' }
-        ]
+const commissionCompositionData = computed(() => months.value.map((m, i) => ({
+    date: monthNames[i]!.substring(0, 3),
+    newSubscription: m.breakdown.new.subscription,
+    recurringSubscription: m.breakdown.recurring.subscription,
+    mrc: m.total.mrc,
+    commission: m.total.commission
+})))
 
-        totalCommissionDonutData.value = donutItems.map(item => item.value)
-        donutLabels.value = donutItems.map(item => ({ name: item.label, color: item.color }))
-        
-        // Donut Chart Data - By Yearly New MRC
-        const serviceItems = data.service.map((s: any) => ({
-            label: s.name,
-            value: Number(s.detail?.new?.mrc ?? 0),
-            color: s.name === 'Home' ? '#0ea5e9' : s.name === 'NusaSelecta' ? '#f97316' : '#a855f7'
-        }))
-        yearlyNewMrcDonutData.value = serviceItems.map((item: any) => item.value)
-        yearlyNewMrcDonutLabels.value = serviceItems.map((item: any) => ({ name: item.label, color: item.color }))
+const groupChartColor: Record<string, string> = { Home: '#0ea5e9', NusaSelecta: '#f97316', Nusafiber: '#a855f7' }
 
-        // Donut Chart Data - By Yearly New Subscription (DPP)
-        const dppItems = data.service.map((s: any) => ({
-            label: s.name,
-            value: Number(s.detail?.new?.dpp ?? 0),
-            color: s.name === 'Home' ? '#0ea5e9' : s.name === 'NusaSelecta' ? '#f97316' : '#a855f7'
-        }))
-        yearlyNewDppDonutData.value = dppItems.map((item: any) => item.value)
-        yearlyNewDppDonutLabels.value = dppItems.map((item: any) => ({ name: item.label, color: item.color }))
-
-        // Month Card
-        const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-        monthcard.value = months.map((m, index) => {
-            const mData = data.monthly[m]
-            
-            const detail = mData?.detail ? {
-                    new: { 
-                        ...mData.detail.new, 
-                        dpp: formatCurrency(Number(mData.detail.new?.dpp ?? 0)), 
-                        mrc: formatCurrency(Number(mData.detail.new?.mrc ?? 0)) 
-                    },
-                    recurring: { 
-                        ...mData.detail.recurring, 
-                        dpp: formatCurrency(Number(mData.detail.recurring?.dpp ?? 0)), 
-                        mrc: formatCurrency(Number(mData.detail.recurring?.mrc ?? 0)) 
-                    },
-                    prorate: { 
-                        ...mData.detail.prorate, 
-                        dpp: formatCurrency(Number(mData.detail.prorate?.dpp ?? 0)), 
-                        mrc: formatCurrency(Number(mData.detail.prorate?.mrc ?? 0)) 
-                    },
-                    upgrade: { 
-                        ...mData.detail.upgrade, 
-                        dpp: formatCurrency(Number(mData.detail.upgrade?.dpp ?? 0)), 
-                        mrc: formatCurrency(Number(mData.detail.upgrade?.mrc ?? 0)) 
-                    },
-                    alat: { 
-                        ...mData.detail.alat, 
-                        dpp: formatCurrency(Number(mData.detail.alat?.dpp ?? 0)), 
-                        mrc: formatCurrency(Number(mData.detail.alat?.mrc ?? 0)) 
-                    },
-                    setup: { 
-                        ...mData.detail.setup, 
-                        dpp: formatCurrency(Number(mData.detail.setup?.dpp ?? 0)), 
-                        mrc: formatCurrency(Number(mData.detail.setup?.mrc ?? 0)) 
-                    }
-            } : { 
-                new: { ...defaultDetailItem, dpp: formatCurrency(0), mrc: formatCurrency(0) }, 
-                recurring: { ...defaultDetailItem, dpp: formatCurrency(0), mrc: formatCurrency(0) }, 
-                prorate: { ...defaultDetailItem, dpp: formatCurrency(0), mrc: formatCurrency(0) },
-                upgrade: { ...defaultDetailItem, dpp: formatCurrency(0), mrc: formatCurrency(0) },
-                alat: { ...defaultDetailItem, dpp: formatCurrency(0), mrc: formatCurrency(0) },
-                setup: { ...defaultDetailItem, dpp: formatCurrency(0), mrc: formatCurrency(0) }
-            }
-
-            let startPeriod = '-'
-            let endPeriod = '-'
-
-            if (mData?.startPeriod) {
-                const [y, month, d] = mData.startPeriod.split('-').map(Number)
-                if (y !== undefined && month !== undefined && d !== undefined) {
-                    startPeriod = df.format(new Date(y, month - 1, d))
-                }
-            }
-
-            if (mData?.endPeriod) {
-                const [y, month, d] = mData.endPeriod.split('-').map(Number)
-                if (y !== undefined && month !== undefined && d !== undefined) {
-                    endPeriod = df.format(new Date(y, month - 1, d))
-                }
-            }
-
-            return {
-                mounth: m,
-                total: formatCurrency(Number(mData?.totalCommission ?? 0)),
-                commission: formatCurrency(Number(mData?.commission ?? 0)),
-                bonus: formatCurrency(Number(mData?.bonus ?? 0)),
-                count: mData?.achievement?.activity ?? 0,
-                dpp: formatCurrency(Number(mData?.dpp ?? 0)),
-                mrc: formatCurrency(Number(mData?.mrc ?? 0)),
-                startPeriod: startPeriod,
-                endPeriod: endPeriod,
-                status: mData?.achievement?.status ?? '-',
-                detail: detail
-            }
-        })
-        
-        // Total Commission Trend
-        totalCommissionData.value = months.map(m => {
-            const mData = data.monthly[m]
-            const detail = mData?.detail
-            return {
-                date: m.substring(0, 3),
-                total: Number(mData?.totalCommission ?? 0),
-                new: Number(detail?.new?.commission ?? 0),
-                recurring: Number(detail?.recurring?.commission ?? 0),
-                prorate: Number(detail?.prorate?.commission ?? 0),
-                upgrade: Number(detail?.upgrade?.commission ?? 0),
-                alat: Number(detail?.alat?.commission ?? 0),
-                setup: Number(detail?.setup?.commission ?? 0),
-                bonus: Number(mData?.bonus ?? 0)
-            }
-        })
-
-        // Monthly New Service Count Trend
-        monthlyServiceData.value = months.map(m => {
-            const mData = data.monthly[m]
-            const services = mData?.service || []
-            const home = services.find((s: any) => s.name === 'Home')?.detail?.new?.count || 0
-            const nusafiber = services.find((s: any) => s.name === 'Nusafiber')?.detail?.new?.count || 0
-            const nusaselecta = services.find((s: any) => s.name === 'NusaSelecta')?.detail?.new?.count || 0
-            
-            return {
-                date: m.substring(0, 3),
-                Home: Number(home),
-                Nusafiber: Number(nusafiber),
-                NusaSelecta: Number(nusaselecta)
-            }
-        })
-
-        // Monthly New MRC Trend by Service Product
-        monthlyMrcData.value = months.map(m => {
-            const mData = data.monthly[m]
-            const services = mData?.service || []
-            const home = services.find((s: any) => s.name === 'Home')?.detail?.new?.mrc || 0
-            const nusafiber = services.find((s: any) => s.name === 'Nusafiber')?.detail?.new?.mrc || 0
-            const nusaselecta = services.find((s: any) => s.name === 'NusaSelecta')?.detail?.new?.mrc || 0
-            
-            return {
-                date: m.substring(0, 3),
-                Home: Number(home),
-                Nusafiber: Number(nusafiber),
-                NusaSelecta: Number(nusaselecta)
-            }
-        })
-
-        // Monthly New Subscription Trend by Service Product
-        monthlyDppData.value = months.map(m => {
-            const mData = data.monthly[m]
-            const services = mData?.service || []
-            const home = services.find((s: any) => s.name === 'Home')?.detail?.new?.dpp || 0
-            const nusafiber = services.find((s: any) => s.name === 'Nusafiber')?.detail?.new?.dpp || 0
-            const nusaselecta = services.find((s: any) => s.name === 'NusaSelecta')?.detail?.new?.dpp || 0
-            
-            return {
-                date: m.substring(0, 3),
-                Home: Number(home),
-                Nusafiber: Number(nusafiber),
-                NusaSelecta: Number(nusaselecta)
-            }
-        })
-
-        // Commission Composition Data (Monthly: DPP, MRC, Commission)
-        commissionCompositionData.value = months.map(m => {
-            const mData = data.monthly[m]
-            return {
-                date: m.substring(0, 3),
-                newSubscription: Number(mData?.detail?.new?.dpp ?? 0),
-                recurringSubscription: Number(mData?.detail?.recurring?.dpp ?? 0),
-                mrc: Number(mData?.mrc ?? 0),
-                commission: Number(mData?.commission ?? 0)
-            }
-        })
-    } finally {
-        setLoading(false)
+const yearlyNewMrcDonut = computed(() => {
+    const values = serviceGroupOrder.map(name => months.value.reduce((sum, m) => sum + (m.byServiceGroup[name]?.new.mrc ?? 0), 0))
+    return {
+        data: values,
+        categories: Object.fromEntries(serviceGroupOrder.map(name => [name, { name, color: groupChartColor[name] }]))
     }
+})
+
+const totalCommissionDonut = computed(() => {
+    const types = ['new', 'recurring', 'prorate', 'upgrade', 'alat', 'setup', 'bonus'] as const
+    const values = types.map(t => t === 'bonus'
+        ? months.value.reduce((sum, m) => sum + m.bonus, 0)
+        : months.value.reduce((sum, m) => sum + m.breakdown[t].commission, 0))
+    return {
+        data: values,
+        categories: Object.fromEntries(types.map(t => [t, totalCommissionChart[t]!]))
+    }
+})
+
+// --- Data fetching ---
+const fetchPeriodData = async () => {
+    const response = await commissionService.salesCommission(route.params.id as string, { month: selectedMonth.value, year: year.value })
+    periodData.value = response.data
 }
 
-const yFormatterComposition = (i: number): string => {
-    return commissionCompositionData.value[i]?.date ?? ''
+const fetchYearData = async () => {
+    const response = await commissionService.salesCommissionYear(route.params.id as string, { year: year.value })
+    yearData.value = response.data
 }
 
-const xFormatterComposition = (tick: number | number, _i?: number, _ticks?: number[]): string => {
-    return formatCurrency(Number(tick))
+const fetchInvoiceData = async () => {
+    const response = await invoiceService.getInvoiceSales(route.params.id as string, { month: selectedMonth.value, year: year.value })
+    invoiceItems.value = response.data.data
 }
+
+const fetchChurnData = async () => {
+    const response = await commissionService.salesChurn(route.params.id as string, { month: selectedMonth.value, year: year.value })
+    churnData.value = response.data
+}
+
+const fetchMonthData = () => Promise.all([fetchPeriodData(), fetchInvoiceData(), fetchChurnData()])
 
 const initData = async () => {
     setLoading(true)
     try {
-        const additionalService = new AdditionalService()
-        const currentPeriod = await additionalService.getCurrentPeriod()
-        
-        // Instantiate services
-        const commissionService = new CommissionService()
-        const employeeService = new EmployeeService()
-
         const employeeData = await employeeService.getEmployee(route.params.id as string)
         employee.value = employeeData.data
-
-        if (currentPeriod?.start && currentPeriod?.end) {
-            if (currentPeriod.month && currentPeriod.year) {
-                    selectedMonth.value = currentPeriod.month
-                    year.value = currentPeriod.year
-            } else {
-                    const [endYear, endMonth, endDay] = currentPeriod.end.split('-').map(Number)
-                    selectedMonth.value = endMonth ?? (new Date().getMonth() + 1)
-                    year.value = endYear ?? new Date().getFullYear()
-            }
-
-            const periodResponse = await commissionService.salesCommissionPeriod(route.params.id as string, {
-                month: currentPeriod.month,
-                year: currentPeriod.year
-            })
-            periodData.value = periodResponse.data
-        }
-        
-        await Promise.all([
-            fetchSalesData(),
-            fetchInvoiceData(),
-            fetchChurnData()
-        ])
+        await Promise.all([fetchMonthData(), fetchYearData()])
     } finally {
         setLoading(false)
     }
 }
 
-const fetchPeriodData = async () => {
-    const commissionService = new CommissionService()
-    const response = await commissionService.salesCommissionPeriod(route.params.id as string, {
-        month: selectedMonth.value,
-        year: year.value
-    })
-    periodData.value = response.data
-}
-
-const fetchInvoiceData = async () => {
-    try {
-        const invoiceService = new InvoiceService()
-        const response = await invoiceService.getInvoiceSales(route.params.id as string, {
-            month: selectedMonth.value,
-            year: year.value
-        })
-        responseData.value = response.data
-    } finally {
-        // No longer setting loading false here
-    }
-}
-
-const fetchChurnData = async () => {
-    try {
-        const commissionService = new CommissionService()
-        const response = await commissionService.salesChurn(route.params.id as string, {
-            month: selectedMonth.value,
-            year: year.value
-        })
-        churnData.value = response.data
-    } finally {
-        // No longer setting loading false here
-    }
-}
-
 watch(year, () => {
-    fetchSalesData()
-    fetchInvoiceData()
-    fetchPeriodData()
-    fetchChurnData()
+    fetchMonthData()
+    fetchYearData()
 })
 
 watch(selectedMonth, () => {
-    fetchInvoiceData()
-    fetchPeriodData()
-    fetchChurnData()
+    fetchMonthData()
 })
 
 initData()
-// Non-initData calls removed, initData handles them
-
 </script>
