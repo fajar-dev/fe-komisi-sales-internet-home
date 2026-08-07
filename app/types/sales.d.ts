@@ -1,211 +1,126 @@
-export interface InternalMouthlyQueryParams {
-    year: number;
-}
-
-export interface InternalPeriodQueryParams {
-    month: number;
-    year: number;
-}
-
-export interface CommissionDetailItem {
+export interface CommissionStats {
     count: number;
-    commission: string;
-    mrc: string;
-    dpp: string;
+    commission: number;
+    subscription: number;
+    mrc: number;
 }
 
-export interface summary{
-    new: {
-        dpp: string;
-        commission: string;
-    },
-    recurring: {
-        dpp: string;
-        commission: string;
-    },
-    other: {
-        dpp: string;
-        commission: string;
-    }
+export interface CommissionBreakdown {
+    new: CommissionStats;
+    upgrade: CommissionStats;
+    prorate: CommissionStats;
+    recurring: CommissionStats;
+    alat: CommissionStats;
+    setup: CommissionStats;
 }
 
-export interface CommissionServiceItem extends CommissionDetailItem {
-    name: string;
-    detail: {
-        new: CommissionDetailItem;
-        prorate: CommissionDetailItem;
-        recurring: CommissionDetailItem;
-        upgrade: CommissionDetailItem;
-        alat: CommissionDetailItem;
-        setup: CommissionDetailItem;
-    };
-}
-
-export interface CommissionData {
-    commission: string;
-    bonus: string;
-    totalCommission: string;
-    mrc: string;
-    dpp: string;
-    count: number;
-    detail: {
-        new: CommissionDetailItem;
-        prorate: CommissionDetailItem;
-        recurring: CommissionDetailItem;
-        upgrade: CommissionDetailItem;
-        alat: CommissionDetailItem;
-        setup: CommissionDetailItem;
-    };
-    startPeriod?: string;
-    endPeriod?: string;
-    service: CommissionServiceItem[];
-    monthly: Record<string, Omit<CommissionData, 'monthly'>>;
-    achievement: {
-        status: string;
-        motivation: string;
-        activity: number;
-        type?: string;
-    };
-    deduction?: {
-        mrc: string;
-        commission: string;
-        subscription: string;
-        new: { name: string; count: number }[];
-    };
-}
-
-export interface CommissionPeriodData {
-    startPeriod: string;
-    endPeriod: string;
-    commission: string;
-    bonus: string;
-    totalCommission: string;
-    mrc: string;
-    dpp: string;
-    count: number;
-    summary: summary;
-    detail: {
-        new: CommissionDetailItem;
-        prorate: CommissionDetailItem;
-        recurring: CommissionDetailItem;
-        upgrade: CommissionDetailItem;
-        alat: CommissionDetailItem;
-        setup: CommissionDetailItem;
-    };
-    service: CommissionServiceItem[];
-    achievement: {
-        status: string;
-        motivation: string;
-        activity: number;
-        type?: string;
-    };
-    deduction?: {
-        mrc: string;
-        commission: string;
-        subscription: string;
-        new: { name: string; count: number }[];
-    };
-}
-
-export interface InternalMouthlyResponseData {
-    success: boolean;
-    message: string;
-    data: CommissionData;
-}
-
-export interface InternalPeriodResponseData {
-    success: boolean;
-    message: string;
-    data: CommissionPeriodData;
-}
-
-export interface SalesInvoiceQueryParams {
-    month: number;
-    year: number;
-}
-
-export interface InvoiceSalesData {
-    ai: number;
-    invoiceNumber?: number;
-    invoiceOrder?: number;
-    invoiceDate: string;
-    dpp: number | string;
-    newSubscription: number | string;
-    paidDate: string;
+export interface CommissionLineItem {
+    aiInvoice: number;
+    aiReceipt: number | null;
+    customerId: string;
+    customerName: string | null;
+    customerCompany: string | null;
+    customerServiceId: number | null;
+    customerServiceAccount: string | null;
+    serviceId: string | null;
+    serviceName: string | null;
+    category: string | null;
+    businessOperation: string | null;
+    type: string;
     month: number;
     lateMonth: number;
-    customerServiceId: number;
-    customerId: string;
-    customerName: string;
-    customerCompany: string;
-    customerServiceAccount: string;
-    customerGroupId?: string;
-    serviceId: string;
-    serviceName: string;
-    salesId: string;
-    managerSalesId?: string;
-    referralId?: string | null;
-    isNew?: boolean;
-    isUpgrade: number | boolean;
-    isTermin?: boolean;
-    salesCommission: number;
-    isAdjustment: number | boolean;
-    category?: string;
-    type: string;
-    modal?: number;
-    typeSub?: string;
-    salesCommissionPercentage: number;
-    isDeleted?: boolean;
-    baseCommission: string
+    isApproved: boolean;
+    paidDate: string | null;
+    subscription: number;
+    mrc: number;
+    referralFee: number;
+    referralType: string | null;
+    baseCommission: number;
+    commissionPercentage: number;
+    commission: number;
 }
 
-export interface InvoiceSalesResponseData {
+export interface SalesCommissionQueryParams {
+    period?: string;
+    month?: number;
+    year?: number;
+}
+
+export interface SalesCommissionData {
+    period: string;
+    startDate: string;
+    endDate: string;
+    employeeId: string;
+    status: string | null;
+    activityCount: number;
+    achievementStatus: string;
+    motivation: string;
+    bonus: number;
+    total: CommissionStats;
+    breakdown: CommissionBreakdown;
+    byServiceGroup: Record<string, CommissionBreakdown>;
+    deduction: CommissionStats;
+}
+
+export interface SalesCommissionResponseData {
     success: boolean;
     message: string;
-    data: {
-        startPeriod: string;
-        endPeriod: string;
-        count: number;
-        commission: string;
-        dpp: string;
-        mrc: string;
-        new: { count?: number; commission?: string; dpp?: string; mrc?: string; data?: InvoiceSalesData[] };
-        upgrade: { count?: number; commission?: string; dpp?: string; mrc?: string; data?: InvoiceSalesData[] };
-        prorate: { count?: number; commission?: string; dpp?: string; mrc?: string; data?: InvoiceSalesData[] };
-        recurring: { count?: number; commission?: string; dpp?: string; mrc?: string; data?: InvoiceSalesData[] };
-        alat: { count?: number; commission?: string; dpp?: string; mrc?: string; data?: InvoiceSalesData[] };
-        setup: { count?: number; commission?: string; dpp?: string; mrc?: string; data?: InvoiceSalesData[] };
-    };
+    data: SalesCommissionData;
 }
 
-export interface InvoiceSalesShowResponseData {
+export interface SalesCommissionYearQueryParams {
+    year: number;
+}
+
+export interface SalesCommissionYearData {
+    year: number;
+    employeeId: string;
+    yearly: CommissionStats;
+    months: SalesCommissionData[];
+}
+
+export interface SalesCommissionYearResponseData {
     success: boolean;
     message: string;
-    data: InvoiceSalesData;
+    data: SalesCommissionYearData;
 }
 
-export interface ChurnData {
-    customerServiceId: number;
-    customerId: string;
-    customerName: string;
-    customerServiceAccount: string;
-    serviceId: string;
-    serviceName: string;
-    registrationDate: string;
-    unregistrationDate: string;
-    subscriptionPeriod: string;
-    reason: string;
+export interface SalesInvoiceData {
+    period: string;
+    startDate: string;
+    endDate: string;
+    count: number;
+    data: CommissionLineItem[];
+}
+
+export interface SalesInvoiceResponseData {
+    success: boolean;
+    message: string;
+    data: SalesInvoiceData;
+}
+
+export interface ChurnRow {
+    customer_service_id: number;
+    customer_id: string;
+    customer_name: string | null;
+    customer_service_account: string | null;
+    service_id: string | null;
+    service_name: string | null;
+    registration_date: string | null;
+    unregistration_date: string | null;
+    reason: string | null;
     period: number;
-    price: number;
-    salesId: string;
-    managerId: string;
+    price: number | null;
+    sales_id: string | null;
+    manager_id: string | null;
+    is_approved: boolean;
     mrc: number;
     commission: number;
     commissionPercentage: number;
 }
 
-export interface ChurnResponseData {
+export interface SalesChurnResponseData {
     success: boolean;
     message: string;
-    data: ChurnData[];
+    data: ChurnRow[];
 }
