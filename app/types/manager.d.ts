@@ -1,118 +1,90 @@
-export interface ManagerMouthlyQueryParams {
+import type { SalesCommissionData } from "./sales"
+
+export interface ManagerCommissionQueryParams {
+    period?: string;
+    month?: number;
+    year?: number;
+}
+
+export interface ManagerCommissionYearQueryParams {
     year: number;
 }
 
-export interface ManagerMonthlyDetail {
-    name: string;
-    count: number;
-    total: number;
-}
-
-export interface ManagerMonthlyData {
-    month: string;
-    detail: ManagerMonthlyDetail[];
-    total: number;
-}
-
-export interface ManagerMouthlyResponseData {
-    success: boolean;
-    message: string;
-    data: {
-        yearlyNewMrc: string;
-        yearlyNewSubscription: string;
-        yearlyNewCommission: string;
-        yearlyRecurringSubscription: string;
-        yearlyRecurringCommission: string;
-        monthly: Record<string, ManagerPeriodData>;
-    };
-}
-
-
-export interface ManagerPeriodQueryParams {
-    year: number;
-    month: number;
-}
-
-export interface ManagerEmployeeAchievement {
-    activity: number;
-    type: string;
-    status: string;
-}
-
-export interface ManagerEmployeeNewService {
-    name: string;
-    count: number;
-    mrc: string;
-    subscription: string;
-}
-
-export interface CreateManagerEmployeeAchievement {
-    activity: number;
-    type: string;
-    status: string;
-}
-
-export interface ManagerEmployeeNewService {
-    name: string;
-    count: number;
-    mrc: string;
-    subscription: string;
-}
-
-export interface ManagerEmployeePerformance {
-    name: string;
+export interface ManagerTeamMember {
     employeeId: string;
+    name: string;
     photoProfile: string;
-    achievement: CreateManagerEmployeeAchievement;
-    newService: ManagerEmployeeNewService[];
-    newMrc: string;
-    newSubscription: string;
-    newCommission: string;
-    recurringSubscription: string;
-    recurringCommission: string;
-    otherSubscription: string;
-    otherCommission: string;
-    bonus: string;
-    totalCommission: string;
-    managerRecurringCommission: string;
-    managerRecurringCommissionPercentage: number;
-    managerNewCommission: string;
-    managerNewCommissionPercentage: number;
+    status: string | null;
+    activityCount: number;
+    achievementStatus: string;
+    motivation: string;
+    newSubscription: number;
+    newMrc: number;
+    newCommission: number;
+    recurringSubscription: number;
+    recurringCommission: number;
+    otherSubscription: number;
+    otherCommission: number;
+    bonus: number;
+    totalCommission: number;
+    managerNewCommission: number;
+    managerRecurringCommission: number;
+    newService: { name: string; count: number; mrc: number; subscription: number }[];
 }
 
-export interface ManagerPeriodAchievement {
-    newCommissionPercentage: string;
-    newCommission: string;
-    recurringCommissionPercentage: string;
-    recurringCommission: string;
-    totalCommission: string;
-}
-
-export interface ManagerSalesSummary {
-    Permanent: number;
-    Probation: number;
-    total: number;
+export interface ManagerTeamPerformance {
+    totalCount: number;
+    permanentCount: number;
+    otherCount: number;
     activity: number;
-    percentage: string;
-    status: string;
-    target: number;
+    baseTarget: number;
+    thresholdPercentage: number;
+    finalTarget: number;
+    achievementPercentage: number;
+    isTargetAchieved: boolean;
 }
 
-export interface ManagerPeriodData {
+export interface ManagerOverride {
+    newCommissionRate: number;
+    newCommission: number;
+    teamNewCommissionPot: number;
+    recurringCommissionRate: number;
+    recurringCommission: number;
+    teamRecurringSubscriptionNet: number;
+}
+
+export interface ManagerCommissionData {
+    period: string;
     startDate: string;
     endDate: string;
-    sales: ManagerSalesSummary;
-    employee: ManagerEmployeePerformance[];
-    monthlyNewMrc: string;
-    monthlyNewSubscription: string;
-    monthlyNewCommission: string;
-    monthlyRecurringSubscription: string;
-    monthlyRecurringCommission: string;
-    achievement: ManagerPeriodAchievement;
+    managerId: string;
+    team: ManagerTeamPerformance;
+    override: ManagerOverride;
+    teamTotals: {
+        newCommission: number;
+        recurringCommission: number;
+        newSubscription: number;
+        newMrc: number;
+    };
+    personal: SalesCommissionData;
+    totalCommission: number;
+    members: ManagerTeamMember[];
 }
 
-export interface ManagerPeriodResponseData {
+export interface ManagerCommissionResponseData {
     success: boolean;
     message: string;
-    data: ManagerPeriodData;
+    data: ManagerCommissionData;
+}
+
+export interface ManagerCommissionYearData {
+    year: number;
+    managerId: string;
+    months: ManagerCommissionData[];
+}
+
+export interface ManagerCommissionYearResponseData {
+    success: boolean;
+    message: string;
+    data: ManagerCommissionYearData;
 }

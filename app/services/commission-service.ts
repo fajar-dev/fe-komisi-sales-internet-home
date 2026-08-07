@@ -6,6 +6,12 @@ import type {
     SalesCommissionYearQueryParams,
     SalesCommissionYearResponseData
 } from "~/types/sales"
+import type {
+    ManagerCommissionQueryParams,
+    ManagerCommissionResponseData,
+    ManagerCommissionYearQueryParams,
+    ManagerCommissionYearResponseData
+} from "~/types/manager"
 
 export class CommissionService {
     async salesCommission(employeeId: string, params: SalesCommissionQueryParams): Promise<SalesCommissionResponseData> {
@@ -39,6 +45,34 @@ export class CommissionService {
     async salesChurn(employeeId: string, params: SalesCommissionQueryParams): Promise<SalesChurnResponseData> {
         try {
             const response = await apiService.client.get(`/sales/${employeeId}/churn`, {
+                params,
+                headers: {
+                    authorization: `Bearer ${useAuth().state.token}`
+                }
+            })
+            return response.data
+        } catch (error: any) {
+            handleServiceError(error)
+        }
+    }
+
+    async managerCommission(managerId: string, params: ManagerCommissionQueryParams): Promise<ManagerCommissionResponseData> {
+        try {
+            const response = await apiService.client.get(`/manager/${managerId}/commission`, {
+                params,
+                headers: {
+                    authorization: `Bearer ${useAuth().state.token}`
+                }
+            })
+            return response.data
+        } catch (error: any) {
+            handleServiceError(error)
+        }
+    }
+
+    async managerCommissionYear(managerId: string, params: ManagerCommissionYearQueryParams): Promise<ManagerCommissionYearResponseData> {
+        try {
+            const response = await apiService.client.get(`/manager/${managerId}/commission/year`, {
                 params,
                 headers: {
                     authorization: `Bearer ${useAuth().state.token}`
