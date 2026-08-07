@@ -8,7 +8,14 @@ export interface User {
     organization_name: string
     job_level: string
     branch: string
-    manager_id: number
+    status: string
+    manager_id: number | null
+    has_dashboard: boolean
+    is_active: boolean
+    is_admin: boolean
+    managerName?: string | null
+    managerEmployeeId?: string | null
+    managerPhotoProfile?: string | null
 }
 
 export interface AuthData {

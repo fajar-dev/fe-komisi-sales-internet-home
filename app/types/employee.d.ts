@@ -15,7 +15,13 @@ export interface Employee {
     job_level: string
     branch: string
     status: string
-    manager_id: number
+    manager_id: number | null
+    has_dashboard: boolean
+    is_active: boolean
+    is_admin: boolean
+    managerName?: string | null
+    managerEmployeeId?: string | null
+    managerPhotoProfile?: string | null
 }
 
 export interface EmployeeHierarchyResponseData {
