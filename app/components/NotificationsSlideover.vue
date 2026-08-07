@@ -210,7 +210,7 @@ function formatKey(key: string) {
     return result.charAt(0).toUpperCase() + result.slice(1).toLowerCase();
 }
 
-onMounted(() => {
-    fetchAdjustments()
-})
+// Adjustment feature isn't built on the v2 backend yet, so this only
+// fetches when the user opens the slideover (via the bell click handler)
+// instead of erroring on every page load.
 </script>
