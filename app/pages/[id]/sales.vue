@@ -153,158 +153,6 @@
             </UCard>
         </div>
 
-        <div class="py-2">
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
-                <UCard class="lg:col-span-12">
-                    <template #header>
-                        <h2>Monthly New Service Count</h2>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">Number of new services per product type</p>
-                    </template>
-                    <BarChart
-                        v-if="monthlyServiceData.length > 0"
-                        :data="monthlyServiceData"
-                        index="date"
-                        :categories="serviceChart"
-                        :y-axis="serviceKeys"
-                        y-label="Count"
-                        :x-num-ticks="4"
-                        :y-num-ticks="4"
-                        :x-formatter="xFormatterMonth"
-                        :y-grid-line="true"
-                        :height="320"
-                        :legend-position="LegendPosition.TopRight"
-                        :rounded-corners="4"
-                    />
-                </UCard>
-
-                <UCard class="lg:col-span-6">
-                    <template #header>
-                        <h2>Monthly MRC</h2>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">Total MRC generated per month</p>
-                    </template>
-                    <LineChart
-                        v-if="monthlyMrcData.length > 0"
-                        :data="monthlyMrcData"
-                        index="date"
-                        :categories="serviceChart"
-                        :y-axis="serviceKeys"
-                        y-label="MRC"
-                        :x-num-ticks="4"
-                        :y-num-ticks="4"
-                        :y-grid-line="true"
-                        :y-formatter="formatCurrency"
-                        :x-formatter="xFormatterMonth"
-                        :curve-type="CurveType.MonotoneX"
-                        :height="320"
-                        :legend-position="LegendPosition.TopRight"
-                    />
-                </UCard>
-
-                <UCard class="lg:col-span-6">
-                    <template #header>
-                        <h2>Monthly New Subscription</h2>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">Total new subscription generated per month</p>
-                    </template>
-                    <LineChart
-                        v-if="monthlySubscriptionData.length > 0"
-                        :data="monthlySubscriptionData"
-                        index="date"
-                        :categories="serviceChart"
-                        :y-axis="serviceKeys"
-                        y-label="Subscription"
-                        :x-num-ticks="4"
-                        :y-num-ticks="4"
-                        :y-grid-line="true"
-                        :y-formatter="formatCurrency"
-                        :x-formatter="xFormatterMonth"
-                        :curve-type="CurveType.MonotoneX"
-                        :height="320"
-                        :legend-position="LegendPosition.TopRight"
-                    />
-                </UCard>
-
-                <UCard class="lg:col-span-8">
-                    <template #header>
-                        <div class="lg:flex items-center justify-between">
-                            <div>
-                                <h2>Monthly Commission Trend</h2>
-                                <p class="text-sm text-gray-500 dark:text-gray-400">Stacked view of commission by type</p>
-                            </div>
-                            <h1 class="font-bold text-2xl">
-                                Total: {{ formatCurrency(totalCommissionData.reduce((total, item) => total + item.total, 0)) }}
-                            </h1>
-                        </div>
-                    </template>
-                    <AreaChart
-                        v-if="totalCommissionData.length > 0"
-                        :data="totalCommissionData"
-                        index="date"
-                        :categories="totalCommissionChart"
-                        y-label="Total Commission"
-                        :x-num-ticks="4"
-                        :y-num-ticks="4"
-                        :y-formatter="formatCurrency"
-                        :x-formatter="xFormatterMonth"
-                        :y-grid-line="true"
-                        :curve-type="CurveType.MonotoneX"
-                        :height="320"
-                        :legend-position="LegendPosition.TopRight"
-                        :stacked="true"
-                    />
-                </UCard>
-
-                <UCard class="lg:col-span-4">
-                    <template #header>
-                        <h2>Commission Composition</h2>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">Monthly comparison of subscription, MRC, and commission</p>
-                    </template>
-                    <BarChart
-                        v-if="commissionCompositionData.length > 0"
-                        :data="commissionCompositionData"
-                        :stacked="true"
-                        :height="300"
-                        :categories="commissionCompositionChart"
-                        :y-axis="['newSubscription', 'recurringSubscription', 'mrc', 'commission']"
-                        :group-padding="0"
-                        :bar-padding="0.2"
-                        :x-num-ticks="6"
-                        :radius="4"
-                        :orientation="Orientation.Horizontal"
-                        :x-formatter="formatCurrency"
-                        :y-formatter="(i: number) => commissionCompositionData[i]?.date ?? ''"
-                        :legend-position="LegendPosition.TopRight"
-                        :hide-legend="false"
-                        :x-grid-line="true"
-                    />
-                </UCard>
-
-                <UCard class="lg:col-span-4">
-                    <template #header>
-                        <h2>Yearly New MRC</h2>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">New MRC by service product</p>
-                    </template>
-                    <DonutChart :data="yearlyNewMrcDonut.data" :height="280" :categories="yearlyNewMrcDonut.categories" :radius="80" :pad-angle="0.1" :arc-width="20" :value-formatter="formatCurrency">
-                        <div class="text-center">
-                            <div class="text-sm text-gray-500 dark:text-gray-400">Total</div>
-                            <div class="text-xl font-bold text-gray-900 dark:text-white">{{ formatCurrency(yearlyNewMrcDonut.data.reduce((a, b) => a + b, 0)) }}</div>
-                        </div>
-                    </DonutChart>
-                </UCard>
-
-                <UCard class="lg:col-span-4">
-                    <template #header>
-                        <h2>Total Commission</h2>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">Total yearly commission by type</p>
-                    </template>
-                    <DonutChart :data="totalCommissionDonut.data" :height="280" :categories="totalCommissionDonut.categories" :radius="80" :pad-angle="0.1" :arc-width="20" :value-formatter="formatCurrency">
-                        <div class="text-center">
-                            <div class="text-sm text-gray-500 dark:text-gray-400">Total</div>
-                            <div class="text-xl font-bold text-gray-900 dark:text-white">{{ formatCurrency(totalCommissionDonut.data.reduce((a, b) => a + b, 0)) }}</div>
-                        </div>
-                    </DonutChart>
-                </UCard>
-            </div>
-        </div>
     </UContainer>
 </template>
 
@@ -315,7 +163,7 @@ import { EmployeeService } from '~/services/employee-service'
 import { InvoiceService } from '~/services/invoice-service'
 import type { Employee } from '~/types/employee'
 import type { SelectMenuItem, TableColumn } from '@nuxt/ui'
-import type { ChurnRow, CommissionLineItem, SalesCommissionData, SalesCommissionYearData } from '~/types/sales'
+import type { ChurnRow, CommissionLineItem, SalesCommissionData } from '~/types/sales'
 
 const { setLoading } = useLoading()
 const route = useRoute()
@@ -333,7 +181,6 @@ const year = ref(new Date().getFullYear())
 const selectedMonth = ref(new Date().getMonth() + 1)
 
 const periodData = ref<SalesCommissionData | null>(null)
-const yearData = ref<SalesCommissionYearData | null>(null)
 const invoiceItems = ref<CommissionLineItem[]>([])
 const churnData = ref<ChurnRow[]>([])
 
@@ -577,106 +424,10 @@ const getColumns = (key: string): TableColumn<any>[] => {
     return cols
 }
 
-// --- Yearly charts, derived from yearData.months (Jan..Dec) ---
-const serviceChart: Record<string, { name: string; color: string }> = {
-    Home: { name: 'Home', color: '#0ea5e9' },
-    Nusafiber: { name: 'Nusafiber', color: '#a855f7' },
-    NusaSelecta: { name: 'NusaSelecta', color: '#f97316' }
-}
-const serviceKeys = Object.keys(serviceChart) as any
-
-const totalCommissionChart: Record<string, { name: string; color: string }> = {
-    new: { name: 'New', color: '#3b82f6' },
-    recurring: { name: 'Recurring', color: '#f97316' },
-    prorate: { name: 'Prorate', color: '#8b5cf6' },
-    upgrade: { name: 'Upgrade', color: '#6366f1' },
-    alat: { name: 'Alat', color: '#ec4899' },
-    setup: { name: 'Setup', color: '#14b8a6' },
-    bonus: { name: 'Bonus', color: '#eab308' }
-}
-
-const commissionCompositionChart = {
-    newSubscription: { name: 'Subscription (New)', color: '#3b82f6' },
-    recurringSubscription: { name: 'Subscription (Recurring)', color: '#6366f1' },
-    mrc: { name: 'MRC', color: '#f97316' },
-    commission: { name: 'Commission', color: '#10b981' }
-}
-
-const months = computed(() => yearData.value?.months ?? [])
-
-const xFormatterMonth = (tick: number) => totalCommissionData.value[tick]?.date ?? ''
-
-const totalCommissionData = computed(() => months.value.map((m, i) => ({
-    date: monthNames[i]!.substring(0, 3),
-    total: m.total.commission + m.bonus,
-    new: m.breakdown.new.commission,
-    recurring: m.breakdown.recurring.commission,
-    prorate: m.breakdown.prorate.commission,
-    upgrade: m.breakdown.upgrade.commission,
-    alat: m.breakdown.alat.commission,
-    setup: m.breakdown.setup.commission,
-    bonus: m.bonus
-})))
-
-const monthlyServiceData = computed(() => months.value.map((m, i) => ({
-    date: monthNames[i]!.substring(0, 3),
-    Home: m.byServiceGroup.Home?.new.count ?? 0,
-    Nusafiber: m.byServiceGroup.Nusafiber?.new.count ?? 0,
-    NusaSelecta: m.byServiceGroup.NusaSelecta?.new.count ?? 0
-})))
-
-const monthlyMrcData = computed(() => months.value.map((m, i) => ({
-    date: monthNames[i]!.substring(0, 3),
-    Home: m.byServiceGroup.Home?.new.mrc ?? 0,
-    Nusafiber: m.byServiceGroup.Nusafiber?.new.mrc ?? 0,
-    NusaSelecta: m.byServiceGroup.NusaSelecta?.new.mrc ?? 0
-})))
-
-const monthlySubscriptionData = computed(() => months.value.map((m, i) => ({
-    date: monthNames[i]!.substring(0, 3),
-    Home: m.byServiceGroup.Home?.new.subscription ?? 0,
-    Nusafiber: m.byServiceGroup.Nusafiber?.new.subscription ?? 0,
-    NusaSelecta: m.byServiceGroup.NusaSelecta?.new.subscription ?? 0
-})))
-
-const commissionCompositionData = computed(() => months.value.map((m, i) => ({
-    date: monthNames[i]!.substring(0, 3),
-    newSubscription: m.breakdown.new.subscription,
-    recurringSubscription: m.breakdown.recurring.subscription,
-    mrc: m.total.mrc,
-    commission: m.total.commission
-})))
-
-const groupChartColor: Record<string, string> = { Home: '#0ea5e9', NusaSelecta: '#f97316', Nusafiber: '#a855f7' }
-
-const yearlyNewMrcDonut = computed(() => {
-    const values = serviceGroupOrder.map(name => months.value.reduce((sum, m) => sum + (m.byServiceGroup[name]?.new.mrc ?? 0), 0))
-    return {
-        data: values,
-        categories: Object.fromEntries(serviceGroupOrder.map(name => [name, { name, color: groupChartColor[name] }]))
-    }
-})
-
-const totalCommissionDonut = computed(() => {
-    const types = ['new', 'recurring', 'prorate', 'upgrade', 'alat', 'setup', 'bonus'] as const
-    const values = types.map(t => t === 'bonus'
-        ? months.value.reduce((sum, m) => sum + m.bonus, 0)
-        : months.value.reduce((sum, m) => sum + m.breakdown[t].commission, 0))
-    return {
-        data: values,
-        categories: Object.fromEntries(types.map(t => [t, totalCommissionChart[t]!]))
-    }
-})
-
 // --- Data fetching ---
 const fetchPeriodData = async () => {
     const response = await commissionService.salesCommission(route.params.id as string, { month: selectedMonth.value, year: year.value })
     periodData.value = response.data
-}
-
-const fetchYearData = async () => {
-    const response = await commissionService.salesCommissionYear(route.params.id as string, { year: year.value })
-    yearData.value = response.data
 }
 
 const fetchInvoiceData = async () => {
@@ -696,7 +447,7 @@ const initData = async () => {
     try {
         const employeeData = await employeeService.getEmployee(route.params.id as string)
         employee.value = employeeData.data
-        await Promise.all([fetchMonthData(), fetchYearData()])
+        await fetchMonthData()
     } finally {
         setLoading(false)
     }
@@ -704,7 +455,6 @@ const initData = async () => {
 
 watch(year, () => {
     fetchMonthData()
-    fetchYearData()
 })
 
 watch(selectedMonth, () => {
