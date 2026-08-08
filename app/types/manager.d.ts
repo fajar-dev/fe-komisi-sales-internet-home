@@ -35,8 +35,8 @@ export interface ManagerTeamMember {
 export interface ManagerTeamPerformance {
     totalCount: number;
     permanentCount: number;
-    otherCount: number;
-    activity: number;
+    nonPermanentCount: number;
+    activityCount: number;
     baseTarget: number;
     thresholdPercentage: number;
     finalTarget: number;
@@ -47,7 +47,6 @@ export interface ManagerTeamPerformance {
 export interface ManagerOverride {
     newCommissionRate: number;
     newCommission: number;
-    teamNewCommissionPot: number;
     recurringCommissionRate: number;
     recurringCommission: number;
     teamRecurringSubscriptionNet: number;
