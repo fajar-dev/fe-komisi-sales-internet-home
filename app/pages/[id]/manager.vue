@@ -49,7 +49,7 @@
                                 </div>
                                 <div class="flex justify-between items-center">
                                     <span class="text-sm text-gray-600 dark:text-gray-400">Probation</span>
-                                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ periodData.team.otherCount }}</span>
+                                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ periodData.team.nonPermanentCount }}</span>
                                 </div>
                                 <div class="flex justify-between items-center">
                                     <span class="text-sm text-gray-600 dark:text-gray-400">Target</span>
@@ -99,7 +99,7 @@
                             </div>
                             <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 mt-6">New Service</h4>
                             <div class="flex flex-col gap-2">
-                                <span class="text-3xl font-bold text-gray-900 dark:text-white">{{ periodData.team.activity }}</span>
+                                <span class="text-3xl font-bold text-gray-900 dark:text-white">{{ periodData.team.activityCount }}</span>
                             </div>
                         </div>
                     </div>
@@ -213,26 +213,8 @@ const selectedMonth = ref(new Date().getMonth() + 1)
 const periodData = ref<ManagerCommissionData | null>(null)
 const expanded = ref({})
 
-const formatCurrency = (value: number): string => {
-    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value)
-}
-
-const formatDate = (isoDate: string): string => {
-    const [y, m, d] = isoDate.split('-').map(Number)
-    if (y === undefined || m === undefined || d === undefined) return isoDate
-    return new Date(y, m - 1, d).toLocaleDateString('en-US', { dateStyle: 'medium' })
-}
-
-const getAchievementColor = (status: string) => {
-    const s = status.toLowerCase()
-    if (s.includes('tidak capai') || s.includes('sp1')) return 'font-bold text-red-500 dark:text-red-400'
-    if (s.includes('average')) return 'font-bold text-orange-500 dark:text-orange-400'
-    if (s.includes('bonus')) return 'font-bold text-violet-500 dark:text-violet-400'
-    if (s.includes('excelent') || s.includes('excellent')) return 'font-bold text-emerald-500 dark:text-emerald-400'
-    if (s.includes('very good')) return 'font-bold text-teal-500 dark:text-teal-400'
-    if (s.includes('capai target')) return 'font-bold text-green-500 dark:text-green-400'
-    return 'text-primary-500 dark:text-primary-400'
-}
+const { formatCurrency, formatDate } = useFormat()
+const { getAchievementTextClass } = useAchievementColor()
 
 const personalItems = computed(() => periodData.value?.personal.items ?? [])
 const croItems = computed(() => periodData.value?.croRecurring ?? [])
@@ -352,7 +334,7 @@ const columns = computed<TableColumn<ManagerTeamMember>[]>(() => [
     {
         id: 'achievement',
         header: 'Achievement',
-        cell: ({ row }) => h('div', { class: getAchievementColor(row.original.achievementStatus) }, row.original.achievementStatus)
+        cell: ({ row }) => h('div', { class: getAchievementTextClass(row.original.achievementStatus) }, row.original.achievementStatus)
     },
     {
         accessorKey: 'activityCount',

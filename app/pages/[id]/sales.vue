@@ -87,15 +87,7 @@ const periodData = ref<SalesCommissionData | null>(null)
 const invoiceItems = ref<CommissionLineItem[]>([])
 const churnData = ref<ChurnRow[]>([])
 
-const formatCurrency = (value: number): string => {
-    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value)
-}
-
-const formatDate = (isoDate: string): string => {
-    const [y, m, d] = isoDate.split('-').map(Number)
-    if (y === undefined || m === undefined || d === undefined) return isoDate
-    return new Date(y, m - 1, d).toLocaleDateString('en-US', { dateStyle: 'medium' })
-}
+const { formatCurrency, formatDate } = useFormat()
 
 const tabItems = computed(() => {
     const byType = (key: string) => invoiceItems.value.filter(i => i.type === key)

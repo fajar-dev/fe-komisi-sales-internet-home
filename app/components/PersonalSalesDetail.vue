@@ -51,7 +51,7 @@
                         <div class="flex flex-col gap-2 md:gap-3">
                             <div>
                                 <p class="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400 mb-1 md:mb-1.5 tracking-wide">Status</p>
-                                <span :class="['text-xs sm:text-sm font-bold uppercase px-2 md:px-2.5 py-0.5 md:py-1 rounded-md border bg-gray-50 dark:bg-gray-800', getAchievementColor(data.achievementStatus)]">
+                                <span :class="['text-xs sm:text-sm font-bold uppercase px-2 md:px-2.5 py-0.5 md:py-1 rounded-md border bg-gray-50 dark:bg-gray-800', getAchievementBadgeClass(data.achievementStatus)]">
                                     {{ data.achievementStatus }}
                                 </span>
                             </div>
@@ -109,20 +109,8 @@ const props = defineProps<{
     churnData: ChurnRow[]
 }>()
 
-const formatCurrency = (value: number): string => {
-    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value)
-}
-
-const getAchievementColor = (status: string) => {
-    const s = status.toLowerCase()
-    if (s.includes('tidak capai') || s.includes('sp1')) return 'text-red-500 dark:text-red-400 border-red-200 dark:border-red-800'
-    if (s.includes('average')) return 'text-orange-500 dark:text-orange-400 border-orange-200 dark:border-orange-800'
-    if (s.includes('bonus')) return 'text-violet-500 dark:text-violet-400 border-violet-200 dark:border-violet-800'
-    if (s.includes('excelent') || s.includes('excellent')) return 'text-emerald-500 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800'
-    if (s.includes('very good')) return 'text-teal-500 dark:text-teal-400 border-teal-200 dark:border-teal-800'
-    if (s.includes('capai target')) return 'text-green-500 dark:text-green-400 border-green-200 dark:border-green-800'
-    return 'text-primary-500 dark:text-primary-400 border-primary-200 dark:border-primary-800'
-}
+const { formatCurrency } = useFormat()
+const { getAchievementBadgeClass } = useAchievementColor()
 
 const serviceGroupOrder = ['Home', 'NusaSelecta', 'Nusafiber'] as const
 const groupColor: Record<string, { bg: string; text: string; textStrong: string }> = {
