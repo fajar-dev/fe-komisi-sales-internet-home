@@ -1,4 +1,4 @@
-import type { SalesCommissionData } from "./sales"
+import type { CommissionLineItem, SalesCommissionData } from "./sales"
 
 export interface ManagerCommissionQueryParams {
     period?: string;
@@ -66,7 +66,10 @@ export interface ManagerCommissionData {
         newSubscription: number;
         newMrc: number;
     };
-    personal: SalesCommissionData;
+    /** The manager's own personal-sales commission (KOMISI.md 6.F), invoice items included. */
+    personal: SalesCommissionData & { items: CommissionLineItem[] };
+    /** Customer Relation Officer recurring rows credited to this manager (KOMISI.md 6.D). */
+    croRecurring: CommissionLineItem[];
     totalCommission: number;
     members: ManagerTeamMember[];
 }
