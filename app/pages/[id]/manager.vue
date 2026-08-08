@@ -128,6 +128,16 @@
         </div>
 
         <div class="py-2">
+            <UPageCard v-if="periodData">
+                <template #header>
+                    <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Personal Sales Detail</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Same breakdown as an individual sales dashboard, scoped to this manager's own invoices</p>
+                </template>
+                <PersonalSalesDetail :data="periodData.personal" :churn-data="churnData" />
+            </UPageCard>
+        </div>
+
+        <div class="py-2">
             <UCard>
                 <template #header>
                     <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Personal Sales Invoice</h3>
@@ -192,7 +202,7 @@ import { EmployeeService } from '~/services/employee-service'
 import type { Employee } from '~/types/employee'
 import type { SelectMenuItem, TableColumn } from '@nuxt/ui'
 import type { ManagerCommissionData, ManagerTeamMember } from '~/types/manager'
-import type { CommissionLineItem } from '~/types/sales'
+import type { ChurnRow, CommissionLineItem } from '~/types/sales'
 
 const { setLoading } = useLoading()
 const route = useRoute()
@@ -211,6 +221,7 @@ const year = ref(new Date().getFullYear())
 const selectedMonth = ref(new Date().getMonth() + 1)
 
 const periodData = ref<ManagerCommissionData | null>(null)
+const churnData = ref<ChurnRow[]>([])
 const expanded = ref({})
 
 const formatCurrency = (value: number): string => {
@@ -434,23 +445,30 @@ const fetchPeriodData = async () => {
     periodData.value = response.data
 }
 
+const fetchChurnData = async () => {
+    const response = await commissionService.salesChurn(route.params.id as string, { month: selectedMonth.value, year: year.value })
+    churnData.value = response.data
+}
+
+const fetchMonthData = () => Promise.all([fetchPeriodData(), fetchChurnData()])
+
 const initData = async () => {
     setLoading(true)
     try {
         const employeeData = await employeeService.getEmployee(route.params.id as string)
         employee.value = employeeData.data
-        await fetchPeriodData()
+        await fetchMonthData()
     } finally {
         setLoading(false)
     }
 }
 
 watch(year, () => {
-    fetchPeriodData()
+    fetchMonthData()
 })
 
 watch(selectedMonth, () => {
-    fetchPeriodData()
+    fetchMonthData()
 })
 
 initData()
