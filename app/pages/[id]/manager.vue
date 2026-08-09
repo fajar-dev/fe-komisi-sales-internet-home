@@ -218,22 +218,25 @@ const { getAchievementTextClass } = useAchievementColor()
 
 const personalItems = computed(() => periodData.value?.personal.items ?? [])
 const croItems = computed(() => periodData.value?.croRecurring ?? [])
+// Customer Relation Officer rows have no real salesperson, so they never
+// appear in personal.items — folded into the Recurring tab here since
+// that's the only commission stream they actually feed (KOMISI.md 6.D).
+const recurringItems = computed(() => [...personalItems.value.filter(i => i.type === 'recurring'), ...croItems.value])
 
 const invoiceTabItems = computed(() => {
     const byType = (key: string) => personalItems.value.filter(i => i.type === key)
     return [
         { label: `New (${byType('new').length})`, key: 'new' },
-        { label: `Recurring (${byType('recurring').length})`, key: 'recurring' },
+        { label: `Recurring (${recurringItems.value.length})`, key: 'recurring' },
         { label: `Prorate (${byType('prorate').length})`, key: 'prorate' },
         { label: `Upgrade (${byType('upgrade').length})`, key: 'upgrade' },
         { label: `Alat (${byType('alat').length})`, key: 'alat' },
-        { label: `Setup (${byType('setup').length})`, key: 'setup' },
-        { label: `Recurring - CRO (${croItems.value.length})`, key: 'cro' }
+        { label: `Setup (${byType('setup').length})`, key: 'setup' }
     ]
 })
 
 const getInvoiceTabData = (key: string) => {
-    if (key === 'cro') return croItems.value
+    if (key === 'recurring') return recurringItems.value
     return personalItems.value.filter(i => i.type === key)
 }
 
