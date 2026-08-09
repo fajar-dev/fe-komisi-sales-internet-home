@@ -64,6 +64,14 @@ export interface ManagerCommissionData {
         recurringCommission: number;
         newSubscription: number;
         newMrc: number;
+        byServiceGroup: Record<'Home' | 'Nusafiber' | 'NusaSelecta', {
+            newCount: number;
+            newSubscription: number;
+            newMrc: number;
+            newCommission: number;
+            recurringSubscription: number;
+            recurringCommission: number;
+        }>;
     };
     /** The manager's own personal-sales commission (KOMISI.md 6.F), invoice items included. */
     personal: SalesCommissionData & { items: CommissionLineItem[] };

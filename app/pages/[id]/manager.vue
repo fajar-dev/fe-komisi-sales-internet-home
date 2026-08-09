@@ -123,6 +123,29 @@
                             <span class="text-xl font-bold text-gray-900 dark:text-white">{{ formatCurrency(periodData.teamTotals.newMrc) }}</span>
                         </div>
                     </div>
+
+                    <!-- Team Production by Service -->
+                    <div class="mt-4 md:mt-6">
+                        <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2 mb-3 md:mb-4">
+                            <UIcon name="i-heroicons-squares-2x2" class="w-4 h-4 sm:w-5 sm:h-5 text-primary-500" />
+                            Team Production by Service
+                        </h4>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-5 gap-4 md:gap-6 p-4 md:p-5 rounded-xl md:rounded-2xl border border-gray-200 dark:border-gray-800">
+                            <div v-for="box in teamServiceBoxes" :key="box.title">
+                                <h5 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 md:mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">{{ box.title }}</h5>
+                                <ul class="space-y-2 md:space-y-3">
+                                    <li v-for="row in box.rows" :key="row.label" class="flex justify-between items-center text-xs sm:text-sm">
+                                        <span class="text-gray-600 dark:text-gray-400">{{ row.label }}</span>
+                                        <span class="font-semibold text-gray-900 dark:text-white">{{ box.isCount ? row.value : formatCurrency(row.value) }}</span>
+                                    </li>
+                                    <li class="flex justify-between items-center text-xs sm:text-sm pt-2 md:pt-3 border-t border-gray-200 dark:border-gray-700 mt-2">
+                                        <span class="font-bold text-gray-900 dark:text-white">Total</span>
+                                        <span class="font-bold text-primary-600 dark:text-primary-400">{{ box.isCount ? box.total : formatCurrency(box.total) }}</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
                 </template>
             </UPageCard>
         </div>
@@ -215,6 +238,48 @@ const expanded = ref({})
 
 const { formatCurrency, formatDate } = useFormat()
 const { getAchievementTextClass } = useAchievementColor()
+
+interface TeamServiceBox {
+    title: string
+    rows: { label: string; value: number }[]
+    total: number
+    isCount?: boolean
+}
+
+const serviceGroupOrder = ['Home', 'Nusafiber', 'NusaSelecta'] as const
+
+const teamServiceBoxes = computed<TeamServiceBox[]>(() => {
+    if (!periodData.value) return []
+    const g = periodData.value.teamTotals.byServiceGroup
+    return [
+        {
+            title: 'New Service',
+            rows: serviceGroupOrder.map(name => ({ label: name, value: g[name].newCount })),
+            total: serviceGroupOrder.reduce((sum, name) => sum + g[name].newCount, 0),
+            isCount: true
+        },
+        {
+            title: 'New Subscription',
+            rows: serviceGroupOrder.map(name => ({ label: name, value: g[name].newSubscription })),
+            total: periodData.value.teamTotals.newSubscription
+        },
+        {
+            title: 'New MRC',
+            rows: serviceGroupOrder.map(name => ({ label: name, value: g[name].newMrc })),
+            total: periodData.value.teamTotals.newMrc
+        },
+        {
+            title: 'Recurring Subscription',
+            rows: serviceGroupOrder.map(name => ({ label: name, value: g[name].recurringSubscription })),
+            total: serviceGroupOrder.reduce((sum, name) => sum + g[name].recurringSubscription, 0)
+        },
+        {
+            title: 'Recurring Commission',
+            rows: serviceGroupOrder.map(name => ({ label: name, value: g[name].recurringCommission })),
+            total: periodData.value.teamTotals.recurringCommission
+        }
+    ]
+})
 
 const personalItems = computed(() => periodData.value?.personal.items ?? [])
 const croItems = computed(() => periodData.value?.croRecurring ?? [])
