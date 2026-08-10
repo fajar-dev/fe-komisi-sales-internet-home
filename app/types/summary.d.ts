@@ -1,18 +1,27 @@
+import type { CommissionLineItem } from "./sales"
+
+export interface SummaryQueryParams {
+    period?: string;
+    month?: number;
+    year?: number;
+}
+
 export interface SalesSummaryItem {
-    name: string;
     employeeId: string;
+    name: string;
     photoProfile: string;
-    achievement: string;
-    newService: number;
-    newMrc: string;
-    newSubscription: string;
-    newCommission: string;
-    recurringSubscription: string;
-    recurringCommission: string;
-    otherSubscription: string;
-    otherCommission: string;
-    bonus: string;
-    totalCommission: string;
+    status: string | null;
+    achievementStatus: string;
+    activityCount: number;
+    newMrc: number;
+    newSubscription: number;
+    newCommission: number;
+    recurringSubscription: number;
+    recurringCommission: number;
+    otherSubscription: number;
+    otherCommission: number;
+    bonus: number;
+    totalCommission: number;
 }
 
 export interface SalesSummaryResponseData {
@@ -21,31 +30,22 @@ export interface SalesSummaryResponseData {
     data: SalesSummaryItem[];
 }
 
-export interface SalesSummaryQueryParams {
-    month: number;
-    year: number;
-    hide?: boolean;
-}
-
 export interface ManagerSummaryItem {
-    name: string;
     employeeId: string;
+    name: string;
     photoProfile: string;
-    team: number;
-    percentage: string;
-    newService: number;
-    status: string;
-    monthlyNewMrc: string;
-    monthlyNewSubscription: string;
-    monthlyNewCommission: string;
-    monthlyRecurringSubscription: string;
-    monthlyRecurringCommission: string;
-    monthlyOtherSubscription: string;
-    monthlyOtherCommission: string;
-    monthlyTotalCommission: string;
-    managerNewCommission: string;
-    managerRecurringCommission: string;
-    managerTotalCommission: string;
+    totalCount: number;
+    achievementPercentage: number;
+    activityCount: number;
+    isTargetAchieved: boolean;
+    newMrc: number;
+    newSubscription: number;
+    newCommission: number;
+    recurringSubscription: number;
+    recurringCommission: number;
+    managerNewCommission: number;
+    managerRecurringCommission: number;
+    managerTotalCommission: number;
 }
 
 export interface ManagerSummaryResponseData {
@@ -54,34 +54,8 @@ export interface ManagerSummaryResponseData {
     data: ManagerSummaryItem[];
 }
 
-export interface InvoiceSummaryItem {
-    sales: {
-        name: string | null;
-        employeeId: string | null;
-        photoProfile: string | null;
-    };
-    ai: number;
-    invoiceDate: string;
-    invoiceDueDate: string;
-    paidDate: string | null;
-    lateMonth: number;
-    month: number;
-    dpp: string;
-    mrc: string;
-    newSubscription: string;
-    customerServiceId: number;
-    customerId: string;
-    customerName: string;
-    customerCompany: string;
-    customerServiceAccount: string;
-    serviceId: string;
-    serviceName: string;
-    salesId: string;
-    type: string;
-    category: string;
-    referralType: string;
-    referralFee: string;
-    isApproved: number;
+export interface InvoiceSummaryItem extends CommissionLineItem {
+    sales: { employeeId: string; name: string; photoProfile: string } | null;
 }
 
 export interface InvoiceSummaryResponseData {
@@ -89,31 +63,34 @@ export interface InvoiceSummaryResponseData {
     message: string;
     data: InvoiceSummaryItem[];
 }
+
+export interface InvoiceApprovalInput {
+    isApproved: boolean;
+}
+
+export interface InvoiceReferralInput {
+    referralFee: number;
+    referralType: string | null;
+}
+
 export interface ChurnSummaryItem {
-    sales: {
-        name: string | null;
-        employeeId: string | null;
-        photoProfile: string | null;
-    };
-    customerServiceId: number;
-    customerId: string;
-    customerName: string;
-    customerServiceAccount: string;
-    serviceId: string;
-    serviceName: string;
-    registrationDate: string;
-    unregistrationDate: string;
-    subscriptionPeriod: string;
-    reason: string;
+    customer_service_id: number;
+    customer_id: string;
+    customer_name: string | null;
+    customer_service_account: string | null;
+    service_id: string | null;
+    service_name: string | null;
+    registration_date: string | null;
+    unregistration_date: string | null;
+    reason: string | null;
     period: number;
-    price: string;
-    salesId: string;
-    managerId: string;
-    mrc: string;
-    baseCommission: string;
-    commission: string;
-    commissionPercentage: number;
-    isApproved: number;
+    price: number | null;
+    sales_id: string | null;
+    manager_id: string | null;
+    is_approved: boolean;
+    employee_name: string | null;
+    employee_eid: string | null;
+    employee_photo: string | null;
 }
 
 export interface ChurnSummaryResponseData {
