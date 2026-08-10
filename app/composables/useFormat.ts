@@ -4,7 +4,7 @@ export const useFormat = () => {
     }
 
     const formatDate = (isoDate: string): string => {
-        const [y, m, d] = isoDate.split('-').map(Number)
+        const [y, m, d] = isoDate.slice(0, 10).split('-').map(Number)
         if (y === undefined || m === undefined || d === undefined) return isoDate
         return new Date(y, m - 1, d).toLocaleDateString('en-US', { dateStyle: 'medium' })
     }
