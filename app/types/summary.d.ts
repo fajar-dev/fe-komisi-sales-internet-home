@@ -98,3 +98,21 @@ export interface ChurnSummaryResponseData {
     message: string;
     data: ChurnSummaryItem[];
 }
+
+export interface SalesTargetItem {
+    employeeId: string;
+    name: string;
+    photoProfile: string;
+    status: string | null;
+    target: number;
+}
+
+export interface SalesTargetResponseData {
+    success: boolean;
+    message: string;
+    data: SalesTargetItem[];
+}
+
+export interface SalesTargetUpdateInput {
+    target: number;
+}
