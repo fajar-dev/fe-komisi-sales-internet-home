@@ -83,6 +83,11 @@
             :referral-type="selectedInvoiceType"
             @success="fetchSummary"
         />
+        <AdjustInvoiceModal
+            v-model:open="isAdjustModalOpen"
+            :ai="selectedAdjustAi"
+            @success="fetchSummary"
+        />
     </div>
 </template>
 
@@ -115,11 +120,19 @@ const selectedInvoiceAi = ref<number | null>(null)
 const selectedInvoiceFee = ref(0)
 const selectedInvoiceType = ref<string | null>(null)
 
+const isAdjustModalOpen = ref(false)
+const selectedAdjustAi = ref<number | null>(null)
+
 const openReferralModal = (row: InvoiceSummaryItem) => {
     selectedInvoiceAi.value = row.aiInvoice
     selectedInvoiceFee.value = Number(row.referralFee)
     selectedInvoiceType.value = row.referralType
     isReferralModalOpen.value = true
+}
+
+const openAdjustModal = (row: InvoiceSummaryItem) => {
+    selectedAdjustAi.value = row.aiInvoice
+    isAdjustModalOpen.value = true
 }
 
 const getRowItems = (row: any) => [
@@ -128,6 +141,11 @@ const getRowItems = (row: any) => [
             label: 'Edit Referral',
             icon: 'i-heroicons-pencil-square-20-solid',
             onSelect: () => openReferralModal(row.original)
+        },
+        {
+            label: 'Adjust Invoice',
+            icon: 'i-heroicons-wrench-screwdriver',
+            onSelect: () => openAdjustModal(row.original)
         }
     ]
 ]
@@ -169,7 +187,13 @@ const columns: TableColumn<InvoiceSummaryItem>[] = [
                 onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
             })
         },
-        cell: ({ row }) => h('div', { class: 'text-center' }, row.original.aiInvoice)
+        cell: ({ row }) => h('div', { class: 'flex items-center justify-center gap-1.5' }, [
+            h('span', row.original.aiInvoice),
+            row.original.isAdjusted
+                ? h(UTooltip, { text: 'This row has been manually adjusted', delayDuration: 0 }, () =>
+                    h(UIcon, { name: 'i-lucide-wrench', class: 'size-3.5 text-amber-500' }))
+                : null
+        ])
     },
     {
         id: 'sales',
