@@ -238,6 +238,7 @@ const expanded = ref({})
 
 const { formatCurrency, formatDate } = useFormat()
 const { getAchievementTextClass } = useAchievementColor()
+const { getServiceLabel } = useServiceLabel()
 
 interface TeamServiceBox {
     title: string
@@ -320,11 +321,8 @@ const getInvoiceColumns = (key: string): TableColumn<CommissionLineItem>[] => [
         id: 'label',
         header: 'Label',
         cell: ({ row }) => {
-            const serviceId = row.original.serviceId ?? ''
-            if (['BFLITE'].some(c => serviceId.startsWith(c))) return h(UBadge, { label: 'Nusafiber', color: 'info', variant: 'subtle' })
-            if (['NFSP030', 'NFSP100', 'NFSP200'].some(c => serviceId.startsWith(c))) return h(UBadge, { label: 'NusaSelecta', color: 'warning', variant: 'subtle' })
-            if (['HOME100', 'HOMESTD100', 'HOMEADV', 'HOMEADV200', 'HOMEPREM300', 'HOME300', 'LITE100', 'LITE200'].some(c => serviceId.startsWith(c))) return h(UBadge, { label: 'Home', color: 'primary', variant: 'subtle' })
-            return null
+            const { label, color } = getServiceLabel(row.original.category, row.original.serviceId)
+            return h(UBadge, { label, color, variant: 'subtle' })
         }
     },
     {
