@@ -3,7 +3,7 @@
         <ClientOnly>
             <Teleport v-if="isMounted" to="#toolbar-left">
                 <div class="flex items-center gap-1">
-                    <UButton icon="i-lucide-arrow-left" size="lg" color="neutral" variant="ghost" to="/"/>
+                    <UButton icon="i-lucide-arrow-left" size="lg" color="neutral" variant="ghost" to="/" />
                     <USeparator orientation="vertical" class="h-7 w-2" />
                     <UButton to="/sumarry/sales" icon="i-heroicons-users" :variant="$route.path === '/sumarry/sales' ? 'soft' : 'ghost'" :color="$route.path === '/sumarry/sales' ? 'primary' : 'neutral'" size="sm">Account Manager</UButton>
                     <USeparator orientation="vertical" class="h-7 w-2" />
@@ -29,9 +29,7 @@
                     <template #header>
                         <div class="flex items-center justify-between">
                             <div>
-                                <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
-                                Sales Manager Summary
-                            </h3>
+                                <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Sales Manager Summary</h3>
                                 <p class="text-xs text-gray-500">{{ selectedMonthLabel }} {{ year }}</p>
                             </div>
                             <div class="flex items-center gap-3">
@@ -40,12 +38,7 @@
                             </div>
                         </div>
                     </template>
-                    <UTable
-                        sticky
-                        :columns="columns"
-                        :data="summaryData"
-                        class="flex-1 max-h-[800px]"
-                    />
+                    <UTable sticky :columns="columns" :data="summaryData" class="flex-1 max-h-[800px]" />
                 </UCard>
             </div>
         </UContainer>
@@ -53,83 +46,42 @@
 </template>
 
 <script setup lang="ts">
-import { h, resolveComponent, ref, onMounted, watch, computed, nextTick } from 'vue'
-import { CommissionService } from '~/services/commission-service'
-import { AdditionalService } from '~/services/additional-service'
+import { h, resolveComponent } from 'vue'
+import { SummaryService } from '~/services/summary-service'
 import type { ManagerSummaryItem } from '~/types/summary'
 import type { TableColumn } from '@nuxt/ui'
 
 definePageMeta({
-  headerProps: {
-    toolbar: true
-  }
+    headerProps: { toolbar: true }
 })
 
+const NuxtLink = resolveComponent('NuxtLink')
 const UAvatar = resolveComponent('UAvatar')
 const UBadge = resolveComponent('UBadge')
-const NuxtLink = resolveComponent('NuxtLink')
 
 const { setLoading } = useLoading()
-const commissionService = new CommissionService()
-const additionalService = new AdditionalService()
+const { formatCurrency } = useFormat()
+const summaryService = new SummaryService()
+
+const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+const monthSelect = monthNames.map((label, i) => ({ id: i + 1, label }))
+const yearItems = [2026, 2027, 2028, 2029, 2030]
 
 const summaryData = ref<ManagerSummaryItem[]>([])
 const year = ref(new Date().getFullYear())
 const selectedMonth = ref(new Date().getMonth() + 1)
-const yearItems = ref<number[]>([])
 const hideValues = ref(true)
 const isMounted = ref(false)
 
-const monthSelect = [
-    { id: 1, label: 'January' },
-    { id: 2, label: 'February' },
-    { id: 3, label: 'March' },
-    { id: 4, label: 'April' },
-    { id: 5, label: 'May' },
-    { id: 6, label: 'June' },
-    { id: 7, label: 'July' },
-    { id: 8, label: 'August' },
-    { id: 9, label: 'September' },
-    { id: 10, label: 'October' },
-    { id: 11, label: 'November' },
-    { id: 12, label: 'December' }
-]
+const selectedMonthLabel = computed(() => monthSelect.find(m => m.id === selectedMonth.value)?.label ?? '')
 
-const selectedMonthLabel = computed(() => {
-    return monthSelect.find(m => m.id === selectedMonth.value)?.label || ''
-})
-
-const formatCurrency = (value: any) => {
-    if (value === '***') return '***'
-    const num = Number(value)
-    if (isNaN(num)) return value
-    return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-    }).format(num)
-}
-
-const getAchievementColor = (status: string) => {
-    const s = status.toLowerCase()
-    if (s.includes('tidak capai') || s.includes('sp1')) return 'font-bold text-red-500 dark:text-red-400 text-xs uppercase'
-    if (s.includes('average')) return 'font-bold text-orange-500 dark:text-orange-400 text-xs uppercase'
-    if (s.includes('bonus')) return 'font-bold text-violet-500 dark:text-violet-400 text-xs uppercase'
-    if (s.includes('excelent') || s.includes('excellent')) return 'font-bold text-emerald-500 dark:text-emerald-400 text-xs uppercase'
-    if (s.includes('very good')) return 'font-bold text-teal-500 dark:text-teal-400 text-xs uppercase'
-    if (s.includes('capai target')) return 'font-bold text-green-500 dark:text-green-400 text-xs uppercase'
-    return 'text-primary-500 dark:text-primary-400 text-xs uppercase'
-}
+const maskedCurrency = (value: number) => hideValues.value ? '***' : formatCurrency(value)
 
 const columns: TableColumn<ManagerSummaryItem>[] = [
     {
         accessorKey: 'name',
         header: 'Sales Manager',
-        cell: ({ row }) => h(NuxtLink, { 
-            to: `/${row.original.employeeId}/manager`,
-            class: 'flex items-center gap-3 group' 
-        }, [
+        cell: ({ row }) => h(NuxtLink, { to: `/${row.original.employeeId}/manager`, class: 'flex items-center gap-3 group' }, () => [
             h(UAvatar, { src: row.original.photoProfile, alt: row.original.name, size: 'sm' }),
             h('div', { class: 'flex flex-col text-left' }, [
                 h('span', { class: 'font-semibold text-sm text-gray-900 dark:text-white group-hover:text-primary-500 transition-colors' }, row.original.name),
@@ -138,114 +90,85 @@ const columns: TableColumn<ManagerSummaryItem>[] = [
         ])
     },
     {
-        accessorKey: 'status',
+        accessorKey: 'isTargetAchieved',
         header: 'Status',
-        cell: ({ row }) => h('div', { class: getAchievementColor(row.original.status) }, row.original.status)
+        cell: ({ row }) => h(UBadge, { color: row.original.isTargetAchieved ? 'success' : 'error', variant: 'subtle' }, () => row.original.isTargetAchieved ? 'Capai Target' : 'Tidak Capai Target')
     },
     {
-        accessorKey: 'newService',
+        accessorKey: 'activityCount',
         header: () => h('div', { class: 'text-center' }, 'New Service'),
-        cell: ({ row }) => h('div', { class: 'text-center font-bold' }, row.original.newService)
+        cell: ({ row }) => h('div', { class: 'text-center font-bold' }, row.original.activityCount)
     },
     {
-        accessorKey: 'percentage',
+        accessorKey: 'achievementPercentage',
         header: () => h('div', { class: 'text-center' }, 'Achv'),
-        cell: ({ row }) => h('div', { class: 'text-center font-bold text-sm' }, row.original.percentage)
+        cell: ({ row }) => h('div', { class: 'text-center font-bold text-sm' }, `${Math.round(row.original.achievementPercentage)}%`)
     },
     {
-        accessorKey: 'team',
+        accessorKey: 'totalCount',
         header: () => h('div', { class: 'text-center' }, 'Team'),
-        cell: ({ row }) => h('div', { class: 'text-center font-bold text-sm' }, row.original.team)
+        cell: ({ row }) => h('div', { class: 'text-center font-bold text-sm' }, row.original.totalCount)
     },
     {
-        accessorKey: 'monthlyNewMrc',
+        accessorKey: 'newMrc',
         header: () => h('div', { class: 'text-right' }, 'New MRC'),
-        cell: ({ row }) => h('div', { class: 'text-right font-medium text-xs' }, formatCurrency(row.original.monthlyNewMrc))
+        cell: ({ row }) => h('div', { class: 'text-right font-medium text-xs' }, maskedCurrency(row.original.newMrc))
     },
     {
-        accessorKey: 'monthlyNewSubscription',
+        accessorKey: 'newSubscription',
         header: () => h('div', { class: 'text-right' }, 'New Subscription'),
-        cell: ({ row }) => h('div', { class: 'text-right font-medium text-xs' }, formatCurrency(row.original.monthlyNewSubscription))
+        cell: ({ row }) => h('div', { class: 'text-right font-medium text-xs' }, maskedCurrency(row.original.newSubscription))
     },
     {
-        accessorKey: 'monthlyNewCommission',
+        accessorKey: 'newCommission',
         header: () => h('div', { class: 'text-right' }, 'New Commission'),
-        cell: ({ row }) => h('div', { class: 'text-right font-medium text-xs' }, formatCurrency(row.original.monthlyNewCommission))
+        cell: ({ row }) => h('div', { class: 'text-right font-medium text-xs' }, maskedCurrency(row.original.newCommission))
     },
     {
-        accessorKey: 'monthlyRecurringSubscription',
+        accessorKey: 'recurringSubscription',
         header: () => h('div', { class: 'text-right' }, 'Recurring Subscription'),
-        cell: ({ row }) => h('div', { class: 'text-right font-medium text-xs' }, formatCurrency(row.original.monthlyRecurringSubscription))
+        cell: ({ row }) => h('div', { class: 'text-right font-medium text-xs' }, maskedCurrency(row.original.recurringSubscription))
     },
     {
-        accessorKey: 'monthlyRecurringCommission',
+        accessorKey: 'recurringCommission',
         header: () => h('div', { class: 'text-right' }, 'Recurring Commission'),
-        cell: ({ row }) => h('div', { class: 'text-right font-medium text-xs' }, formatCurrency(row.original.monthlyRecurringCommission))
+        cell: ({ row }) => h('div', { class: 'text-right font-medium text-xs' }, maskedCurrency(row.original.recurringCommission))
     },
     {
         accessorKey: 'managerNewCommission',
         header: () => h('div', { class: 'text-right text-primary-500' }, 'Mgr New Comm'),
-        cell: ({ row }) => h('div', { class: 'text-right font-bold text-primary-600 dark:text-primary-400 text-xs' }, formatCurrency(row.original.managerNewCommission))
+        cell: ({ row }) => h('div', { class: 'text-right font-bold text-primary-600 dark:text-primary-400 text-xs' }, maskedCurrency(row.original.managerNewCommission))
     },
     {
         accessorKey: 'managerRecurringCommission',
         header: () => h('div', { class: 'text-right text-primary-500' }, 'Mgr Recur Comm'),
-        cell: ({ row }) => h('div', { class: 'text-right font-bold text-primary-600 dark:text-primary-400 text-xs' }, formatCurrency(row.original.managerRecurringCommission))
+        cell: ({ row }) => h('div', { class: 'text-right font-bold text-primary-600 dark:text-primary-400 text-xs' }, maskedCurrency(row.original.managerRecurringCommission))
     },
     {
         accessorKey: 'managerTotalCommission',
         header: () => h('div', { class: 'text-right text-primary-600 font-bold' }, 'Mgr Total'),
-        cell: ({ row }) => h('div', { class: 'text-right font-bold text-primary-700 dark:text-primary-300' }, formatCurrency(row.original.managerTotalCommission))
+        cell: ({ row }) => h('div', { class: 'text-right font-bold text-primary-700 dark:text-primary-300' }, maskedCurrency(row.original.managerTotalCommission))
     }
 ]
 
 const fetchSummary = async () => {
     setLoading(true)
     try {
-        const response = await commissionService.managerSummary({
-            month: selectedMonth.value,
-            year: year.value,
-            hide: hideValues.value
-        })
-        if (response && response.success) {
-            summaryData.value = response.data || []
-        } else {
-            summaryData.value = []
-        }
-    } catch (error) {
-        console.error('Failed to fetch summary:', error)
-        summaryData.value = []
-    } finally {
-        setLoading(false)
-    }
-}
-
-const initData = async () => {
-    setLoading(true)
-    try {
-        const currentPeriod = await additionalService.getCurrentPeriod()
-        if (currentPeriod) {
-            selectedMonth.value = currentPeriod.month
-            year.value = currentPeriod.year
-        }
-        
-        const currentYear = new Date().getFullYear()
-        yearItems.value = Array.from({ length: 5 }, (_, i) => currentYear - 2 + i)
-        
-        await fetchSummary()
+        const response = await summaryService.managerSummary({ month: selectedMonth.value, year: year.value })
+        summaryData.value = response?.data ?? []
     } finally {
         setLoading(false)
     }
 }
 
 onMounted(() => {
-    initData()
+    fetchSummary()
     nextTick(() => {
         isMounted.value = true
     })
 })
 
-watch([year, selectedMonth, hideValues], () => {
+watch([year, selectedMonth], () => {
     fetchSummary()
 })
 </script>
