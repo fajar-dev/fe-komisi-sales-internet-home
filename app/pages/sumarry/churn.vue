@@ -3,7 +3,7 @@
         <ClientOnly>
             <Teleport v-if="isMounted" to="#toolbar-left">
                 <div class="flex items-center gap-1">
-                    <UButton icon="i-lucide-arrow-left" size="lg" color="neutral" variant="ghost" to="/"/>
+                    <UButton icon="i-lucide-arrow-left" size="lg" color="neutral" variant="ghost" to="/" />
                     <USeparator orientation="vertical" class="h-7 w-2" />
                     <UButton to="/sumarry/sales" icon="i-heroicons-users" :variant="$route.path === '/sumarry/sales' ? 'soft' : 'ghost'" :color="$route.path === '/sumarry/sales' ? 'primary' : 'neutral'" size="sm">Account Manager</UButton>
                     <USeparator orientation="vertical" class="h-7 w-2" />
@@ -29,9 +29,7 @@
                     <template #header>
                         <div class="flex items-center justify-between">
                             <div>
-                                <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
-                                Churn Summary
-                            </h3>
+                                <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Churn Summary</h3>
                                 <p class="text-xs text-gray-500">{{ selectedMonthLabel }} {{ year }}</p>
                             </div>
                             <div class="flex items-center gap-3">
@@ -39,7 +37,7 @@
                             </div>
                         </div>
                     </template>
-                    
+
                     <UTable
                         ref="table"
                         sticky
@@ -57,12 +55,12 @@
                     <template #footer>
                         <div class="flex items-center justify-between pt-4 px-4">
                             <div class="text-sm text-gray-500 dark:text-gray-400">
-                                Showing 
+                                Showing
                                 <span class="font-medium text-gray-700 dark:text-gray-200">{{ table?.tableApi?.getFilteredRowModel().rows.length === 0 ? 0 : (table?.tableApi?.getState().pagination.pageIndex || 0) * (table?.tableApi?.getState().pagination.pageSize || 0) + 1 }}</span>
-                                to 
+                                to
                                 <span class="font-medium text-gray-700 dark:text-gray-200">{{ Math.min(((table?.tableApi?.getState().pagination.pageIndex || 0) + 1) * (table?.tableApi?.getState().pagination.pageSize || 0), table?.tableApi?.getFilteredRowModel().rows.length || 0) }}</span>
-                                of 
-                                <span class="font-medium text-gray-700 dark:text-gray-200">{{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }}</span> 
+                                of
+                                <span class="font-medium text-gray-700 dark:text-gray-200">{{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }}</span>
                                 results
                             </div>
                             <UPagination
@@ -82,86 +80,44 @@
 <script setup lang="ts">
 import { h, resolveComponent, ref, onMounted, watch, computed, nextTick, useTemplateRef } from 'vue'
 import { getPaginationRowModel } from '@tanstack/vue-table'
-import { CommissionService } from '~/services/commission-service'
-import { AdditionalService } from '~/services/additional-service'
+import { SummaryService } from '~/services/summary-service'
 import type { ChurnSummaryItem } from '~/types/summary'
 import type { TableColumn } from '@nuxt/ui'
 
 definePageMeta({
-  headerProps: {
-    toolbar: true
-  }
+    headerProps: { toolbar: true }
 })
 
 const UAvatar = resolveComponent('UAvatar')
 const NuxtLink = resolveComponent('NuxtLink')
 const UButton = resolveComponent('UButton')
-const UBadge = resolveComponent('UBadge')
 const USwitch = resolveComponent('USwitch')
 const UIcon = resolveComponent('UIcon')
 const UTooltip = resolveComponent('UTooltip')
 
 const { setLoading } = useLoading()
+const { formatCurrency, formatDate } = useFormat()
 const toast = useToast()
-const commissionService = new CommissionService()
-const additionalService = new AdditionalService()
+const summaryService = new SummaryService()
 
 const table = useTemplateRef('table')
 const summaryData = ref<ChurnSummaryItem[]>([])
 const year = ref(new Date().getFullYear())
 const selectedMonth = ref(new Date().getMonth() + 1)
-const yearItems = ref<number[]>([])
+const yearItems = [2026, 2027, 2028, 2029, 2030]
 const isMounted = ref(false)
 
 const pagination = ref({
-  pageIndex: 0,
-  pageSize: 100
+    pageIndex: 0,
+    pageSize: 100
 })
 const sorting = ref([{ id: 'no', desc: false }])
 const globalFilter = ref('')
 
-const monthSelect = [
-    { id: 1, label: 'January' },
-    { id: 2, label: 'February' },
-    { id: 3, label: 'March' },
-    { id: 4, label: 'April' },
-    { id: 5, label: 'May' },
-    { id: 6, label: 'June' },
-    { id: 7, label: 'July' },
-    { id: 8, label: 'August' },
-    { id: 9, label: 'September' },
-    { id: 10, label: 'October' },
-    { id: 11, label: 'November' },
-    { id: 12, label: 'December' }
-]
+const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+const monthSelect = monthNames.map((label, i) => ({ id: i + 1, label }))
 
-const selectedMonthLabel = computed(() => {
-    return monthSelect.find(m => m.id === selectedMonth.value)?.label || ''
-})
-
-const formatCurrency = (value: any) => {
-    const num = Number(value)
-    if (isNaN(num)) return value
-    return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-    }).format(num)
-}
-
-const formatDate = (date: string | null) => {
-    if (!date) return '-'
-    try {
-        return new Intl.DateTimeFormat('id-ID', {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric'
-        }).format(new Date(date))
-    } catch (e) {
-        return date
-    }
-}
+const selectedMonthLabel = computed(() => monthSelect.find(m => m.id === selectedMonth.value)?.label ?? '')
 
 const columns: TableColumn<ChurnSummaryItem>[] = [
     {
@@ -170,12 +126,8 @@ const columns: TableColumn<ChurnSummaryItem>[] = [
         cell: ({ row }) => h('div', { class: 'text-center text-xs' }, row.index + 1)
     },
     {
-        id: 'sales',
-        accessorFn: (row) => {
-            const name = row.sales?.name || 'Customer Relation Officer'
-            const employeeId = row.sales?.employeeId || ''
-            return `${name} ${employeeId}`
-        },
+        id: 'employee',
+        accessorFn: (row) => `${row.employee_name || 'Customer Relation Officer'} ${row.employee_eid || ''}`,
         header: ({ column }) => {
             const isSorted = column.getIsSorted()
             return h(UButton, {
@@ -187,28 +139,28 @@ const columns: TableColumn<ChurnSummaryItem>[] = [
             })
         },
         sortingFn: (rowA, rowB) => {
-            const nameA = rowA.original.sales?.name || 'Customer Relation Officer'
-            const nameB = rowB.original.sales?.name || 'Customer Relation Officer'
+            const nameA = rowA.original.employee_name || 'Customer Relation Officer'
+            const nameB = rowB.original.employee_name || 'Customer Relation Officer'
             return nameA.localeCompare(nameB)
         },
         cell: ({ row }) => {
-            const sales = row.original.sales
-            if (!sales || !sales.employeeId) return h('div', { class: 'text-gray-400 italic' }, 'Customer Relation Officer')
-            
-            return h(NuxtLink, { 
-                to: `/${sales.employeeId}/sales`,
-                class: 'flex items-center gap-3 group' 
+            const { employee_eid, employee_name, employee_photo } = row.original
+            if (!employee_eid) return h('div', { class: 'text-gray-400 italic' }, 'Customer Relation Officer')
+
+            return h(NuxtLink, {
+                to: `/${employee_eid}/sales`,
+                class: 'flex items-center gap-3 group'
             }, [
-                h(UAvatar, { src: sales.photoProfile || undefined, alt: sales.name || '', size: 'sm' }),
+                h(UAvatar, { src: employee_photo || undefined, alt: employee_name || '', size: 'sm' }),
                 h('div', { class: 'flex flex-col' }, [
-                    h('span', { class: 'font-semibold text-gray-900 dark:text-white group-hover:text-primary-500 transition-colors' }, sales.name || 'Unknown'),
-                    h('span', { class: 'text-xs text-gray-500' }, sales.employeeId || '')
+                    h('span', { class: 'font-semibold text-gray-900 dark:text-white group-hover:text-primary-500 transition-colors' }, employee_name || 'Unknown'),
+                    h('span', { class: 'text-xs text-gray-500' }, employee_eid || '')
                 ])
             ])
         }
     },
     {
-        accessorKey: 'customerName',
+        accessorKey: 'customer_name',
         header: ({ column }) => {
             const isSorted = column.getIsSorted()
             return h(UButton, {
@@ -220,16 +172,16 @@ const columns: TableColumn<ChurnSummaryItem>[] = [
             })
         },
         cell: ({ row }) => h('div', { class: 'flex flex-col' }, [
-            h('span', { class: 'font-medium' }, row.original.customerName),
-            h('a', { 
-                href: `https://isx.nusa.net.id/customer.php?custId=${row.original.customerId}&pid=profile`,
+            h('span', { class: 'font-medium' }, row.original.customer_name ?? '-'),
+            h('a', {
+                href: `https://isx.nusa.net.id/customer.php?custId=${row.original.customer_id}&pid=profile`,
                 target: '_blank',
                 class: 'text-xs text-blue-500 hover:underline'
-            }, row.original.customerId)
+            }, row.original.customer_id)
         ])
     },
     {
-        accessorKey: 'customerServiceAccount',
+        accessorKey: 'customer_service_account',
         header: ({ column }) => {
             const isSorted = column.getIsSorted()
             return h(UButton, {
@@ -241,16 +193,16 @@ const columns: TableColumn<ChurnSummaryItem>[] = [
             })
         },
         cell: ({ row }) => h('div', { class: 'flex flex-col' }, [
-            h('a', { 
-                href: `https://isx.nusa.net.id/v2/customer/service/${row.original.customerServiceId}/detail`,
+            h('a', {
+                href: `https://isx.nusa.net.id/v2/customer/service/${row.original.customer_service_id}/detail`,
                 target: '_blank',
                 class: 'font-medium text-blue-500 hover:underline'
-            }, row.original.customerServiceAccount),
-            h('span', { class: 'text-xs text-gray-400 truncate max-w-[200px]' }, row.original.serviceName)
+            }, row.original.customer_service_account ?? '-'),
+            h('span', { class: 'text-xs text-gray-400 truncate max-w-[200px]' }, row.original.service_name ?? '-')
         ])
     },
     {
-        accessorKey: 'registrationDate',
+        accessorKey: 'registration_date',
         header: ({ column }) => {
             const isSorted = column.getIsSorted()
             return h(UButton, {
@@ -261,10 +213,10 @@ const columns: TableColumn<ChurnSummaryItem>[] = [
                 onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
             })
         },
-        cell: ({ row }) => h('div', { class: 'text-xs' }, formatDate(row.original.registrationDate))
+        cell: ({ row }) => h('div', { class: 'text-xs' }, row.original.registration_date ? formatDate(row.original.registration_date) : '-')
     },
     {
-        accessorKey: 'unregistrationDate',
+        accessorKey: 'unregistration_date',
         header: ({ column }) => {
             const isSorted = column.getIsSorted()
             return h(UButton, {
@@ -275,20 +227,35 @@ const columns: TableColumn<ChurnSummaryItem>[] = [
                 onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
             })
         },
-        cell: ({ row }) => h('div', { class: 'text-xs' }, formatDate(row.original.unregistrationDate))
+        cell: ({ row }) => h('div', { class: 'text-xs' }, row.original.unregistration_date ? formatDate(row.original.unregistration_date) : '-')
     },
     {
-        accessorKey: 'subscriptionPeriod',
+        accessorKey: 'period',
         header: 'Sub Period',
-        cell: ({ row }) => h('div', { class: 'text-xs' }, row.original.subscriptionPeriod)
+        cell: ({ row }) => h('div', { class: 'text-xs' }, row.original.period)
+    },
+    {
+        accessorKey: 'price',
+        header: ({ column }) => {
+            const isSorted = column.getIsSorted()
+            return h(UButton, {
+                color: 'neutral',
+                variant: 'ghost',
+                label: 'Price',
+                icon: isSorted ? (isSorted === 'asc' ? 'i-lucide-arrow-up-narrow-wide' : 'i-lucide-arrow-down-wide-narrow') : 'i-lucide-arrow-up-down',
+                onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
+                class: 'ml-auto'
+            })
+        },
+        cell: ({ row }) => h('div', { class: 'text-right font-medium' }, formatCurrency(row.original.price ?? 0))
     },
     {
         accessorKey: 'reason',
         header: 'Reason',
-        cell: ({ row }) => h('div', { class: 'text-xs italic text-gray-500 whitespace-normal min-w-[200px] max-w-[400px]', title: row.original.reason }, row.original.reason)
+        cell: ({ row }) => h('div', { class: 'text-xs italic text-gray-500 whitespace-normal min-w-[200px] max-w-[400px]', title: row.original.reason ?? '' }, row.original.reason ?? '-')
     },
     {
-        accessorKey: 'isApproved',
+        accessorKey: 'is_approved',
         header: () => h('div', { class: 'flex items-center justify-center gap-1' }, [
             h('span', 'Approve'),
             h(UTooltip, {
@@ -301,12 +268,12 @@ const columns: TableColumn<ChurnSummaryItem>[] = [
         ]),
         cell: ({ row }) => h('div', { class: 'flex justify-center' }, [
             h(USwitch, {
-                modelValue: row.original.isApproved === 1,
+                modelValue: row.original.is_approved,
                 'onUpdate:modelValue': async (val: boolean) => {
                     try {
-                        const response = await commissionService.updateChurnStatus(row.original.customerServiceId, val)
+                        const response = await summaryService.approveChurn(row.original.customer_service_id, { isApproved: val })
                         if (response && response.success) {
-                            row.original.isApproved = val ? 1 : 0
+                            row.original.is_approved = val
                         }
                     } catch (error) {
                         toast.add({
@@ -324,44 +291,15 @@ const columns: TableColumn<ChurnSummaryItem>[] = [
 const fetchSummary = async () => {
     setLoading(true)
     try {
-        const response = await commissionService.churnSummary({
-            month: selectedMonth.value,
-            year: year.value,
-            hide: false
-        })
-        if (response && response.success) {
-            summaryData.value = response.data || []
-        } else {
-            summaryData.value = []
-        }
-    } catch (error) {
-        console.error('Failed to fetch summary:', error)
-        summaryData.value = []
-    } finally {
-        setLoading(false)
-    }
-}
-
-const initData = async () => {
-    setLoading(true)
-    try {
-        const currentPeriod = await additionalService.getCurrentPeriod()
-        if (currentPeriod) {
-            selectedMonth.value = currentPeriod.month
-            year.value = currentPeriod.year
-        }
-        
-        const currentYear = new Date().getFullYear()
-        yearItems.value = Array.from({ length: 5 }, (_, i) => currentYear - 2 + i)
-        
-        await fetchSummary()
+        const response = await summaryService.churnSummary({ month: selectedMonth.value, year: year.value })
+        summaryData.value = response?.data ?? []
     } finally {
         setLoading(false)
     }
 }
 
 onMounted(() => {
-    initData()
+    fetchSummary()
     nextTick(() => {
         isMounted.value = true
     })
