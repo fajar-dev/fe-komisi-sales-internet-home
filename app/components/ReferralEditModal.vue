@@ -36,7 +36,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue'
-import { CommissionService } from '~/services/commission-service'
+import { SummaryService } from '~/services/summary-service'
 import { z } from 'zod'
 
 const props = defineProps<{
@@ -48,7 +48,7 @@ const props = defineProps<{
 const isOpen = defineModel<boolean>('open', { default: false })
 const emit = defineEmits(['success'])
 
-const commissionService = new CommissionService()
+const summaryService = new SummaryService()
 const toast = useToast()
 const loading = ref(false)
 
@@ -72,7 +72,7 @@ async function onSubmit() {
   
   loading.value = true
   try {
-    const response = await commissionService.updateReferralInvoice(props.ai, {
+    const response = await summaryService.updateInvoiceReferral(props.ai, {
       referralFee: Number(state.referralFee),
       referralType: state.referralType
     })
