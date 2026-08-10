@@ -15,7 +15,7 @@
                     description="Only the fields you touch are updated. AI Invoice, AI Receipt, and Period stay locked — they're the identity keys a re-crawl matches on."
                 />
 
-                <UForm :state="state" class="space-y-5" @submit="onSubmit">
+                <UForm :state="state" class="space-y-5">
                     <div>
                         <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Customer</h4>
                         <div class="grid grid-cols-2 gap-3">
@@ -123,12 +123,14 @@
                             </div>
                         </div>
                     </div>
-
-                    <div class="flex justify-end gap-3 pt-2">
-                        <UButton color="neutral" variant="ghost" :disabled="saving" @click="isOpen = false">Cancel</UButton>
-                        <UButton type="submit" color="primary" :loading="saving">Save Adjustment</UButton>
-                    </div>
                 </UForm>
+            </div>
+        </template>
+
+        <template #footer="{ close }">
+            <div class="flex justify-end gap-3 w-full">
+                <UButton type="button" color="neutral" variant="ghost" :disabled="saving" @click="close">Cancel</UButton>
+                <UButton type="button" color="primary" :loading="saving" @click="onSubmit">Save Adjustment</UButton>
             </div>
         </template>
     </UModal>
