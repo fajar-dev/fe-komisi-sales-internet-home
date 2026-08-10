@@ -31,16 +31,13 @@
                     <template #header>
                         <div class="flex items-center justify-between">
                             <div>
-                                <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Account Manager Summary</h3>
-                                <p class="text-xs text-gray-500">{{ selectedMonthLabel }} {{ year }}</p>
+                                <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Sales Target</h3>
+                                <p class="text-xs text-gray-500">{{ selectedMonthLabel }} {{ year }} &middot; Default target is {{ defaultTarget }} New Achievement/month for Permanent Account Managers</p>
                             </div>
-                            <div class="flex items-center gap-3">
-                                <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Hide Values</span>
-                                <USwitch v-model="hideValues" color="primary" />
-                            </div>
+                            <UInput v-model="globalFilter" icon="i-heroicons-magnifying-glass" placeholder="Search account manager..." />
                         </div>
                     </template>
-                    <UTable sticky :columns="columns" :data="summaryData" class="flex-1 max-h-[800px]" />
+                    <UTable sticky :columns="columns" :data="filteredData" class="flex-1 max-h-[800px]" />
                 </UCard>
             </div>
         </UContainer>
@@ -50,7 +47,7 @@
 <script setup lang="ts">
 import { h, resolveComponent } from 'vue'
 import { SummaryService } from '~/services/summary-service'
-import type { SalesSummaryItem } from '~/types/summary'
+import type { SalesTargetItem } from '~/types/summary'
 import type { TableColumn } from '@nuxt/ui'
 
 definePageMeta({
@@ -59,27 +56,62 @@ definePageMeta({
 
 const NuxtLink = resolveComponent('NuxtLink')
 const UAvatar = resolveComponent('UAvatar')
+const UBadge = resolveComponent('UBadge')
+const UInput = resolveComponent('UInput')
 
 const { setLoading } = useLoading()
-const { formatCurrency } = useFormat()
-const { getAchievementTextClass } = useAchievementColor()
+const toast = useToast()
 const summaryService = new SummaryService()
+
+const defaultTarget = 12
 
 const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 const monthSelect = monthNames.map((label, i) => ({ id: i + 1, label }))
 const yearItems = [2026, 2027, 2028, 2029, 2030]
 
-const summaryData = ref<SalesSummaryItem[]>([])
+const summaryData = ref<SalesTargetItem[]>([])
 const year = ref(new Date().getFullYear())
 const selectedMonth = ref(new Date().getMonth() + 1)
-const hideValues = ref(true)
+const globalFilter = ref('')
 const isMounted = ref(false)
+const savingIds = ref(new Set<string>())
 
 const selectedMonthLabel = computed(() => monthSelect.find(m => m.id === selectedMonth.value)?.label ?? '')
 
-const maskedCurrency = (value: number) => hideValues.value ? '***' : formatCurrency(value)
+const filteredData = computed(() => {
+    const query = globalFilter.value.trim().toLowerCase()
+    if (!query) return summaryData.value
+    return summaryData.value.filter(row =>
+        row.name.toLowerCase().includes(query) || row.employeeId.toLowerCase().includes(query)
+    )
+})
 
-const columns: TableColumn<SalesSummaryItem>[] = [
+const saveTarget = async (row: SalesTargetItem, value: number) => {
+    if (!Number.isFinite(value) || value < 0) {
+        toast.add({ title: 'Invalid target', description: 'Target must be a non-negative number', color: 'error' })
+        return
+    }
+    if (value === row.target) return
+
+    savingIds.value.add(row.employeeId)
+    try {
+        const response = await summaryService.updateSalesTarget(
+            row.employeeId,
+            { month: selectedMonth.value, year: year.value },
+            { target: value }
+        )
+        if (response && response.success) {
+            row.target = value
+            toast.add({ title: 'Target updated', description: `${row.name}'s target is now ${value}`, color: 'success' })
+        }
+    } catch (error) {
+        toast.add({ title: 'Error', description: 'Failed to update target', color: 'error' })
+    } finally {
+        savingIds.value.delete(row.employeeId)
+    }
+}
+
+const columns: TableColumn<SalesTargetItem>[] = [
     {
         accessorKey: 'name',
         header: 'Account Manager',
@@ -92,66 +124,40 @@ const columns: TableColumn<SalesSummaryItem>[] = [
         ])
     },
     {
-        accessorKey: 'achievementStatus',
-        header: 'Achievement',
-        cell: ({ row }) => h('div', { class: getAchievementTextClass(row.original.achievementStatus) + ' text-xs uppercase' }, row.original.achievementStatus)
+        accessorKey: 'status',
+        header: 'Status',
+        cell: ({ row }) => row.original.status
+            ? h(UBadge, { color: row.original.status === 'Permanent' ? 'primary' : 'neutral', variant: 'subtle' }, () => row.original.status)
+            : h('span', { class: 'text-xs text-gray-400 italic' }, 'N/A')
     },
     {
-        accessorKey: 'activityCount',
-        header: () => h('div', { class: 'text-center' }, 'New Service'),
-        cell: ({ row }) => h('div', { class: 'text-center font-bold' }, row.original.activityCount)
-    },
-    {
-        accessorKey: 'newMrc',
-        header: () => h('div', { class: 'text-right' }, 'New MRC'),
-        cell: ({ row }) => h('div', { class: 'text-right font-medium' }, maskedCurrency(row.original.newMrc))
-    },
-    {
-        accessorKey: 'newSubscription',
-        header: () => h('div', { class: 'text-right' }, 'New Subscription'),
-        cell: ({ row }) => h('div', { class: 'text-right font-medium' }, maskedCurrency(row.original.newSubscription))
-    },
-    {
-        accessorKey: 'newCommission',
-        header: () => h('div', { class: 'text-right' }, 'New Commission'),
-        cell: ({ row }) => h('div', { class: 'text-right font-medium' }, maskedCurrency(row.original.newCommission))
-    },
-    {
-        accessorKey: 'recurringSubscription',
-        header: () => h('div', { class: 'text-right' }, 'Recurring Subscription'),
-        cell: ({ row }) => h('div', { class: 'text-right font-medium' }, maskedCurrency(row.original.recurringSubscription))
-    },
-    {
-        accessorKey: 'recurringCommission',
-        header: () => h('div', { class: 'text-right' }, 'Recurring Commission'),
-        cell: ({ row }) => h('div', { class: 'text-right font-medium' }, maskedCurrency(row.original.recurringCommission))
-    },
-    {
-        accessorKey: 'otherSubscription',
-        header: () => h('div', { class: 'text-right' }, 'Other Subscription'),
-        cell: ({ row }) => h('div', { class: 'text-right font-medium' }, maskedCurrency(row.original.otherSubscription))
-    },
-    {
-        accessorKey: 'otherCommission',
-        header: () => h('div', { class: 'text-right' }, 'Other Commission'),
-        cell: ({ row }) => h('div', { class: 'text-right font-medium' }, maskedCurrency(row.original.otherCommission))
-    },
-    {
-        accessorKey: 'bonus',
-        header: () => h('div', { class: 'text-right' }, 'Bonus'),
-        cell: ({ row }) => h('div', { class: 'text-right font-medium text-violet-600 dark:text-violet-400' }, maskedCurrency(row.original.bonus))
-    },
-    {
-        accessorKey: 'totalCommission',
-        header: () => h('div', { class: 'text-right' }, 'Total Commission'),
-        cell: ({ row }) => h('div', { class: 'text-right font-bold text-primary-600 dark:text-primary-400' }, maskedCurrency(row.original.totalCommission))
+        accessorKey: 'target',
+        header: () => h('div', { class: 'text-right' }, 'New Achievement Target'),
+        cell: ({ row }) => h('div', { class: 'flex justify-end' }, [
+            h(UInput, {
+                type: 'number',
+                min: 0,
+                modelValue: row.original.target,
+                loading: savingIds.value.has(row.original.employeeId),
+                disabled: savingIds.value.has(row.original.employeeId),
+                class: 'w-24',
+                ui: { base: 'text-right' },
+                'onUpdate:modelValue': (val: string | number) => {
+                    row.original.target = Number(val)
+                },
+                onBlur: () => saveTarget(row.original, Number(row.original.target)),
+                onKeydown: (e: KeyboardEvent) => {
+                    if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+                }
+            })
+        ])
     }
 ]
 
 const fetchSummary = async () => {
     setLoading(true)
     try {
-        const response = await summaryService.salesSummary({ month: selectedMonth.value, year: year.value })
+        const response = await summaryService.salesTarget({ month: selectedMonth.value, year: year.value })
         summaryData.value = response?.data ?? []
     } finally {
         setLoading(false)
