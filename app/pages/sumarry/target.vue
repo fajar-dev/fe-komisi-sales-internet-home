@@ -133,24 +133,31 @@ const columns: TableColumn<SalesTargetItem>[] = [
     {
         accessorKey: 'target',
         header: () => h('div', { class: 'text-right' }, 'New Achievement Target'),
-        cell: ({ row }) => h('div', { class: 'flex justify-end' }, [
-            h(UInput, {
-                type: 'number',
-                min: 0,
-                modelValue: row.original.target,
-                loading: savingIds.value.has(row.original.employeeId),
-                disabled: savingIds.value.has(row.original.employeeId),
-                class: 'w-24',
-                ui: { base: 'text-right' },
-                'onUpdate:modelValue': (val: string | number) => {
-                    row.original.target = Number(val)
-                },
-                onBlur: () => saveTarget(row.original, Number(row.original.target)),
-                onKeydown: (e: KeyboardEvent) => {
-                    if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
-                }
-            })
-        ])
+        cell: ({ row }) => {
+            // Probation is never gated on target (rate/performance-penalty checks
+            // only apply to Permanent), so it stays fixed at 0 and isn't editable.
+            if (row.original.status !== 'Permanent') {
+                return h('div', { class: 'text-right text-sm text-gray-400 italic pr-2.5' }, 'N/A')
+            }
+            return h('div', { class: 'flex justify-end' }, [
+                h(UInput, {
+                    type: 'number',
+                    min: 0,
+                    modelValue: row.original.target,
+                    loading: savingIds.value.has(row.original.employeeId),
+                    disabled: savingIds.value.has(row.original.employeeId),
+                    class: 'w-24',
+                    ui: { base: 'text-right' },
+                    'onUpdate:modelValue': (val: string | number) => {
+                        row.original.target = Number(val)
+                    },
+                    onBlur: () => saveTarget(row.original, Number(row.original.target)),
+                    onKeydown: (e: KeyboardEvent) => {
+                        if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+                    }
+                })
+            ])
+        }
     }
 ]
 
