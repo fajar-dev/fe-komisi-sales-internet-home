@@ -26,6 +26,7 @@ export interface CommissionLineItem {
     serviceName: string | null;
     category: string | null;
     businessOperation: string | null;
+    manager: string | null;
     type: string;
     month: number;
     lateMonth: number;

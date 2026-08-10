@@ -56,6 +56,7 @@ export interface ManagerSummaryResponseData {
 
 export interface InvoiceSummaryItem extends CommissionLineItem {
     sales: { employeeId: string; name: string; photoProfile: string } | null;
+    managerEmployee: { employeeId: string; name: string; photoProfile: string } | null;
 }
 
 export interface InvoiceSummaryResponseData {

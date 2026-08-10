@@ -51,7 +51,7 @@
                         :pagination-options="{
                             getPaginationRowModel: getPaginationRowModel()
                         }"
-                        class="flex-1 max-h-[800px]"
+                        class="flex-1 max-h-[800px] [&_tr:has(.row-adjusted)]:bg-amber-50 dark:[&_tr:has(.row-adjusted)]:bg-amber-950/20"
                     />
 
                     <template #footer>
@@ -187,7 +187,7 @@ const columns: TableColumn<InvoiceSummaryItem>[] = [
                 onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
             })
         },
-        cell: ({ row }) => h('div', { class: 'flex items-center justify-center gap-1.5' }, [
+        cell: ({ row }) => h('div', { class: ['flex items-center justify-center gap-1.5', row.original.isAdjusted ? 'row-adjusted' : ''] }, [
             h('span', row.original.aiInvoice),
             row.original.isAdjusted
                 ? h(UTooltip, { text: 'This row has been manually adjusted', delayDuration: 0 }, () =>
@@ -229,6 +229,40 @@ const columns: TableColumn<InvoiceSummaryItem>[] = [
                 h('div', { class: 'flex flex-col' }, [
                     h('span', { class: 'font-semibold text-gray-900 dark:text-white group-hover:text-primary-500 transition-colors' }, sales.name || 'Unknown'),
                     h('span', { class: 'text-xs text-gray-500' }, sales.employeeId || '')
+                ])
+            ])
+        }
+    },
+    {
+        id: 'manager',
+        accessorFn: (row) => row.managerEmployee?.name || row.managerEmployee?.employeeId || '',
+        header: ({ column }) => {
+            const isSorted = column.getIsSorted()
+            return h(UButton, {
+                color: 'neutral',
+                variant: 'ghost',
+                label: 'Sales Manager',
+                icon: isSorted ? (isSorted === 'asc' ? 'i-lucide-arrow-up-narrow-wide' : 'i-lucide-arrow-down-wide-narrow') : 'i-lucide-arrow-up-down',
+                onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
+            })
+        },
+        sortingFn: (rowA, rowB) => {
+            const nameA = rowA.original.managerEmployee?.name || ''
+            const nameB = rowB.original.managerEmployee?.name || ''
+            return nameA.localeCompare(nameB)
+        },
+        cell: ({ row }) => {
+            const manager = row.original.managerEmployee
+            if (!manager) return h('div', { class: 'text-gray-400 italic text-xs' }, '-')
+
+            return h(NuxtLink, {
+                to: `/${manager.employeeId}/manager`,
+                class: 'flex items-center gap-3 group'
+            }, [
+                h(UAvatar, { src: manager.photoProfile || undefined, alt: manager.name || '', size: 'sm' }),
+                h('div', { class: 'flex flex-col' }, [
+                    h('span', { class: 'font-semibold text-gray-900 dark:text-white group-hover:text-primary-500 transition-colors' }, manager.name || 'Unknown'),
+                    h('span', { class: 'text-xs text-gray-500' }, manager.employeeId || '')
                 ])
             ])
         }
