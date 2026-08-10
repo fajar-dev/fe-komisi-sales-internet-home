@@ -30,6 +30,7 @@ export interface CommissionLineItem {
     month: number;
     lateMonth: number;
     isApproved: boolean;
+    isAdjusted: boolean;
     paidDate: string | null;
     subscription: number;
     mrc: number;

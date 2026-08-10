@@ -116,3 +116,64 @@ export interface SalesTargetResponseData {
 export interface SalesTargetUpdateInput {
     target: number;
 }
+
+/** Admin-editable snapshot fields — everything except the identity keys (ai/aiReceipt/period) and isApproved (has its own toggle). */
+export interface AdjustableSnapshotFields {
+    customerId?: string;
+    customerName?: string | null;
+    customerCompany?: string | null;
+    customerServiceId?: number | null;
+    customerServiceAccount?: string | null;
+    serviceId?: string | null;
+    serviceName?: string | null;
+    category?: string | null;
+    sales?: string | null;
+    manager?: string | null;
+    vendor?: string | null;
+    subscription?: number | null;
+    lineRental?: number | null;
+    paidDate?: string | null;
+    month?: number | null;
+    lateMonth?: number | null;
+    type?: string | null;
+    referralFee?: number | null;
+    referralType?: string | null;
+    referralName?: string | null;
+    businessOperation?: string | null;
+}
+
+export interface InvoiceAdjustmentInput extends AdjustableSnapshotFields {
+    note: string;
+}
+
+/** Full raw invoice row, used to prefill the adjustment form with every field. */
+export interface SnapshotDetailItem extends AdjustableSnapshotFields {
+    aiInvoice: number;
+    aiReceipt: number | null;
+    period: string;
+    isApproved: boolean;
+    isAdjusted: boolean;
+}
+
+export interface SnapshotDetailResponseData {
+    success: boolean;
+    message: string;
+    data: SnapshotDetailItem;
+}
+
+export interface SnapshotAdjustmentItem {
+    id: number;
+    aiInvoice: number;
+    employeeId: string;
+    employeeName: string | null;
+    oldValue: Partial<AdjustableSnapshotFields>;
+    newValue: Partial<AdjustableSnapshotFields>;
+    note: string;
+    createdAt: string;
+}
+
+export interface SnapshotAdjustmentResponseData {
+    success: boolean;
+    message: string;
+    data: SnapshotAdjustmentItem[];
+}

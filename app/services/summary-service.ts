@@ -2,12 +2,15 @@ import { apiService } from "./api-service"
 import type {
     ChurnSummaryResponseData,
     InvoiceApprovalInput,
+    InvoiceAdjustmentInput,
     InvoiceReferralInput,
     InvoiceSummaryResponseData,
     ManagerSummaryResponseData,
     SalesSummaryResponseData,
     SalesTargetResponseData,
     SalesTargetUpdateInput,
+    SnapshotAdjustmentResponseData,
+    SnapshotDetailResponseData,
     SummaryQueryParams
 } from "~/types/summary"
 
@@ -70,6 +73,45 @@ export class SummaryService {
     async updateInvoiceReferral(aiInvoice: number, data: InvoiceReferralInput): Promise<any> {
         try {
             const response = await apiService.client.put(`/summary/invoice/${aiInvoice}`, data, {
+                headers: {
+                    authorization: `Bearer ${useAuth().state.token}`
+                }
+            })
+            return response.data
+        } catch (error: any) {
+            handleServiceError(error)
+        }
+    }
+
+    async invoiceDetail(aiInvoice: number): Promise<SnapshotDetailResponseData> {
+        try {
+            const response = await apiService.client.get(`/summary/invoice/${aiInvoice}`, {
+                headers: {
+                    authorization: `Bearer ${useAuth().state.token}`
+                }
+            })
+            return response.data
+        } catch (error: any) {
+            handleServiceError(error)
+        }
+    }
+
+    async adjustInvoice(aiInvoice: number, data: InvoiceAdjustmentInput): Promise<any> {
+        try {
+            const response = await apiService.client.put(`/summary/invoice/${aiInvoice}/adjust`, data, {
+                headers: {
+                    authorization: `Bearer ${useAuth().state.token}`
+                }
+            })
+            return response.data
+        } catch (error: any) {
+            handleServiceError(error)
+        }
+    }
+
+    async invoiceAdjustments(aiInvoice: number): Promise<SnapshotAdjustmentResponseData> {
+        try {
+            const response = await apiService.client.get(`/summary/invoice/${aiInvoice}/adjustments`, {
                 headers: {
                     authorization: `Bearer ${useAuth().state.token}`
                 }
