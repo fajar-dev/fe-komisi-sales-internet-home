@@ -64,7 +64,7 @@ export interface ManagerCommissionData {
         recurringCommission: number;
         newSubscription: number;
         newMrc: number;
-        byServiceGroup: Record<'Home' | 'Nusafiber' | 'NusaSelecta', {
+        byServiceGroup: Record<'Home' | 'Nusafiber' | 'NusaSelecta' | 'Digital Business' | 'Access Business', {
             newCount: number;
             newSubscription: number;
             newMrc: number;

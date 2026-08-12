@@ -113,6 +113,8 @@ const { formatCurrency } = useFormat()
 const { getAchievementBadgeClass } = useAchievementColor()
 
 const serviceGroupOrder = ['Home', 'NusaSelecta', 'Nusafiber'] as const
+// Recurring-only: carves Digital Business and Access Business out of Home (KOMISI.md 3) — New-side boxes stay on the 3-way serviceGroupOrder above.
+const recurringServiceGroupOrder = ['Home', 'NusaSelecta', 'Nusafiber', 'Digital Business', 'Access Business'] as const
 const groupColor: Record<string, { bg: string; text: string; textStrong: string }> = {
     Home: { bg: 'bg-sky-50 dark:bg-sky-900/10 border-sky-100 dark:border-sky-800', text: 'text-sky-700 dark:text-sky-300', textStrong: 'text-sky-900 dark:text-sky-100' },
     NusaSelecta: { bg: 'bg-orange-50 dark:bg-orange-900/10 border-orange-100 dark:border-orange-800', text: 'text-orange-700 dark:text-orange-300', textStrong: 'text-orange-900 dark:text-orange-100' },
@@ -192,7 +194,7 @@ const financialBoxes = computed<FinancialBox[]>(() => {
         },
         {
             title: 'Subscription (Recurring)',
-            rows: serviceGroupOrder.map(name => ({ label: name, value: g[name]?.recurring.subscription ?? 0 })),
+            rows: recurringServiceGroupOrder.map(name => ({ label: name, value: g[name]?.recurring.subscription ?? 0 })),
             total: b.recurring.subscription
         },
         {

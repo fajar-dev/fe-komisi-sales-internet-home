@@ -248,6 +248,8 @@ interface TeamServiceBox {
 }
 
 const serviceGroupOrder = ['Home', 'Nusafiber', 'NusaSelecta'] as const
+// Recurring-only: carves Digital Business and Access Business out of Home (KOMISI.md 3) — New-side boxes stay on the 3-way serviceGroupOrder above.
+const recurringServiceGroupOrder = ['Home', 'Nusafiber', 'NusaSelecta', 'Digital Business', 'Access Business'] as const
 
 const teamServiceBoxes = computed<TeamServiceBox[]>(() => {
     if (!periodData.value) return []
@@ -271,12 +273,12 @@ const teamServiceBoxes = computed<TeamServiceBox[]>(() => {
         },
         {
             title: 'Recurring Subscription',
-            rows: serviceGroupOrder.map(name => ({ label: name, value: g[name].recurringSubscription })),
-            total: serviceGroupOrder.reduce((sum, name) => sum + g[name].recurringSubscription, 0)
+            rows: recurringServiceGroupOrder.map(name => ({ label: name, value: g[name].recurringSubscription })),
+            total: recurringServiceGroupOrder.reduce((sum, name) => sum + g[name].recurringSubscription, 0)
         },
         {
             title: 'Recurring Commission',
-            rows: serviceGroupOrder.map(name => ({ label: name, value: g[name].recurringCommission })),
+            rows: recurringServiceGroupOrder.map(name => ({ label: name, value: g[name].recurringCommission })),
             total: periodData.value.teamTotals.recurringCommission
         }
     ]
