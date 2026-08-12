@@ -180,8 +180,11 @@ const financialBoxes = computed<FinancialBox[]>(() => {
         },
         {
             title: 'MRC (New)',
-            rows: serviceGroupOrder.map(name => ({ label: name, value: g[name]?.new.mrc ?? 0 })),
-            total: b.new.mrc
+            rows: [
+                ...serviceGroupOrder.map(name => ({ label: name, value: g[name]?.new.mrc ?? 0 })),
+                { label: 'Upgrade', value: b.upgrade.mrc }
+            ],
+            total: b.new.mrc + b.upgrade.mrc
         },
         {
             title: 'Subscription (New)',
