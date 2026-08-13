@@ -174,7 +174,7 @@ const financialBoxes = computed<FinancialBox[]>(() => {
                 { label: 'Upgrade', value: b.upgrade.commission },
                 { label: 'Alat', value: b.alat.commission },
                 { label: 'Setup', value: b.setup.commission },
-                { label: 'Bonus', value: data.bonus }
+                { label: 'Bonus Kelebihan Service', value: data.bonus }
             ],
             total: data.total.commission + data.bonus
         },

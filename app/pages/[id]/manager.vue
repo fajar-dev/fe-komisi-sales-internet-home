@@ -448,7 +448,7 @@ const columns = computed<TableColumn<ManagerTeamMember>[]>(() => [
     },
     {
         accessorKey: 'bonus',
-        header: () => h('div', { class: 'text-right' }, 'Bonus'),
+        header: () => h('div', { class: 'text-right' }, 'Bonus Kelebihan Service'),
         cell: ({ row }) => h('div', { class: 'text-right font-medium' }, formatCurrency(row.original.bonus)),
         footer: () => h('div', { class: 'text-right font-bold py-3' }, formatCurrency(members.value.reduce((sum, m) => sum + m.bonus, 0)))
     },

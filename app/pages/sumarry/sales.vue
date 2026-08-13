@@ -138,7 +138,7 @@ const columns: TableColumn<SalesSummaryItem>[] = [
     },
     {
         accessorKey: 'bonus',
-        header: () => h('div', { class: 'text-right' }, 'Bonus'),
+        header: () => h('div', { class: 'text-right' }, 'Bonus Kelebihan Service'),
         cell: ({ row }) => h('div', { class: 'text-right font-medium text-violet-600 dark:text-violet-400' }, maskedCurrency(row.original.bonus))
     },
     {
