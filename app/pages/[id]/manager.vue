@@ -264,12 +264,12 @@ const teamServiceBoxes = computed<TeamServiceBox[]>(() => {
         {
             title: 'New Subscription',
             rows: serviceGroupOrder.map(name => ({ label: name, value: g[name].newSubscription })),
-            total: periodData.value.teamTotals.newSubscription
+            total: serviceGroupOrder.reduce((sum, name) => sum + g[name].newSubscription, 0)
         },
         {
             title: 'New MRC',
             rows: serviceGroupOrder.map(name => ({ label: name, value: g[name].newMrc })),
-            total: periodData.value.teamTotals.newMrc
+            total: serviceGroupOrder.reduce((sum, name) => sum + g[name].newMrc, 0)
         },
         {
             title: 'Recurring Subscription',
@@ -279,7 +279,7 @@ const teamServiceBoxes = computed<TeamServiceBox[]>(() => {
         {
             title: 'Recurring Commission',
             rows: recurringServiceGroupOrder.map(name => ({ label: name, value: g[name].recurringCommission })),
-            total: periodData.value.teamTotals.recurringCommission
+            total: recurringServiceGroupOrder.reduce((sum, name) => sum + g[name].recurringCommission, 0)
         }
     ]
 })
