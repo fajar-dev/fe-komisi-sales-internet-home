@@ -58,6 +58,7 @@ export interface SalesCommissionData {
     achievementStatus: string;
     motivation: string;
     bonus: number;
+    consistencyBonus: number;
     total: CommissionStats;
     breakdown: CommissionBreakdown;
     byServiceGroup: Record<string, CommissionBreakdown>;

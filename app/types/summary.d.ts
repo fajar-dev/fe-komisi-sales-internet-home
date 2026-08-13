@@ -21,6 +21,7 @@ export interface SalesSummaryItem {
     otherSubscription: number;
     otherCommission: number;
     bonus: number;
+    consistencyBonus: number;
     totalCommission: number;
 }
 
@@ -177,4 +178,26 @@ export interface SnapshotAdjustmentResponseData {
     success: boolean;
     message: string;
     data: SnapshotAdjustmentItem[];
+}
+
+export interface ConsistencyBonusItem {
+    employeeId: string;
+    name: string;
+    photoProfile: string;
+    status: string | null;
+    amount: number;
+    note: string | null;
+    grantedBy: string | null;
+    grantedByName: string | null;
+    createdAt: string | null;
+}
+
+export interface ConsistencyBonusResponseData {
+    success: boolean;
+    message: string;
+    data: ConsistencyBonusItem[];
+}
+
+export interface ConsistencyBonusGrantInput {
+    note: string;
 }

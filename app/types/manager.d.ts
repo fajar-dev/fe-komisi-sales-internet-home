@@ -26,6 +26,7 @@ export interface ManagerTeamMember {
     otherSubscription: number;
     otherCommission: number;
     bonus: number;
+    consistencyBonus: number;
     totalCommission: number;
     managerNewCommission: number;
     managerRecurringCommission: number;

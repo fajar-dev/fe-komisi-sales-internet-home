@@ -1,6 +1,8 @@
 import { apiService } from "./api-service"
 import type {
     ChurnSummaryResponseData,
+    ConsistencyBonusGrantInput,
+    ConsistencyBonusResponseData,
     InvoiceApprovalInput,
     InvoiceAdjustmentInput,
     InvoiceReferralInput,
@@ -166,6 +168,48 @@ export class SummaryService {
     async updateSalesTarget(employeeId: string, params: SummaryQueryParams, data: SalesTargetUpdateInput): Promise<any> {
         try {
             const response = await apiService.client.put(`/summary/target/${employeeId}`, data, {
+                params,
+                headers: {
+                    authorization: `Bearer ${useAuth().state.token}`
+                }
+            })
+            return response.data
+        } catch (error: any) {
+            handleServiceError(error)
+        }
+    }
+
+    async consistencyBonus(params: SummaryQueryParams): Promise<ConsistencyBonusResponseData> {
+        try {
+            const response = await apiService.client.get(`/summary/consistency-bonus`, {
+                params,
+                headers: {
+                    authorization: `Bearer ${useAuth().state.token}`
+                }
+            })
+            return response.data
+        } catch (error: any) {
+            handleServiceError(error)
+        }
+    }
+
+    async grantConsistencyBonus(employeeId: string, params: SummaryQueryParams, data: ConsistencyBonusGrantInput): Promise<any> {
+        try {
+            const response = await apiService.client.put(`/summary/consistency-bonus/${employeeId}`, data, {
+                params,
+                headers: {
+                    authorization: `Bearer ${useAuth().state.token}`
+                }
+            })
+            return response.data
+        } catch (error: any) {
+            handleServiceError(error)
+        }
+    }
+
+    async revokeConsistencyBonus(employeeId: string, params: SummaryQueryParams): Promise<any> {
+        try {
+            const response = await apiService.client.delete(`/summary/consistency-bonus/${employeeId}`, {
                 params,
                 headers: {
                     authorization: `Bearer ${useAuth().state.token}`
