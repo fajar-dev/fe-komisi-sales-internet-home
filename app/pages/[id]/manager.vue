@@ -71,7 +71,7 @@
                                 </div>
                                 <div class="flex justify-between items-center">
                                     <span class="text-sm text-gray-600 dark:text-gray-400">Personal Sales</span>
-                                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ formatCurrency(periodData.personal.total.commission + periodData.personal.bonus) }}</span>
+                                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ formatCurrency(periodData.personal.total.commission + periodData.personal.bonus + periodData.personal.consistencyBonus) }}</span>
                                 </div>
                                 <div class="pt-2 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center">
                                     <span class="text-sm font-bold text-gray-900 dark:text-white">Total</span>
@@ -451,6 +451,12 @@ const columns = computed<TableColumn<ManagerTeamMember>[]>(() => [
         header: () => h('div', { class: 'text-right' }, 'Bonus Kelebihan Service'),
         cell: ({ row }) => h('div', { class: 'text-right font-medium' }, formatCurrency(row.original.bonus)),
         footer: () => h('div', { class: 'text-right font-bold py-3' }, formatCurrency(members.value.reduce((sum, m) => sum + m.bonus, 0)))
+    },
+    {
+        accessorKey: 'consistencyBonus',
+        header: () => h('div', { class: 'text-right' }, 'Bonus Konsistensi'),
+        cell: ({ row }) => h('div', { class: 'text-right font-medium' }, formatCurrency(row.original.consistencyBonus)),
+        footer: () => h('div', { class: 'text-right font-bold py-3' }, formatCurrency(members.value.reduce((sum, m) => sum + m.consistencyBonus, 0)))
     },
     {
         accessorKey: 'totalCommission',

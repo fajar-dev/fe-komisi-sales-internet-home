@@ -174,9 +174,10 @@ const financialBoxes = computed<FinancialBox[]>(() => {
                 { label: 'Upgrade', value: b.upgrade.commission },
                 { label: 'Alat', value: b.alat.commission },
                 { label: 'Setup', value: b.setup.commission },
-                { label: 'Bonus Kelebihan Service', value: data.bonus }
+                { label: 'Bonus Kelebihan Service', value: data.bonus },
+                { label: 'Bonus Konsistensi', value: data.consistencyBonus }
             ],
-            total: data.total.commission + data.bonus
+            total: data.total.commission + data.bonus + data.consistencyBonus
         },
         {
             title: 'MRC (New)',

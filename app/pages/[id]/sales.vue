@@ -29,7 +29,7 @@
                                 Grand Total Commission
                             </p>
                             <span class="text-2xl sm:text-3xl md:text-4xl font-bold text-primary-500 dark:text-primary-400">
-                                {{ formatCurrency(periodData.total.commission + periodData.bonus) }}
+                                {{ formatCurrency(periodData.total.commission + periodData.bonus + periodData.consistencyBonus) }}
                             </span>
                         </div>
                     </div>

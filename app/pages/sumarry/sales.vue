@@ -14,6 +14,8 @@
                     <UButton to="/sumarry/churn" icon="i-heroicons-archive-box-x-mark" :variant="$route.path === '/sumarry/churn' ? 'soft' : 'ghost'" :color="$route.path === '/sumarry/churn' ? 'primary' : 'neutral'" size="sm">Churn</UButton>
                     <USeparator orientation="vertical" class="h-7 w-2" />
                     <UButton to="/sumarry/target" icon="i-heroicons-flag" :variant="$route.path === '/sumarry/target' ? 'soft' : 'ghost'" :color="$route.path === '/sumarry/target' ? 'primary' : 'neutral'" size="sm">Target</UButton>
+                    <USeparator orientation="vertical" class="h-7 w-2" />
+                    <UButton to="/sumarry/consistency-bonus" icon="i-heroicons-gift" :variant="$route.path === '/sumarry/consistency-bonus' ? 'soft' : 'ghost'" :color="$route.path === '/sumarry/consistency-bonus' ? 'primary' : 'neutral'" size="sm">Bonus Konsistensi</UButton>
                 </div>
             </Teleport>
             <Teleport v-if="isMounted" to="#toolbar-right">
@@ -140,6 +142,11 @@ const columns: TableColumn<SalesSummaryItem>[] = [
         accessorKey: 'bonus',
         header: () => h('div', { class: 'text-right' }, 'Bonus Kelebihan Service'),
         cell: ({ row }) => h('div', { class: 'text-right font-medium text-violet-600 dark:text-violet-400' }, maskedCurrency(row.original.bonus))
+    },
+    {
+        accessorKey: 'consistencyBonus',
+        header: () => h('div', { class: 'text-right' }, 'Bonus Konsistensi'),
+        cell: ({ row }) => h('div', { class: 'text-right font-medium text-violet-600 dark:text-violet-400' }, maskedCurrency(row.original.consistencyBonus))
     },
     {
         accessorKey: 'totalCommission',
