@@ -187,6 +187,10 @@ export interface ConsistencyBonusItem {
     status: string | null;
     amount: number;
     note: string | null;
+    /** Comma-separated month numbers (1-12) the admin cites as the consistency record — informational only. */
+    months: string | null;
+    serviceCount: number | null;
+    testimonialLink: string | null;
     grantedBy: string | null;
     grantedByName: string | null;
     createdAt: string | null;
@@ -200,4 +204,7 @@ export interface ConsistencyBonusResponseData {
 
 export interface ConsistencyBonusGrantInput {
     note: string;
+    months?: number[];
+    serviceCount: number;
+    testimonialLink?: string;
 }

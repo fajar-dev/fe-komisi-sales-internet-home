@@ -49,6 +49,9 @@
             :employee-id="selectedEmployeeId"
             :employee-name="selectedEmployeeName"
             :existing-note="selectedExistingNote"
+            :existing-months="selectedExistingMonths"
+            :existing-service-count="selectedExistingServiceCount"
+            :existing-testimonial-link="selectedExistingTestimonialLink"
             :month="selectedMonth"
             :year="year"
             @success="fetchSummary"
@@ -92,6 +95,12 @@ const isGrantModalOpen = ref(false)
 const selectedEmployeeId = ref<string | null>(null)
 const selectedEmployeeName = ref<string | null>(null)
 const selectedExistingNote = ref<string | null>(null)
+const selectedExistingMonths = ref<string | null>(null)
+const selectedExistingServiceCount = ref<number | null>(null)
+const selectedExistingTestimonialLink = ref<string | null>(null)
+
+const monthShortLabel = (n: number) => monthSelect.find(m => m.id === n)?.label.slice(0, 3) ?? String(n)
+const formatMonths = (months: string | null) => months ? months.split(',').map(m => monthShortLabel(Number(m))).join(', ') : null
 
 const selectedMonthLabel = computed(() => monthSelect.find(m => m.id === selectedMonth.value)?.label ?? '')
 
@@ -107,6 +116,9 @@ const openGrantModal = (row: ConsistencyBonusItem) => {
     selectedEmployeeId.value = row.employeeId
     selectedEmployeeName.value = row.name
     selectedExistingNote.value = row.note
+    selectedExistingMonths.value = row.months
+    selectedExistingServiceCount.value = row.serviceCount
+    selectedExistingTestimonialLink.value = row.testimonialLink
     isGrantModalOpen.value = true
 }
 
@@ -117,6 +129,9 @@ const revokeBonus = async (row: ConsistencyBonusItem) => {
         if (response && response.success) {
             row.amount = 0
             row.note = null
+            row.months = null
+            row.serviceCount = null
+            row.testimonialLink = null
             row.grantedBy = null
             row.grantedByName = null
             row.createdAt = null
@@ -164,6 +179,28 @@ const columns: TableColumn<ConsistencyBonusItem>[] = [
             return h(UTooltip, { text: note, delayDuration: 0 }, () =>
                 h('span', { class: 'text-xs text-gray-600 dark:text-gray-300 truncate block max-w-[220px]' }, note))
         }
+    },
+    {
+        accessorKey: 'serviceCount',
+        header: () => h('div', { class: 'text-center' }, 'Service'),
+        cell: ({ row }) => h('div', { class: 'text-center font-medium' }, row.original.serviceCount ?? '-')
+    },
+    {
+        accessorKey: 'months',
+        header: 'Bulan',
+        cell: ({ row }) => {
+            const label = formatMonths(row.original.months)
+            return label
+                ? h('span', { class: 'text-xs text-gray-600 dark:text-gray-300' }, label)
+                : h('span', { class: 'text-xs text-gray-400 italic' }, '-')
+        }
+    },
+    {
+        accessorKey: 'testimonialLink',
+        header: 'Testimoni',
+        cell: ({ row }) => row.original.testimonialLink
+            ? h('a', { href: row.original.testimonialLink, target: '_blank', class: 'text-xs text-blue-500 hover:underline' }, 'Lihat')
+            : h('span', { class: 'text-xs text-gray-400 italic' }, '-')
     },
     {
         accessorKey: 'grantedByName',
