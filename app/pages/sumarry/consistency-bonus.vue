@@ -218,16 +218,12 @@ const columns: TableColumn<ConsistencyBonusItem>[] = [
         cell: ({ row }) => h('div', { class: 'flex justify-end gap-2' }, [
             row.original.amount > 0
                 ? h(UButton, {
-                    size: 'xs',
                     color: 'error',
-                    variant: 'soft',
                     loading: revokingIds.value.has(row.original.employeeId),
                     onClick: () => revokeBonus(row.original)
                 }, () => 'Revoke')
                 : h(UButton, {
-                    size: 'xs',
                     color: 'primary',
-                    variant: 'soft',
                     onClick: () => openGrantModal(row.original)
                 }, () => 'Grant')
         ])
