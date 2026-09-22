@@ -57,7 +57,8 @@ export interface SalesCommissionData {
     activityCount: number;
     achievementStatus: string;
     motivation: string;
-    bonus: number;
+    bonusBulanan: number;
+    bonusKelebihanService: number;
     consistencyBonus: number;
     total: CommissionStats;
     breakdown: CommissionBreakdown;

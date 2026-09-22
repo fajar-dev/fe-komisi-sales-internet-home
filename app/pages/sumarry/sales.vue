@@ -139,9 +139,14 @@ const columns: TableColumn<SalesSummaryItem>[] = [
         cell: ({ row }) => h('div', { class: 'text-right font-medium' }, maskedCurrency(row.original.otherCommission))
     },
     {
-        accessorKey: 'bonus',
+        accessorKey: 'bonusBulanan',
+        header: () => h('div', { class: 'text-right' }, 'Bonus Bulanan'),
+        cell: ({ row }) => h('div', { class: 'text-right font-medium text-violet-600 dark:text-violet-400' }, maskedCurrency(row.original.bonusBulanan))
+    },
+    {
+        accessorKey: 'bonusKelebihanService',
         header: () => h('div', { class: 'text-right' }, 'Bonus Kelebihan Service'),
-        cell: ({ row }) => h('div', { class: 'text-right font-medium text-violet-600 dark:text-violet-400' }, maskedCurrency(row.original.bonus))
+        cell: ({ row }) => h('div', { class: 'text-right font-medium text-violet-600 dark:text-violet-400' }, maskedCurrency(row.original.bonusKelebihanService))
     },
     {
         accessorKey: 'consistencyBonus',
