@@ -2,10 +2,13 @@
     <UModal
         v-model:open="isOpen"
         :title="`Bonus Konsistensi — ${employeeName ?? ''}`"
-        description="Bonus tetap Rp 1.000.000, ditambahkan langsung ke Total Komisi periode ini."
+        description="Nominal ditentukan admin, ditambahkan langsung ke Total Komisi periode ini."
     >
         <template #body>
             <UForm :state="state" class="space-y-4">
+                <UFormField label="Nominal Bonus" name="amount" required description="Jumlah bonus yang diberikan, bebas ditentukan admin.">
+                    <UInput v-model.number="state.amount" type="number" min="0" step="1000" icon="i-heroicons-banknotes" class="w-full" placeholder="Contoh: 1000000" />
+                </UFormField>
                 <UFormField label="Note" name="note" required description="Alasan pemberian bonus ini, wajib diisi untuk audit log.">
                     <UTextarea v-model="state.note" class="w-full" :rows="3" placeholder="Contoh: Konsisten capai target 3 bulan berturut-turut" />
                 </UFormField>
@@ -24,7 +27,7 @@
         <template #footer="{ close }">
             <div class="flex justify-end gap-3 w-full">
                 <UButton type="button" color="neutral" variant="ghost" :disabled="saving" @click="close">Cancel</UButton>
-                <UButton type="button" color="primary" :loading="saving" @click="onSubmit">Grant Rp 1.000.000</UButton>
+                <UButton type="button" color="primary" :loading="saving" @click="onSubmit">Grant {{ state.amount ? formatCurrency(state.amount) : '' }}</UButton>
             </div>
         </template>
     </UModal>
@@ -37,6 +40,7 @@ import { SummaryService } from '~/services/summary-service'
 const props = defineProps<{
     employeeId: string | null
     employeeName: string | null
+    existingAmount: number | null
     existingNote: string | null
     existingMonths: string | null
     existingServiceCount: number | null
@@ -49,13 +53,15 @@ const isOpen = defineModel<boolean>('open', { default: false })
 const emit = defineEmits(['success'])
 
 const summaryService = new SummaryService()
+const { formatCurrency } = useFormat()
 const toast = useToast()
 const saving = ref(false)
 
 const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 const monthOptions = monthNames.map((label, i) => ({ id: i + 1, label }))
 
-const state = reactive<{ note: string; serviceCount: number | undefined; months: number[]; testimonialLink: string }>({
+const state = reactive<{ amount: number | undefined; note: string; serviceCount: number | undefined; months: number[]; testimonialLink: string }>({
+    amount: undefined,
     note: '',
     serviceCount: undefined,
     months: [],
@@ -63,9 +69,10 @@ const state = reactive<{ note: string; serviceCount: number | undefined; months:
 })
 
 watch(
-    () => [props.existingNote, props.existingMonths, props.existingServiceCount, props.existingTestimonialLink, isOpen.value] as const,
-    ([note, months, serviceCount, testimonialLink, open]) => {
+    () => [props.existingAmount, props.existingNote, props.existingMonths, props.existingServiceCount, props.existingTestimonialLink, isOpen.value] as const,
+    ([amount, note, months, serviceCount, testimonialLink, open]) => {
         if (open) {
+            state.amount = amount ?? undefined
             state.note = note ?? ''
             state.months = months ? months.split(',').map(Number) : []
             state.serviceCount = serviceCount ?? undefined
@@ -77,6 +84,10 @@ watch(
 
 async function onSubmit() {
     if (!props.employeeId) return
+    if (state.amount === undefined || state.amount === null || state.amount <= 0) {
+        toast.add({ title: 'Nominal Bonus is required', description: 'Isi nominal bonus yang diberikan.', color: 'error' })
+        return
+    }
     if (!state.note.trim()) {
         toast.add({ title: 'Note is required', description: 'Explain why this bonus is being granted.', color: 'error' })
         return
@@ -92,6 +103,7 @@ async function onSubmit() {
             props.employeeId,
             { month: props.month, year: props.year },
             {
+                amount: state.amount,
                 note: state.note.trim(),
                 serviceCount: state.serviceCount,
                 months: state.months.length > 0 ? state.months : undefined,
@@ -99,7 +111,7 @@ async function onSubmit() {
             }
         )
         if (response && response.success) {
-            toast.add({ title: 'Granted', description: 'Bonus Konsistensi Rp 1.000.000 berhasil diberikan', color: 'success' })
+            toast.add({ title: 'Granted', description: `Bonus Konsistensi ${formatCurrency(state.amount)} berhasil diberikan`, color: 'success' })
             emit('success')
             isOpen.value = false
         }

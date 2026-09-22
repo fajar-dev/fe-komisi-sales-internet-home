@@ -34,7 +34,7 @@
                         <div class="flex items-center justify-between">
                             <div>
                                 <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Bonus Konsistensi</h3>
-                                <p class="text-xs text-gray-500">{{ selectedMonthLabel }} {{ year }} &middot; Bonus tetap Rp 1.000.000, ditambahkan ke Total Komisi periode ini</p>
+                                <p class="text-xs text-gray-500">{{ selectedMonthLabel }} {{ year }} &middot; Nominal ditentukan admin, ditambahkan ke Total Komisi periode ini</p>
                             </div>
                             <UInput v-model="globalFilter" icon="i-heroicons-magnifying-glass" placeholder="Search account manager..." />
                         </div>
@@ -48,6 +48,7 @@
             v-model:open="isGrantModalOpen"
             :employee-id="selectedEmployeeId"
             :employee-name="selectedEmployeeName"
+            :existing-amount="selectedExistingAmount"
             :existing-note="selectedExistingNote"
             :existing-months="selectedExistingMonths"
             :existing-service-count="selectedExistingServiceCount"
@@ -94,6 +95,7 @@ const revokingIds = ref(new Set<string>())
 const isGrantModalOpen = ref(false)
 const selectedEmployeeId = ref<string | null>(null)
 const selectedEmployeeName = ref<string | null>(null)
+const selectedExistingAmount = ref<number | null>(null)
 const selectedExistingNote = ref<string | null>(null)
 const selectedExistingMonths = ref<string | null>(null)
 const selectedExistingServiceCount = ref<number | null>(null)
@@ -115,6 +117,7 @@ const filteredData = computed(() => {
 const openGrantModal = (row: ConsistencyBonusItem) => {
     selectedEmployeeId.value = row.employeeId
     selectedEmployeeName.value = row.name
+    selectedExistingAmount.value = row.amount > 0 ? row.amount : null
     selectedExistingNote.value = row.note
     selectedExistingMonths.value = row.months
     selectedExistingServiceCount.value = row.serviceCount

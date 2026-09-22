@@ -199,6 +199,7 @@ export interface ConsistencyBonusResponseData {
 }
 
 export interface ConsistencyBonusGrantInput {
+    amount: number;
     note: string;
     months?: number[];
     serviceCount: number;
