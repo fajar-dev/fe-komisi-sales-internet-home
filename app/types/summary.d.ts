@@ -71,11 +71,6 @@ export interface InvoiceApprovalInput {
     isApproved: boolean;
 }
 
-export interface InvoiceReferralInput {
-    referralFee: number;
-    referralType: string | null;
-}
-
 export interface ChurnSummaryItem {
     customer_service_id: number;
     customer_id: string;

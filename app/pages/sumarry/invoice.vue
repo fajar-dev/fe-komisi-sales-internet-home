@@ -78,13 +78,6 @@
                 </UCard>
             </div>
         </UContainer>
-        <ReferralEditModal
-            v-model:open="isReferralModalOpen"
-            :ai="selectedInvoiceAi"
-            :referral-fee="selectedInvoiceFee"
-            :referral-type="selectedInvoiceType"
-            @success="fetchSummary"
-        />
         <AdjustInvoiceModal
             v-model:open="isAdjustModalOpen"
             :ai="selectedAdjustAi"
@@ -117,20 +110,8 @@ const { formatCurrency, formatDate } = useFormat()
 const toast = useToast()
 const summaryService = new SummaryService()
 
-const isReferralModalOpen = ref(false)
-const selectedInvoiceAi = ref<number | null>(null)
-const selectedInvoiceFee = ref(0)
-const selectedInvoiceType = ref<string | null>(null)
-
 const isAdjustModalOpen = ref(false)
 const selectedAdjustAi = ref<number | null>(null)
-
-const openReferralModal = (row: InvoiceSummaryItem) => {
-    selectedInvoiceAi.value = row.aiInvoice
-    selectedInvoiceFee.value = Number(row.referralFee)
-    selectedInvoiceType.value = row.referralType
-    isReferralModalOpen.value = true
-}
 
 const openAdjustModal = (row: InvoiceSummaryItem) => {
     selectedAdjustAi.value = row.aiInvoice
@@ -139,11 +120,6 @@ const openAdjustModal = (row: InvoiceSummaryItem) => {
 
 const getRowItems = (row: any) => [
     [
-        {
-            label: 'Edit Referral',
-            icon: 'i-heroicons-pencil-square-20-solid',
-            onSelect: () => openReferralModal(row.original)
-        },
         {
             label: 'Adjust Invoice',
             icon: 'i-heroicons-wrench-screwdriver',

@@ -5,7 +5,6 @@ import type {
     ConsistencyBonusResponseData,
     InvoiceApprovalInput,
     InvoiceAdjustmentInput,
-    InvoiceReferralInput,
     InvoiceSummaryResponseData,
     ManagerSummaryResponseData,
     SalesSummaryResponseData,
@@ -62,19 +61,6 @@ export class SummaryService {
     async approveInvoice(aiInvoice: number, data: InvoiceApprovalInput): Promise<any> {
         try {
             const response = await apiService.client.post(`/summary/invoice/${aiInvoice}/approve`, data, {
-                headers: {
-                    authorization: `Bearer ${useAuth().state.token}`
-                }
-            })
-            return response.data
-        } catch (error: any) {
-            handleServiceError(error)
-        }
-    }
-
-    async updateInvoiceReferral(aiInvoice: number, data: InvoiceReferralInput): Promise<any> {
-        try {
-            const response = await apiService.client.put(`/summary/invoice/${aiInvoice}`, data, {
                 headers: {
                     authorization: `Bearer ${useAuth().state.token}`
                 }
