@@ -60,6 +60,7 @@ const NuxtLink = resolveComponent('NuxtLink')
 const UAvatar = resolveComponent('UAvatar')
 const UBadge = resolveComponent('UBadge')
 const UInput = resolveComponent('UInput')
+const UButton = resolveComponent('UButton')
 
 const { setLoading } = useLoading()
 const toast = useToast()
@@ -77,6 +78,7 @@ const selectedMonth = ref(new Date().getMonth() + 1)
 const globalFilter = ref('')
 const isMounted = ref(false)
 const savingIds = ref(new Set<string>())
+const drafts = ref<Record<string, number>>({})
 
 const selectedMonthLabel = computed(() => monthSelect.find(m => m.id === selectedMonth.value)?.label ?? '')
 
@@ -104,6 +106,7 @@ const saveTarget = async (row: SalesTargetItem, value: number) => {
         )
         if (response && response.success) {
             row.target = value
+            drafts.value[row.employeeId] = value
             toast.add({ title: 'Target updated', description: `${row.name}'s target is now ${value}`, color: 'success' })
         }
     } catch (error) {
@@ -135,24 +138,38 @@ const columns: TableColumn<SalesTargetItem>[] = [
     {
         accessorKey: 'target',
         header: () => h('div', { class: 'text-right' }, 'New Achievement Target'),
-        cell: ({ row }) => h('div', { class: 'flex justify-end' }, [
-            h(UInput, {
-                type: 'number',
-                min: 0,
-                modelValue: row.original.target,
-                loading: savingIds.value.has(row.original.employeeId),
-                disabled: savingIds.value.has(row.original.employeeId),
-                class: 'w-24',
-                ui: { base: 'text-right' },
-                'onUpdate:modelValue': (val: string | number) => {
-                    row.original.target = Number(val)
-                },
-                onBlur: () => saveTarget(row.original, Number(row.original.target)),
-                onKeydown: (e: KeyboardEvent) => {
-                    if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
-                }
-            })
-        ])
+        cell: ({ row }) => {
+            const employeeId = row.original.employeeId
+            const draft = drafts.value[employeeId] ?? row.original.target
+            const isDirty = draft !== row.original.target
+            const isSaving = savingIds.value.has(employeeId)
+
+            return h('div', { class: 'flex justify-end items-center gap-2' }, [
+                h(UInput, {
+                    type: 'number',
+                    min: 0,
+                    modelValue: draft,
+                    disabled: isSaving,
+                    class: 'w-24',
+                    ui: { base: 'text-right' },
+                    'onUpdate:modelValue': (val: string | number) => {
+                        drafts.value[employeeId] = Number(val)
+                    },
+                    onKeydown: (e: KeyboardEvent) => {
+                        if (e.key === 'Enter') saveTarget(row.original, drafts.value[employeeId] ?? draft)
+                    }
+                }),
+                h(UButton, {
+                    icon: 'i-heroicons-check',
+                    size: 'xs',
+                    color: 'primary',
+                    variant: 'soft',
+                    disabled: !isDirty,
+                    loading: isSaving,
+                    onClick: () => saveTarget(row.original, drafts.value[employeeId] ?? draft)
+                }, () => 'Save')
+            ])
+        }
     }
 ]
 
@@ -161,6 +178,7 @@ const fetchSummary = async () => {
     try {
         const response = await summaryService.salesTarget({ month: selectedMonth.value, year: year.value })
         summaryData.value = response?.data ?? []
+        drafts.value = {}
     } finally {
         setLoading(false)
     }
